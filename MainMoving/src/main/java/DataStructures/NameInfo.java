@@ -315,11 +315,11 @@ public class NameInfo {
 	}
 	
 	public boolean hasSeason() {
-		return !this.season.isBlank();
+		return this.season != null && !this.season.isBlank();
 	}
 	
 	public boolean hasEpisode() {
-		return !this.episode.isBlank();
+		return this.episode != null && !this.episode.isBlank();
 	}
 	
 	public boolean hasDescription() {
