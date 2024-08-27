@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>MainMoving</groupId>
+  <artifactId>MainMoving</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+    <build>
+	    <resources>
+	        <resource>
+	            <directory>src/main/resources</directory>
+	            <filtering>true</filtering>
+	        </resource>
+        </resources>
+  </build>
+
+  <dependencies>
+	          <dependency>
+            <groupId>net.sourceforge.tess4j</groupId>
+            <artifactId>tess4j</artifactId>
+            <version>5.3.0</version>         
+        </dependency>
+	    <dependency>
+	        <groupId>org.openpnp</groupId>
+	        <artifactId>opencv</artifactId>
+	        <version>4.6.0-0</version>
+	    </dependency>
+		<dependency>
+		    <groupId>org.apache.pdfbox</groupId>
+		    <artifactId>pdfbox</artifactId>
+		    <version>2.0.27</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.ini4j</groupId>
+		    <artifactId>ini4j</artifactId>
+		    <version>0.5.4</version>
+		</dependency>
+		<dependency>
+		   <groupId>org.apache.tika</groupId>
+		   <artifactId>tika-core</artifactId>
+		   <version>2.6.0</version>
+		</dependency>
+	    <dependency>
+	        <groupId>org.apache.tika</groupId>
+	        <artifactId>tika-parsers-standard-package</artifactId>
+	        <version>2.6.0</version>
+	    </dependency>		
+		<dependency>
+	       <groupId>org.slf4j</groupId>
+	       <artifactId>slf4j-api</artifactId>
+	       <version>2.0.7</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-simple</artifactId>
+		    <version>2.0.7</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.googlecode.json-simple</groupId>
+		    <artifactId>json-simple</artifactId>
+		    <version>1.1.1</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.jclarion</groupId>
+		    <artifactId>image4j</artifactId>
+		    <version>0.7</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.apache.xmlgraphics</groupId>
+		  <artifactId>batik-all</artifactId>
+		  <version>1.17</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>MyUtilities</groupId>
+		  <artifactId>MyUtilities</artifactId>
+		  <version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.jsoup</groupId>
+		    <artifactId>jsoup</artifactId>
+		    <version>LATEST</version>
+		</dependency>
+		
+	</dependencies>
+</project>
