@@ -307,7 +307,7 @@ public class NameInfo {
 	}
 	
 	public boolean hasName() {
-		return !this.name.isBlank();
+		return this.name != null && !this.name.isBlank();
 	}
 	
 	public boolean hasYear() {

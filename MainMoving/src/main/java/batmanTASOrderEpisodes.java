@@ -36,8 +36,25 @@ import DataStructures.NameInfo;
 public class batmanTASOrderEpisodes {
 	
 	public static void main(String[] args) throws IOException {
-		File json = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\batmanTAS.json");
-		createCloneWarsOrder(json);
+		File json = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars");
+		
+		createSupermanAndTheNewBatmanOrder(json);
+		
+		/*List<NameInfo> supermanNameInfoList = loadFile(new File(json, SUPERMAN+".json"));
+		for(NameInfo nameInfo : supermanNameInfoList) { 
+			Integer number = getInteger(nameInfo.getEpisode());
+			System.out.println(number);
+			if(number != null)
+				setSeasonEpisodeSupermanTAS(nameInfo, number);
+		}
+		
+		
+		convertProductionNumbersToEpisodeSeasonsSupermanTAS(supermanNameInfoList);*/
+		
+		
+		
+		
+		//createCloneWarsOrder(json);
 		
 		//List<NameInfo> nameInfoList = loadFile(json);
 		
@@ -160,131 +177,197 @@ public class batmanTASOrderEpisodes {
 		Files.move(fileInfo.getFile().toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	}
 	
-	public static void createCloneWarsOrder(File json) throws IOException {
-		final String search = "https://comicbookmovie.com/fan-fic/my-episode-timeline-for-batman-the-animated-series-version-20-a64619#gs.e8qmmw";
+	private static Document loadPage(String searchPath) throws IOException {
 		Map<String, String> prop = new HashMap<>();
 		prop.put("gl", "us");
 		prop.put("hl", "en");
-		Document googlePage = Jsoup.connect(search)
+		return Jsoup.connect(searchPath)
 				.userAgent(SEARCH_AGENT)
 				.data(prop)
 				.header("Accept-Language", "en")
 				.header("Accept-Language", "en-US").get();
-		List<NameInfo> nameInfoList = new ArrayList<>();
-		System.out.println(googlePage);
+	}
+	
+	private static List<TextNode> getPageTextNodes(String searchPath) throws IOException {
+		List<TextNode> textNodesList = new ArrayList<>();
+		Document googlePage = loadPage(searchPath);
 		Element table = googlePage.getElementById("aContent");
 		Elements rows = table.getElementsByTag("b");
-		int listIndex = 1;
 		for(Element row : rows) {
 			List<TextNode> textNodes = row.textNodes();
-			for(TextNode textNode : textNodes) {
-				String text = textNode.text().trim();
-				System.out.println(text);
-				int twoWords = text.indexOf(' ');
-				if(twoWords != -1) {
-					String firstText = text.substring(0, twoWords);
-					String secondText = text.substring(twoWords+1);
-					int twoParts = firstText.indexOf('-');
-					if(twoParts != -1) {
-						if(addToList(firstText.substring(0, twoParts), secondText, nameInfoList, listIndex))
-							listIndex++;
-						firstText = firstText.substring(twoParts+1);
-					}
-					if(addToList(firstText, secondText, nameInfoList, listIndex))
-						listIndex++;
-					/*Integer number = getInteger(firstText);
-					NameInfo nameInfo = new NameInfo();
-					if(number != null) {
-						nameInfo.setName("Batman The Animated Series");
-						nameInfo.setIndex(""+listIndex++);
-						nameInfo.setEpisode(""+number);
-						//setSeasonEpisode(nameInfo, number);
-						nameInfo.setEpisodeName(secondText);
-						nameInfoList.add(nameInfo);
-					}
-					else if(firstText.startsWith("MOVIE")) {
-						nameInfo.setIndex(""+listIndex++);
-						nameInfoList.add(nameInfo);
-					}
-					System.out.println(text + " = " + nameInfo.getFullNameWithIndex());*/
-					
+			if(textNodes != null)
+				textNodesList.addAll(textNodes);
+		}
+		return textNodesList;
+	}
+	
+	public static void createCloneWarsOrder(File jsonDir) throws IOException {
+		final String search = "https://comicbookmovie.com/fan-fic/my-episode-timeline-for-batman-the-animated-series-version-20-a64619#gs.e8qmmw";
+		List<NameInfo> nameInfoList = new ArrayList<>();
+		List<TextNode> textNodes = getPageTextNodes(search);
+		for(TextNode textNode : textNodes) {
+			String text = textNode.text().trim();
+			//System.out.println(text);
+			int twoWords = text.indexOf(' ');
+			if(twoWords != -1) {
+				String firstText = text.substring(0, twoWords);
+				String secondText = text.substring(twoWords+1);
+				if(firstText.matches("\\d+a"))
+					firstText = firstText.substring(0, firstText.length()-1);
+				List<String> multipleTextList = getEpisodesInTheText(firstText);
+				for(String textInList : multipleTextList) {
+					if(!addToBatmanTASList(textInList, secondText, nameInfoList))
+						System.err.println(text);
 				}
-				
 			}
 		}
-		convertProductionNumbersToEpisodeSeasons(nameInfoList);
-		saveMedia(json, nameInfoList);
+		convertProductionNumbersToEpisodeSeasonsBatmanTAS(nameInfoList);
+		File batmanJson = new File(jsonDir, BATMAN+".json");
+		saveMedia(batmanJson, nameInfoList);
+	}
+	
+	private static List<String> getEpisodesInTheText(String firstText) {
+		List<String> list = new ArrayList<>();
+		int multipleEpisodes = firstText.indexOf('-');
+		if(multipleEpisodes != -1) {
+			String firstEpisode = firstText.substring(0, multipleEpisodes);
+			String lastEpisode = firstText.substring(multipleEpisodes+1);
+			Integer firstEpisodeNumber = getInteger(firstEpisode);
+			Integer lastEpisodeNumber = getInteger(lastEpisode);
+			if(firstEpisode != null && lastEpisode != null) {
+				while(firstEpisodeNumber <= lastEpisodeNumber) {
+					list.add(""+firstEpisodeNumber);
+					firstEpisodeNumber++;
+				}
+			}
+		}
+		else
+			list.add(firstText);
+		return list;
 	}
 	
 	public static void createSupermanAndTheNewBatmanOrder(File jsonDir) throws IOException {
 		final String search = "https://comicbookmovie.com/fan-fic/my-episode-timeline-for-the-new-batman-superman-adventures-a66635#gs.e945ia";
-		Map<String, String> prop = new HashMap<>();
-		prop.put("gl", "us");
-		prop.put("hl", "en");
-		Document googlePage = Jsoup.connect(search)
-				.userAgent(SEARCH_AGENT)
-				.data(prop)
-				.header("Accept-Language", "en")
-				.header("Accept-Language", "en-US").get();
-		List<NameInfo> nameInfoList = new ArrayList<>();
-		System.out.println(googlePage);
-		Element table = googlePage.getElementById("aContent");
-		Elements rows = table.getElementsByTag("b");
-		int listIndex = 1;
-		for(Element row : rows) {
-			List<TextNode> textNodes = row.textNodes();
-			for(TextNode textNode : textNodes) {
-				String text = textNode.text().trim();
-				System.out.println(text);
-				int twoWords = text.indexOf(' ');
-				if(twoWords != -1) {
-					String firstText = text.substring(0, twoWords);
-					String secondText = text.substring(twoWords+1);
-					if(firstText.startsWith("B")) {
-						firstText = 
+		List<NameInfo> supermanNameInfoList = new ArrayList<>();
+		List<NameInfo> batmanNameInfoList = new ArrayList<>();
+		List<TextNode> textNodes = getPageTextNodes(search);
+		for(TextNode textNode : textNodes) {
+			String text = textNode.text().trim();
+			System.out.println(text);
+			int twoWords = text.indexOf(' ');
+			if(twoWords != -1) {
+				String firstText = text.substring(0, twoWords);
+				String secondText = text.substring(twoWords+1);
+				if(firstText.equals("01"))
+					firstText = "B01";
+				String tvName = null;
+				if(firstText.startsWith("S")) {
+					firstText = firstText.substring(1);
+					List<String> multipleTextList = getEpisodesInTheText(firstText);
+					for(String textInList : multipleTextList) {
+						if(!addToSupermanTASList(textInList, secondText, supermanNameInfoList))
+							System.err.println(text);
 					}
-					else if(firstText.startsWith("S")) {
-						
-					}
-					int twoParts = firstText.indexOf('-');
-					if(twoParts != -1) {
-						if(addToList(firstText.substring(0, twoParts), secondText, nameInfoList, listIndex))
-							listIndex++;
-						firstText = firstText.substring(twoParts+1);
-					}
-					if(addToList(firstText, secondText, nameInfoList, listIndex))
-						listIndex++;
 				}
-				
+				else if(firstText.startsWith("B")) {
+					firstText = firstText.substring(1);
+					List<String> multipleTextList = getEpisodesInTheText(firstText);
+					for(String textInList : multipleTextList) {
+						if(!addToTheNewBatmanAdventuresTASList(textInList, secondText, batmanNameInfoList))
+							System.err.println(text);
+					}
+				}
+				else {
+					if(!addToTheNewBatmanAdventuresTASList(null, text, batmanNameInfoList))
+						System.err.println(text);
+				}
 			}
 		}
-		convertProductionNumbersToEpisodeSeasons(nameInfoList);
-		saveMedia(json, nameInfoList);
+		convertProductionNumbersToEpisodeSeasonsSupermanTAS(supermanNameInfoList);
+		/*convertProductionNumbersToEpisodeSeasons(nameInfoList);*/
+		File supermanJson = new File(jsonDir, SUPERMAN+".json");
+		saveMedia(supermanJson, supermanNameInfoList);
+		
+		convertProductionNumbersToEpisodeSeasonsTheNewBatmanAdveturesTAS(batmanNameInfoList);
+		File batmanJson = new File(jsonDir, THE_NEW_BATMAN_ADVENTURES+".json");
+		saveMedia(batmanJson, batmanNameInfoList);
 	}
 	
-	private static boolean addToList(String firstText, String secondText, List<NameInfo> nameInfoList, int listIndex) {
+	private static NameInfo addTvEpisodeToList(String firstText, String secondText, List<NameInfo> nameInfoList, String tvSeriesName) {
 		Integer number = getInteger(firstText);
-		NameInfo nameInfo = new NameInfo();
+		NameInfo nameInfo = null;
 		if(number != null) {
-			nameInfo.setName("Batman The Animated Series");
-			nameInfo.setIndex(""+listIndex++);
-			nameInfo.setEpisode(""+fixThePageEpisodeNumberIncorrect(number));
+			nameInfo = new NameInfo();
+			nameInfo.setName(tvSeriesName);
+			nameInfo.setEpisode(""+number);
 			//setSeasonEpisode(nameInfo, number);
 			nameInfo.setEpisodeName(secondText);
 			nameInfoList.add(nameInfo);
+			nameInfo.setIndex(""+nameInfoList.size());
+		}
+		return nameInfo;
+	}
+	
+	private static boolean addToBatmanTASList(String firstText, String secondText, List<NameInfo> nameInfoList) {
+		NameInfo nameInfo = addTvEpisodeToList(firstText, secondText, nameInfoList, BATMAN);
+		if(nameInfo == null) {
+			if(firstText.startsWith("MOVIE") && (secondText.equals("Mask of the Phantasm") || secondText.equals("Sub Zero"))) {
+				nameInfo = new NameInfo();
+				if(secondText.equals("Mask of the Phantasm")) {
+					nameInfo.setName("Batman Mask of the Phantasm");
+					nameInfo.setYear("1993");
+				} else if(secondText.equals("Sub Zero")) {
+					nameInfo.setName("Batman & Mr. Freeze SubZero");
+					nameInfo.setYear("1998");
+				}
+				nameInfoList.add(nameInfo);
+				nameInfo.setIndex(""+nameInfoList.size());
+				return true;
+			}
+		}
+		else {
+			Integer number = fixBatmanTASIncorrectNumbers(nameInfo.getEpisode());
+			if(number != null)
+				nameInfo.setEpisode(""+number);
 			return true;
 		}
-		else if(firstText.startsWith("MOVIE") && (secondText.equals("Mask of the Phantasm") || secondText.equals("Sub Zero"))) {
-			nameInfo.setIndex(""+listIndex++);
-			if(secondText.equals("Mask of the Phantasm")) {
-				nameInfo.setName("Batman Mask of the Phantasm");
-				nameInfo.setYear("1993");
-			} else if(secondText.equals("Sub Zero")) {
-				nameInfo.setName("Batman & Mr. Freeze SubZero");
-				nameInfo.setYear("1998");
-			}
-			nameInfoList.add(nameInfo);
+		return false;
+	}
+	
+	private static final String BATMAN = "Batman The Animated Series";
+	private static final String SUPERMAN = "Superman - The Animated Series";
+	private static final String THE_NEW_BATMAN_ADVENTURES = "The New Batman Adventures";
+	
+	private static boolean addToSupermanTASList(String firstText, String secondText, List<NameInfo> nameInfoList) {
+		NameInfo nameInfo = addTvEpisodeToList(firstText, secondText, nameInfoList, SUPERMAN);
+		if(nameInfo != null) {
+			Integer number = fixSupermanTASIncorrectNumbers(nameInfo.getEpisode());
+			if(number != null)
+				setSeasonEpisodeSupermanTAS(nameInfo, number);
 			return true;
+		}
+		return false;
+	}
+	
+	private static boolean addToTheNewBatmanAdventuresTASList(String firstText, String secondText, List<NameInfo> nameInfoList) {
+		NameInfo nameInfo = addTvEpisodeToList(firstText, secondText, nameInfoList, THE_NEW_BATMAN_ADVENTURES);
+		if(nameInfo == null) {
+			if(secondText.equals("Mystery of the Batwoman")) {
+				nameInfo = new NameInfo();
+				nameInfo.setName("Batman Mystery of the Batwoman");
+				nameInfo.setYear("2003");
+				nameInfoList.add(nameInfo);
+				nameInfo.setIndex(""+nameInfoList.size());
+				return true;
+			}
+		}
+		else {
+			return true;
+			/*
+			Integer number = fixBatmanTASIncorrectNumbers(nameInfo.getEpisode());
+			if(number != null)
+				nameInfo.setEpisode(""+number);
+			*/
 		}
 		return false;
 	}
@@ -294,7 +377,8 @@ public class batmanTASOrderEpisodes {
 	 * @param number
 	 * @return
 	 */
-	private static Integer fixThePageEpisodeNumberIncorrect(Integer number) {
+	private static Integer fixBatmanTASIncorrectNumbers(String numberText) {
+		Integer number = getInteger(numberText);
 		if(number == 11) //Two-Face, Part 2
 			return 17;
 		if(number == 12) //It’s Never Too Late
@@ -348,63 +432,79 @@ public class batmanTASOrderEpisodes {
 		return number;
 	}
 	
-	public static void convertProductionNumbersToEpisodeSeasons(List<NameInfo> nameInfoList) throws IOException {
-		final String search = "https://dcau.fandom.com/wiki/Batman:_The_Animated_Series#Season_One";
-		Map<String, String> prop = new HashMap<>();
-		prop.put("gl", "us");
-		prop.put("hl", "en");
-		Document googlePage = Jsoup.connect(search)
-				.userAgent(SEARCH_AGENT)
-				.data(prop)
-				.header("Accept-Language", "en")
-				.header("Accept-Language", "en-US").get();
+	/**
+	 * fix problems with the list that is on the site
+	 * @param number
+	 * @return
+	 */
+	private static Integer fixSupermanTASIncorrectNumbers(String numberText) {
+		Integer number = getInteger(numberText);
+		if(number == 32) //Bizarro’s World
+			return 33;
+		if(number == 33) //The Hand of Fate
+			return 32;
+		return number;
+	}
+	
+	public static void convertProductionNumbersToEpisodeSeasonsBatmanTAS(List<NameInfo> nameInfoList) throws IOException {
+		final String searchPath = "https://dcau.fandom.com/wiki/Batman:_The_Animated_Series#Season_One";
+		convertProductionNumbersToEpisodeSeasons(searchPath, nameInfoList, BATMAN, true);
+	}
+	
+	public static void convertProductionNumbersToEpisodeSeasonsSupermanTAS(List<NameInfo> nameInfoList) throws IOException {
+		final String searchPath = "https://dcau.fandom.com/wiki/Superman:_The_Animated_Series#Season_One";
+		setNamesforEpisodeSeasons(searchPath, nameInfoList, SUPERMAN);
+	}
+	
+	public static void convertProductionNumbersToEpisodeSeasonsTheNewBatmanAdveturesTAS(List<NameInfo> nameInfoList) throws IOException {
+		final String searchPath = "https://dcau.fandom.com/wiki/The_New_Batman_Adventures#Season_One";
+		convertProductionNumbersToEpisodeSeasons(searchPath, nameInfoList, THE_NEW_BATMAN_ADVENTURES, true);
+	}
+	
+	public static void setNamesforEpisodeSeasons(String searchPath, List<NameInfo> nameInfoList, String seriesName) throws IOException {
+		convertProductionNumbersToEpisodeSeasons(searchPath, nameInfoList, seriesName, false);
+	}
+	
+	public static void convertProductionNumbersToEpisodeSeasons(String searchPath, List<NameInfo> nameInfoList, String seriesName, boolean byProduction) throws IOException {
+		Document googlePage = loadPage(searchPath);
 		//System.out.println(googlePage);
-		Elements rows = googlePage.getElementsByTag("h4");
+		Elements rows = googlePage.select("h3, h4");
 		System.out.println(rows);
+		boolean firstTable = true;
+		boolean byOrder = false;
+		boolean byCode = false;
 		for(Element row : rows) {
 			Element seasonTextElm = row.getElementsByTag("span").first();
-			String text = seasonTextElm.text();
-			System.out.println(text);
-			String seasonText = "Season ";
-			if(text.startsWith(seasonText)) {
-				String seasonNumber = getNumberFromNumberName(text.substring(seasonText.length()));
-				System.out.println(seasonNumber);
-				Element element = row;
-				while(element != null) {
-					element = element.nextElementSibling();
-					if(element.is("table"))
-						break;
-				}
-				if(element != null && element.is("table")) {
-					Elements tableRows = element.getElementsByTag("tr");
-					for(Element tableRow : tableRows) {
-						Elements rowVals = tableRow.getElementsByTag("td");
-						if(rowVals.size() >= 3) {
-							String episodeNumber = rowVals.get(0).text();
-							String productionCode = rowVals.get(1).ownText();
-							String episodeName = rowVals.get(2).text();
-							Pattern pattern = Pattern.compile("406-5(?<number>\\d\\d)");
-							Matcher matcher = pattern.matcher(productionCode);
-							System.out.println(productionCode);
-							if(matcher.matches()) {
-								Integer productionValueNum = getInteger(matcher.group("number"));
-								if(productionValueNum != null) {
-									Optional<NameInfo> nameInfoOpt = nameInfoList.stream().filter(n -> n.hasEpisode() && !n.hasSeason() && productionValueNum == getInteger(n.getEpisode()))
-											.findFirst();
-									if(nameInfoOpt.isPresent()) {
-										NameInfo nameInfo = nameInfoOpt.get();
-										String description = nameInfo.getDescription();
-										if(!description.toLowerCase().replaceAll(" ", "").equals(episodeName.toLowerCase().replaceAll(" ", "")))
-											System.out.print(nameInfo.getFullNameWithIndex() + " = ");
-										nameInfo.setSeason(seasonNumber);
-										nameInfo.setEpisode(""+getInteger(episodeNumber));
-										nameInfo.setEpisodeName(episodeName);
-										if(!description.toLowerCase().replaceAll(" ", "").equals(episodeName.toLowerCase().replaceAll(" ", "")))
-											System.out.print(nameInfo.getFullNameWithIndex() + "\n");
-									}
+			if(seasonTextElm != null) {
+				String text = seasonTextElm.text();
+				System.out.println(text);
+				String seasonText = "Season ";
+				if(text.startsWith(seasonText)) {
+					Integer seasonNumber = getNumberFromNumberName(text.substring(seasonText.length()));
+					System.out.println(seasonNumber);
+					Element element = row;
+					while(element != null) {
+						element = element.nextElementSibling();
+						if(element.is("table"))
+							break;
+					}
+					if(element != null && element.is("table")) {
+						if(firstTable) {
+							Elements headersRows = element.getElementsByTag("th");
+							for(Element headerRow : headersRows) {
+								String headerName = headerRow.text();
+								System.out.println(headerName);
+								if(headerName.equals("Prod. Order")) {
+									byOrder = true;
+									break;
+								} else if(headerName.equals("Prod. Code")) {
+									byCode = true;
+									break;
 								}
 							}
+							firstTable = false;
 						}
+						parseTable(element, seasonNumber, nameInfoList, seriesName, byProduction, byCode, byOrder);					
 					}
 				}
 			}
@@ -417,21 +517,152 @@ public class batmanTASOrderEpisodes {
 		}
 	}
 	
-	private static String getNumberFromNumberName(String numberName) {
-		Map<String, String> map = new HashMap<>(Map.ofEntries(
-			    Map.entry("zero", "0"),
-			    Map.entry("one", "1"),
-			    Map.entry("two", "2"),
-			    Map.entry("three", "3"),
-			    Map.entry("four", "4"),
-			    Map.entry("five", "5"),
-			    Map.entry("six", "6"),
-			    Map.entry("seven", "7"),
-			    Map.entry("eight", "8"),
-			    Map.entry("nine", "9")
+	private static void parseTable(Element table, Integer seasonNumber, List<NameInfo> nameInfoList, String seriesName, boolean byProduction) {
+		if(table != null && table.is("table")) {
+			Elements headersRows = table.getElementsByTag("th");
+			boolean byOrder = false;
+			boolean byCode = false;
+			for(Element headerRow : headersRows) {
+				String headerName = headerRow.text();
+				System.out.println(headerName);
+				if(headerName.equals("Prod. Order")) {
+					byOrder = true;
+					break;
+				} else if(headerName.equals("Prod. Code")) {
+					byCode = true;
+					break;
+				}
+			}
+			if(!byOrder && !byCode)
+				return;
+			parseTable(table, seasonNumber, nameInfoList, seriesName, byProduction, byCode, byOrder);
+		}
+	}
+	
+	private static void parseTable(Element table, Integer seasonNumber, List<NameInfo> nameInfoList, String seriesName, boolean byProduction, boolean byCode, boolean byOrder) {
+		if(table != null && table.is("table")) {
+			if(!byOrder && !byCode)
+				return;
+			Elements tableRows = table.getElementsByTag("tr");
+			for(Element tableRow : tableRows) {
+				Elements rowVals = tableRow.getElementsByTag("td");
+				if(rowVals.size() >= 3) {
+					String episodeNumber = rowVals.get(0).text();
+					String productionNumber = rowVals.get(1).ownText();
+					String episodeName = rowVals.get(2).text();
+					if(byProduction) {
+						if(byCode) {
+							Pattern pattern = Pattern.compile("406-5(?<number>\\d\\d)");
+							Matcher matcher = pattern.matcher(productionNumber);
+							if(matcher.matches()) {
+								saveTableRow(seasonNumber, episodeNumber, matcher.group("number"), episodeName, nameInfoList, seriesName);
+							}
+						} else if(byOrder) {
+							List<String> productionNumbers = getEpisodesInTheText(productionNumber);
+							List<String> episodesNumbers = getEpisodesInTheText(episodeNumber);
+							if(productionNumbers.size() == episodesNumbers.size()) {
+								for(int i = 0; i < productionNumbers.size(); i++) {
+									String productionNumberStr = productionNumbers.get(i);
+									String episodeNumberStr = episodesNumbers.get(i);
+									String subEpisodeName = episodeName;
+									if(productionNumbers.size() > 1)
+										subEpisodeName += ", Part "+(i+1);
+									saveTableRow(seasonNumber, episodeNumberStr, productionNumberStr, subEpisodeName, nameInfoList, seriesName);
+								}
+							}
+							else
+								System.err.println("Not same size: " + "(" + productionNumber + ") " + productionNumbers + " != " + "(" + productionNumber + ") " + episodesNumbers);
+						}
+					}
+					else {
+						List<String> episodesNumbers = getEpisodesInTheText(episodeNumber);
+						for(int i = 0; i < episodesNumbers.size(); i++) {
+							String episodeNumberStr = episodesNumbers.get(i);
+							String subEpisodeName = episodeName;
+							if(episodesNumbers.size() > 1)
+								subEpisodeName += ", Part "+(i+1);
+							saveTableRow(seasonNumber, episodeNumberStr, subEpisodeName, nameInfoList, seriesName);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private static void saveTableRow(Integer seasonNumber, String episodeNumber, String productionNumber, String episodeName, List<NameInfo> nameInfoList, String seriesName) {
+		Integer productionValueNum = getInteger(productionNumber);
+		Integer episodeValueNum = getInteger(episodeNumber);
+		if(productionValueNum != null && episodeNumber != null) {
+			Optional<NameInfo> nameInfoOpt = nameInfoList.stream().filter(n -> n.hasEpisode() && !n.hasSeason() && n.hasName() && n.getName().equals(seriesName) && productionValueNum == getInteger(n.getEpisode()))
+					.findFirst();
+			if(!saveTableRow(nameInfoOpt, seasonNumber, episodeValueNum, episodeName))
+				System.err.println("Not Found for: " + "Prod num (" + productionValueNum + ") " + "S"+seasonNumber+"E"+episodeNumber + " - " + episodeName);
+		}
+	}
+	
+	private static void saveTableRow(Integer seasonNumber, String episodeNumber, String episodeName, List<NameInfo> nameInfoList, String seriesName) {
+		Integer episodeValueNum = getInteger(episodeNumber);
+		if(episodeValueNum != null) {
+			Optional<NameInfo> nameInfoOpt = nameInfoList.stream().filter(n -> n.hasEpisode() && n.hasSeason() && seasonNumber == getInteger(n.getSeason()) && n.hasName() && n.getName().equals(seriesName) && episodeValueNum == getInteger(n.getEpisode()))
+					.findFirst();
+			if(!saveTableRow(nameInfoOpt, seasonNumber, episodeValueNum, episodeName))
+				System.err.println("Not Found for: " + "S"+seasonNumber+"E"+episodeValueNum + " - " + episodeName);
+		}
+	}
+	
+	private static boolean saveTableRow(Optional<NameInfo> nameInfoOpt, Integer seasonNumber, Integer episodeNumber, String episodeName) {
+		if(nameInfoOpt.isPresent()) {
+			NameInfo nameInfo = nameInfoOpt.get();
+			String description = nameInfo.getDescription();
+			if(!description.toLowerCase().replaceAll(" ", "").equals(episodeName.toLowerCase().replaceAll(" ", "")))
+				System.out.print(nameInfo.getFullNameWithIndex() + " = ");
+			nameInfo.setSeason(""+seasonNumber);
+			nameInfo.setEpisode(""+episodeNumber);
+			nameInfo.setEpisodeName(episodeName);
+			if(!description.toLowerCase().replaceAll(" ", "").equals(episodeName.toLowerCase().replaceAll(" ", "")))
+				System.out.print(nameInfo.getFullNameWithIndex() + "\n");
+			return true;
+		}
+		return false;
+	}
+	
+	private static Integer getNumberFromNumberName(String numberName) {
+		Map<String, Integer> map = new HashMap<>(Map.ofEntries(
+			    Map.entry("zero", 0),
+			    Map.entry("one", 1),
+			    Map.entry("two", 2),
+			    Map.entry("three", 3),
+			    Map.entry("four", 4),
+			    Map.entry("five", 5),
+			    Map.entry("six", 6),
+			    Map.entry("seven", 7),
+			    Map.entry("eight", 8),
+			    Map.entry("nine", 9)
 			));
 		numberName = numberName.toLowerCase();
 		return map.get(numberName);
+	}
+	
+	private static void setSeasonEpisodeSupermanTAS(NameInfo nameInfo, int number) {
+		final int S1 = 13, S2 = 41, S3 = 51, S4 = 54;
+		int season = -1, episode = -1;
+		if(1 <= number &&  number <= S1) {
+			season = 1;
+			episode = number;
+		} else if(S1 < number && number <= S2) {
+			season = 2;
+			episode = number - S1;
+		} else if(S2 < number && number <= S3) {
+			season = 3;
+			episode = number - S2;
+		} else if(S3 < number && number <= S4) {
+			season = 4;
+			episode = number - S3;
+		}
+		if(season != -1 && episode != -1) {
+			nameInfo.setEpisode(""+episode);
+			nameInfo.setSeason(""+season);
+		}
 	}
 	
 	private static void setSeasonEpisode(NameInfo nameInfo, int number) {
