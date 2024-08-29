@@ -35,16 +35,16 @@ public class cloneWarsOrderEpisodes {
 	
 	public static void main(String[] args) throws IOException {
 		File json = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\colenT.json");
-		List<NameInfo> nameInfoList = loadFile(json);
+		List<NameInfo> nameInfoList = OrderEpisodesUtils.loadFile(json);
 		
-		/*File folder = new File("E:\\Clone Wars\\input");
+		File folder = new File("E:\\Clone Wars\\input");
 		List<FileInfo> fileInfos = new ArrayList<>();
 		for(File file : folder.listFiles()) {
 			FileInfo fileInfo = new FileInfo(file);
 			if(file.isDirectory())
 				fileInfos.add(fileInfo);
 		}
-		setOrderForEpisodes(fileInfos, nameInfoList);*/
+		OrderEpisodesUtils.setOrderForEpisodes(fileInfos, nameInfoList);
 	}
 	
 	public static final String SEARCH_AGENT = "Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6";
@@ -76,7 +76,7 @@ public class cloneWarsOrderEpisodes {
 		File json = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\colenT.json");
 		File folder = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\Clone Wars");
 		//createCloneWarsOrder(json);
-		List<NameInfo> nameInfoList = loadFile(json);
+		List<NameInfo> nameInfoList = OrderEpisodesUtils.loadFile(json);
 		/*for(NameInfo nameInfo : nameInfoList) {
 			File file = new File(folder, nameInfo.getFullName());
 			file.mkdir();
@@ -91,7 +91,7 @@ public class cloneWarsOrderEpisodes {
 		
 		FolderInfo folderInfo = manageFolder.TVMap.get("theclonewars");
 		//= new FolderInfo(new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\Clone Wars\\W-Output\\TV\\The Clone Wars"));
-		setOrderForEpisodes(folderInfo, nameInfoList);
+		OrderEpisodesUtils.setOrderForEpisodes(folderInfo, nameInfoList);
 		
 		/*
 		
@@ -107,72 +107,14 @@ public class cloneWarsOrderEpisodes {
 		*/
 	}
 	
-	public static void setOrderForEpisodes(FolderInfo folderInfo, List<NameInfo> episodesOrderList) {
-		for(NameInfo nameInfo : episodesOrderList) {
-			if(nameInfo.hasIndex()) {
-				if(nameInfo.hasEpisode()) {
-					File file = folderInfo.getFolderByType(nameInfo, FolderType.TV_EPISODE);
-					if(file.isDirectory()) {
-						FileInfo fileInfo = new FileInfo(file);
-						try {
-							renameToIndex(fileInfo, nameInfo);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}
-	}
+	private static final String THE_CLONE_WARS = "The Clone Wars";
 	
-	public static void setOrderForEpisodes(List<FileInfo> fileInfos, List<NameInfo> episodesOrderList) {
-		for(NameInfo nameInfo : episodesOrderList) {
-			if(nameInfo.hasIndex()) {
-				FileInfo fileInfo = fileInfos.stream().filter(p -> 
-							nameInfo.getName().equals(p.getName()) && nameInfo.getEpisode().equals(p.getEpisode()) && nameInfo.getSeason().equals(p.getSeason()))
-						.findFirst().orElse(null);
-				if(fileInfo != null) {
-					File file = fileInfo.getFile();
-					System.out.println("Man " + file);
-					if(file.isDirectory()) {
-						try {
-							renameToIndex(fileInfo, nameInfo);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	private static void renameToIndex(FileInfo fileInfo, NameInfo nameInfo) throws IOException {
-		if(fileInfo.hasIndex() && nameInfo.hasIndex() && fileInfo.getIndex().equals(nameInfo.getIndex()))
-			return;
-		fileInfo.setIndex(nameInfo.getIndex());
-		File newFile = new File(fileInfo.getParentPath(),fileInfo.getFullNameWithIndex());
-		Files.move(fileInfo.getFile().toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-	}
-	
-	public static void createCloneWarsOrder(File json) throws IOException {
+	public static void createCloneWarsOrder(File jsonFolder) throws IOException {
 		final String search = "https://www.starwars.com/news/star-wars-the-clone-wars-chronological-episodeorder";
-		Map<String, String> prop = new HashMap<>();
-		prop.put("gl", "us");
-		prop.put("hl", "en");
-		Document googlePage = Jsoup.connect(search)
-				.userAgent(SEARCH_AGENT)
-				.data(prop)
-				.header("Accept-Language", "en")
-				.header("Accept-Language", "en-US").get();
-		File file = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\clone.txt");
+		Document googlePage = OrderEpisodesUtils.loadPage(search);
 		List<NameInfo> nameInfoList = new ArrayList<>();
-		System.out.println(googlePage);
 		Elements tables = googlePage.getElementsByTag("table");
-		System.out.println(tables);
 		Element table = tables.first();
-		System.out.println(table);
 		Elements rows = table.getElementsByTag("tr");
 		for(Element row : rows) {
 			Elements columns = row.getElementsByTag("td");
@@ -191,7 +133,7 @@ public class cloneWarsOrderEpisodes {
 						NameInfo nameInfo = new NameInfo();
 						if(!episodeNumber.strip().equals("T")) {
 							System.out.println(episodeNumber.strip());
-							nameInfo.setName("The Clone Wars");
+							nameInfo.setName(THE_CLONE_WARS);
 							nameInfo.setIndex(orderNumber);
 							nameInfo.setSeason(""+episodeNumber.charAt(0));
 							nameInfo.setEpisode(""+episodeNumber.substring(1));
@@ -205,7 +147,7 @@ public class cloneWarsOrderEpisodes {
 				}
 			}
 		}
-		saveMedia(json, nameInfoList);
+		OrderEpisodesUtils.saveMedia(nameInfoList, jsonFolder, THE_CLONE_WARS);
 	}
 	
 	public static String episodeNameGood(String episodeName) {
@@ -225,50 +167,5 @@ public class cloneWarsOrderEpisodes {
 			}
 		}
 		return episodeName;
-	}
-	
-	private static void writeToFile(File file, String text) throws IOException {
-        try {
-        	FileWriter fileWriter = new FileWriter(file);
-        	BufferedWriter writer = new BufferedWriter(fileWriter);
-            writer.write(text);
-            writer.close();
-        }
-        catch ( IOException e){
-        	e.printStackTrace();
-        }
-	}
-	
-	public static List<NameInfo> loadFile(File file) throws IOException {
-		ObjectMapper mapper = createPolymorphismMediaSimple();
-		CollectionType type = TypeFactory.defaultInstance().constructCollectionType(List.class, NameInfo.class);
-		return mapper.readValue(file, type);
-	}
-	
-	public static void saveMedia(File file, Object object) throws IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper = JsonMapper.builder().build();
-		mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
-                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withCreatorVisibility(JsonAutoDetect.Visibility.ANY));
-		//mapper.addMixIn(MediaSimple.class, MediaSimpleMixIn.class);
-		//MapType type = TypeFactory.defaultInstance().constructMapType(Map.class, String.class, MediaSimple.class);
-		mapper.setSerializationInclusion(Include.NON_EMPTY);
-		mapper.writeValue(file, object);
-		System.out.println(file);
-	}
-	
-	private static ObjectMapper createPolymorphismMediaSimple() {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper = JsonMapper.builder().build();
-		mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
-                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withSetterVisibility(JsonAutoDetect.Visibility.ANY)
-                .withCreatorVisibility(JsonAutoDetect.Visibility.ANY));
-		mapper.setSerializationInclusion(Include.NON_EMPTY);
-		return mapper;
 	}
 }

@@ -68,8 +68,6 @@ public class batmanTASOrderEpisodes {
 		setOrderForEpisodes(fileInfos, nameInfoList);*/
 	}
 	
-	public static final String SEARCH_AGENT = "Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6";
-	
 	private static Integer getInteger(String str) {
 		try {
 			return Integer.parseInt(str);
@@ -92,105 +90,10 @@ public class batmanTASOrderEpisodes {
 		}
 		return result;
 	}
-
-	public static void main2(String[] args) throws IOException {
-		File json = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\colenT.json");
-		File folder = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\Clone Wars");
-		//createCloneWarsOrder(json);
-		List<NameInfo> nameInfoList = loadFile(json);
-		/*for(NameInfo nameInfo : nameInfoList) {
-			File file = new File(folder, nameInfo.getFullName());
-			file.mkdir();
-			File child = new File(file, file.getName()+".srt");
-			writeToFile(child, "");
-			System.out.println(nameInfo.getFullName());
-		}*/
-		
-		ManageFolder manageFolder = new ManageFolder(folder.getPath());
-		System.out.println(manageFolder.TVMap);
-		//manageFolder.moveFilesFromInput();
-		
-		FolderInfo folderInfo = manageFolder.TVMap.get("theclonewars");
-		//= new FolderInfo(new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\Clone Wars\\W-Output\\TV\\The Clone Wars"));
-		setOrderForEpisodes(folderInfo, nameInfoList);
-		
-		/*
-		
-		//Map<NameInfo, String> map = new HashMap<>();
-		List<FileInfo> fileInfos = new ArrayList<>();
-		for(File file : folder.listFiles()) {
-			FileInfo fileInfo = new FileInfo(file);
-			if(file.isDirectory())
-				fileInfos.add(fileInfo);
-		}
-		setOrderForEpisodes(fileInfos, nameInfoList);
-		
-		*/
-	}
-	
-	public static void setOrderForEpisodes(FolderInfo folderInfo, List<NameInfo> episodesOrderList) {
-		for(NameInfo nameInfo : episodesOrderList) {
-			if(nameInfo.hasIndex()) {
-				if(nameInfo.hasEpisode()) {
-					File file = folderInfo.getFolderByType(nameInfo, FolderType.TV_EPISODE);
-					if(file.isDirectory()) {
-						FileInfo fileInfo = new FileInfo(file);
-						try {
-							renameToIndex(fileInfo, nameInfo);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	public static void setOrderForEpisodes(List<FileInfo> fileInfos, List<NameInfo> episodesOrderList) {
-		for(NameInfo nameInfo : episodesOrderList) {
-			if(nameInfo.hasIndex()) {
-				FileInfo fileInfo = fileInfos.stream().filter(p -> 
-							nameInfo.getName().equals(p.getName()) && nameInfo.getEpisode().equals(p.getEpisode()) && nameInfo.getSeason().equals(p.getSeason()))
-						.findFirst().orElse(null);
-				if(fileInfo != null) {
-					File file = fileInfo.getFile();
-					System.out.println("Man " + file);
-					if(file.isDirectory()) {
-						try {
-							renameToIndex(fileInfo, nameInfo);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	private static void renameToIndex(FileInfo fileInfo, NameInfo nameInfo) throws IOException {
-		if(fileInfo.hasIndex() && nameInfo.hasIndex() && fileInfo.getIndex().equals(nameInfo.getIndex()))
-			return;
-		fileInfo.setIndex(nameInfo.getIndex());
-		File newFile = new File(fileInfo.getParentPath(),fileInfo.getFullNameWithIndex());
-		Files.move(fileInfo.getFile().toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-	}
-	
-	private static Document loadPage(String searchPath) throws IOException {
-		Map<String, String> prop = new HashMap<>();
-		prop.put("gl", "us");
-		prop.put("hl", "en");
-		return Jsoup.connect(searchPath)
-				.userAgent(SEARCH_AGENT)
-				.data(prop)
-				.header("Accept-Language", "en")
-				.header("Accept-Language", "en-US").get();
-	}
 	
 	private static List<TextNode> getPageTextNodes(String searchPath) throws IOException {
 		List<TextNode> textNodesList = new ArrayList<>();
-		Document googlePage = loadPage(searchPath);
+		Document googlePage = OrderEpisodesUtils.loadPage(searchPath);
 		Element table = googlePage.getElementById("aContent");
 		Elements rows = table.getElementsByTag("b");
 		for(Element row : rows) {
@@ -222,8 +125,7 @@ public class batmanTASOrderEpisodes {
 			}
 		}
 		convertProductionNumbersToEpisodeSeasonsBatmanTAS(nameInfoList);
-		File batmanJson = new File(jsonDir, BATMAN+".json");
-		saveMedia(batmanJson, nameInfoList);
+		OrderEpisodesUtils.saveMedia(nameInfoList, jsonDir, BATMAN);
 	}
 	
 	private static List<String> getEpisodesInTheText(String firstText) {
@@ -284,13 +186,10 @@ public class batmanTASOrderEpisodes {
 			}
 		}
 		convertProductionNumbersToEpisodeSeasonsSupermanTAS(supermanNameInfoList);
-		/*convertProductionNumbersToEpisodeSeasons(nameInfoList);*/
-		File supermanJson = new File(jsonDir, SUPERMAN+".json");
-		saveMedia(supermanJson, supermanNameInfoList);
+		OrderEpisodesUtils.saveMedia(supermanNameInfoList, jsonDir, SUPERMAN);
 		
 		convertProductionNumbersToEpisodeSeasonsTheNewBatmanAdveturesTAS(batmanNameInfoList);
-		File batmanJson = new File(jsonDir, THE_NEW_BATMAN_ADVENTURES+".json");
-		saveMedia(batmanJson, batmanNameInfoList);
+		OrderEpisodesUtils.saveMedia(batmanNameInfoList, jsonDir, THE_NEW_BATMAN_ADVENTURES);
 	}
 	
 	private static NameInfo addTvEpisodeToList(String firstText, String secondText, List<NameInfo> nameInfoList, String tvSeriesName) {
@@ -448,31 +347,25 @@ public class batmanTASOrderEpisodes {
 	
 	public static void convertProductionNumbersToEpisodeSeasonsBatmanTAS(List<NameInfo> nameInfoList) throws IOException {
 		final String searchPath = "https://dcau.fandom.com/wiki/Batman:_The_Animated_Series#Season_One";
-		convertProductionNumbersToEpisodeSeasons(searchPath, nameInfoList, BATMAN, true);
+		convertProductionNumbersToEpisodeSeasons(searchPath, nameInfoList, BATMAN, null);
 	}
 	
 	public static void convertProductionNumbersToEpisodeSeasonsSupermanTAS(List<NameInfo> nameInfoList) throws IOException {
 		final String searchPath = "https://dcau.fandom.com/wiki/Superman:_The_Animated_Series#Season_One";
-		setNamesforEpisodeSeasons(searchPath, nameInfoList, SUPERMAN);
+		convertProductionNumbersToEpisodeSeasons(searchPath, nameInfoList, SUPERMAN, TableType.EPISODE_NUMBER);
 	}
 	
 	public static void convertProductionNumbersToEpisodeSeasonsTheNewBatmanAdveturesTAS(List<NameInfo> nameInfoList) throws IOException {
 		final String searchPath = "https://dcau.fandom.com/wiki/The_New_Batman_Adventures#Season_One";
-		convertProductionNumbersToEpisodeSeasons(searchPath, nameInfoList, THE_NEW_BATMAN_ADVENTURES, true);
+		convertProductionNumbersToEpisodeSeasons(searchPath, nameInfoList, THE_NEW_BATMAN_ADVENTURES, null);
 	}
 	
-	public static void setNamesforEpisodeSeasons(String searchPath, List<NameInfo> nameInfoList, String seriesName) throws IOException {
-		convertProductionNumbersToEpisodeSeasons(searchPath, nameInfoList, seriesName, false);
-	}
-	
-	public static void convertProductionNumbersToEpisodeSeasons(String searchPath, List<NameInfo> nameInfoList, String seriesName, boolean byProduction) throws IOException {
-		Document googlePage = loadPage(searchPath);
+	public static void convertProductionNumbersToEpisodeSeasons(String searchPath, List<NameInfo> nameInfoList, String seriesName, TableType findBy) throws IOException {
+		Document googlePage = OrderEpisodesUtils.loadPage(searchPath);
 		//System.out.println(googlePage);
 		Elements rows = googlePage.select("h3, h4");
 		System.out.println(rows);
 		boolean firstTable = true;
-		boolean byOrder = false;
-		boolean byCode = false;
 		for(Element row : rows) {
 			Element seasonTextElm = row.getElementsByTag("span").first();
 			if(seasonTextElm != null) {
@@ -488,23 +381,14 @@ public class batmanTASOrderEpisodes {
 						if(element.is("table"))
 							break;
 					}
-					if(element != null && element.is("table")) {
+					if(isTable(element)) {
 						if(firstTable) {
-							Elements headersRows = element.getElementsByTag("th");
-							for(Element headerRow : headersRows) {
-								String headerName = headerRow.text();
-								System.out.println(headerName);
-								if(headerName.equals("Prod. Order")) {
-									byOrder = true;
-									break;
-								} else if(headerName.equals("Prod. Code")) {
-									byCode = true;
-									break;
-								}
+							if(findBy == null) {
+								findBy = findTableType(element);
 							}
 							firstTable = false;
 						}
-						parseTable(element, seasonNumber, nameInfoList, seriesName, byProduction, byCode, byOrder);					
+						parseTable(element, seasonNumber, nameInfoList, seriesName, findBy);
 					}
 				}
 			}
@@ -517,72 +401,70 @@ public class batmanTASOrderEpisodes {
 		}
 	}
 	
-	private static void parseTable(Element table, Integer seasonNumber, List<NameInfo> nameInfoList, String seriesName, boolean byProduction) {
-		if(table != null && table.is("table")) {
-			Elements headersRows = table.getElementsByTag("th");
-			boolean byOrder = false;
-			boolean byCode = false;
+	private static TableType findTableType(Element element) {
+		TableType tableType = null;
+		if(isTable(element)) {
+			Elements headersRows = element.getElementsByTag("th");
 			for(Element headerRow : headersRows) {
 				String headerName = headerRow.text();
 				System.out.println(headerName);
 				if(headerName.equals("Prod. Order")) {
-					byOrder = true;
+					tableType = TableType.PRODUCTION_ORDER;
 					break;
 				} else if(headerName.equals("Prod. Code")) {
-					byCode = true;
+					tableType = TableType.PRODUCTION_CODE;
 					break;
 				}
 			}
-			if(!byOrder && !byCode)
-				return;
-			parseTable(table, seasonNumber, nameInfoList, seriesName, byProduction, byCode, byOrder);
 		}
+		return tableType;
 	}
 	
-	private static void parseTable(Element table, Integer seasonNumber, List<NameInfo> nameInfoList, String seriesName, boolean byProduction, boolean byCode, boolean byOrder) {
-		if(table != null && table.is("table")) {
-			if(!byOrder && !byCode)
-				return;
-			Elements tableRows = table.getElementsByTag("tr");
-			for(Element tableRow : tableRows) {
-				Elements rowVals = tableRow.getElementsByTag("td");
-				if(rowVals.size() >= 3) {
-					String episodeNumber = rowVals.get(0).text();
-					String productionNumber = rowVals.get(1).ownText();
-					String episodeName = rowVals.get(2).text();
-					if(byProduction) {
-						if(byCode) {
-							Pattern pattern = Pattern.compile("406-5(?<number>\\d\\d)");
-							Matcher matcher = pattern.matcher(productionNumber);
-							if(matcher.matches()) {
-								saveTableRow(seasonNumber, episodeNumber, matcher.group("number"), episodeName, nameInfoList, seriesName);
-							}
-						} else if(byOrder) {
-							List<String> productionNumbers = getEpisodesInTheText(productionNumber);
-							List<String> episodesNumbers = getEpisodesInTheText(episodeNumber);
-							if(productionNumbers.size() == episodesNumbers.size()) {
-								for(int i = 0; i < productionNumbers.size(); i++) {
-									String productionNumberStr = productionNumbers.get(i);
-									String episodeNumberStr = episodesNumbers.get(i);
-									String subEpisodeName = episodeName;
-									if(productionNumbers.size() > 1)
-										subEpisodeName += ", Part "+(i+1);
-									saveTableRow(seasonNumber, episodeNumberStr, productionNumberStr, subEpisodeName, nameInfoList, seriesName);
-								}
-							}
-							else
-								System.err.println("Not same size: " + "(" + productionNumber + ") " + productionNumbers + " != " + "(" + productionNumber + ") " + episodesNumbers);
-						}
+	private static boolean isTable(Element element) {
+		return element != null && element.is("table");
+	}
+	
+	private static void parseTable(Element table, Integer seasonNumber, List<NameInfo> nameInfoList, String seriesName, TableType findBy) {
+		if(findBy == null || !isTable(table))
+			return;
+		Elements tableRows = table.getElementsByTag("tr");
+		for(Element tableRow : tableRows) {
+			Elements rowVals = tableRow.getElementsByTag("td");
+			if(rowVals.size() >= 3) {
+				String episodeNumber = rowVals.get(0).text();
+				String productionNumber = rowVals.get(1).ownText();
+				String episodeName = rowVals.get(2).text();
+				if(findBy == TableType.PRODUCTION_CODE) {
+					Pattern pattern = Pattern.compile("406-5(?<number>\\d\\d)");
+					Matcher matcher = pattern.matcher(productionNumber);
+					if(matcher.matches()) {
+						saveTableRow(seasonNumber, episodeNumber, matcher.group("number"), episodeName, nameInfoList, seriesName);
 					}
-					else {
-						List<String> episodesNumbers = getEpisodesInTheText(episodeNumber);
-						for(int i = 0; i < episodesNumbers.size(); i++) {
+				}
+				else if(findBy == TableType.PRODUCTION_ORDER) {
+					List<String> productionNumbers = getEpisodesInTheText(productionNumber);
+					List<String> episodesNumbers = getEpisodesInTheText(episodeNumber);
+					if(productionNumbers.size() == episodesNumbers.size()) {
+						for(int i = 0; i < productionNumbers.size(); i++) {
+							String productionNumberStr = productionNumbers.get(i);
 							String episodeNumberStr = episodesNumbers.get(i);
 							String subEpisodeName = episodeName;
-							if(episodesNumbers.size() > 1)
+							if(productionNumbers.size() > 1)
 								subEpisodeName += ", Part "+(i+1);
-							saveTableRow(seasonNumber, episodeNumberStr, subEpisodeName, nameInfoList, seriesName);
+							saveTableRow(seasonNumber, episodeNumberStr, productionNumberStr, subEpisodeName, nameInfoList, seriesName);
 						}
+					}
+					else
+						System.err.println("Not same size: " + "(" + productionNumber + ") " + productionNumbers + " != " + "(" + productionNumber + ") " + episodesNumbers);
+				}
+				else if(findBy == TableType.EPISODE_NUMBER) {
+					List<String> episodesNumbers = getEpisodesInTheText(episodeNumber);
+					for(int i = 0; i < episodesNumbers.size(); i++) {
+						String episodeNumberStr = episodesNumbers.get(i);
+						String subEpisodeName = episodeName;
+						if(episodesNumbers.size() > 1)
+							subEpisodeName += ", Part "+(i+1);
+						saveTableRow(seasonNumber, episodeNumberStr, subEpisodeName, nameInfoList, seriesName);
 					}
 				}
 			}
@@ -624,6 +506,12 @@ public class batmanTASOrderEpisodes {
 			return true;
 		}
 		return false;
+	}
+	
+	private static enum TableType {
+		PRODUCTION_CODE,
+		PRODUCTION_ORDER,
+		EPISODE_NUMBER
 	}
 	
 	private static Integer getNumberFromNumberName(String numberName) {
@@ -685,50 +573,5 @@ public class batmanTASOrderEpisodes {
 			nameInfo.setEpisode(""+episode);
 			nameInfo.setSeason(""+season);
 		}
-	}
-	
-	private static void writeToFile(File file, String text) throws IOException {
-        try {
-        	FileWriter fileWriter = new FileWriter(file);
-        	BufferedWriter writer = new BufferedWriter(fileWriter);
-            writer.write(text);
-            writer.close();
-        }
-        catch ( IOException e){
-        	e.printStackTrace();
-        }
-	}
-	
-	public static List<NameInfo> loadFile(File file) throws IOException {
-		ObjectMapper mapper = createPolymorphismMediaSimple();
-		CollectionType type = TypeFactory.defaultInstance().constructCollectionType(List.class, NameInfo.class);
-		return mapper.readValue(file, type);
-	}
-	
-	public static void saveMedia(File file, Object object) throws IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper = JsonMapper.builder().build();
-		mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
-                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withCreatorVisibility(JsonAutoDetect.Visibility.ANY));
-		//mapper.addMixIn(MediaSimple.class, MediaSimpleMixIn.class);
-		//MapType type = TypeFactory.defaultInstance().constructMapType(Map.class, String.class, MediaSimple.class);
-		mapper.setSerializationInclusion(Include.NON_EMPTY);
-		mapper.writeValue(file, object);
-		System.out.println(file);
-	}
-	
-	private static ObjectMapper createPolymorphismMediaSimple() {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper = JsonMapper.builder().build();
-		mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
-                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withSetterVisibility(JsonAutoDetect.Visibility.ANY)
-                .withCreatorVisibility(JsonAutoDetect.Visibility.ANY));
-		mapper.setSerializationInclusion(Include.NON_EMPTY);
-		return mapper;
 	}
 }

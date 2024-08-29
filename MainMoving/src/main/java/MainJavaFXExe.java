@@ -1,0 +1,22 @@
+import java.util.Arrays;
+import java.util.Collections;
+
+import javafx.application.Application;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+
+public class MainJavaFXExe extends Application {
+	//--module-path "C:\JavaFX_22.02\lib" --add-modules javafx.controls,javafx.fxml
+
+	public static void main(String[] args) {
+		//String[] args2 = Arrays.asList(args, "--module-path \"C:\\JavaFX_22.02\\lib\" --add-modules javafx.controls,javafx.fxml").toArray(new String[0]);
+		Application.launch(args);
+	}
+
+    @Override
+    public void start(Stage stage) throws Exception {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open Resource File");
+		fileChooser.showOpenDialog(stage);
+    }
+}
