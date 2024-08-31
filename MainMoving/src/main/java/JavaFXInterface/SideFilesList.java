@@ -1,9 +1,7 @@
 package JavaFXInterface;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -19,7 +17,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -50,138 +47,140 @@ import javax.swing.filechooser.FileSystemView;
 import org.apache.poi.ddf.EscherColorRef.SysIndexProcedure;
 
 import FileUtilities.FilesUtils;
-import Interface.FileExplorer.FileName;
 import OtherUtilities.ImageUtils;
 import SwingUtilities.FocusContainer;
 import SwingUtilities.FocusPaneView;
 import SwingUtilities.JLabelTextFill;
 import SwingUtilities.SwingUtils;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.event.EventHandler;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
+import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.Light;
+import javafx.scene.effect.Lighting;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.Rotate;
 
-public class SideFilesList extends JScrollPane {
+public class SideFilesList extends ScrollPane {
 
 	private FileExplorer explorer;
-	private FocusPaneView view;
+	private BorderPane view;
 	
 	public SideFilesList(File root) {
 		this(null, root);
 	}
 	
 	public SideFilesList(FileExplorer explorer, File root) {
-		super(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		this.setVbarPolicy(ScrollBarPolicy.ALWAYS);
+		this.setHbarPolicy(ScrollBarPolicy.NEVER);
 		this.explorer = explorer;
-		this.view = new FocusPaneView(this);
-		this.view.setOpaque(false);
-		view.setLayout(new BorderLayout());
-		view.add(new SideFilePanel(root), BorderLayout.CENTER);
-		setViewportView(view);
-		setOpaque(false);
-		getViewport().setOpaque(false);
+		this.view = new BorderPane();
+		view.setCenter(new SideFilePanel(root));
+		this.setContent(view);
 	}
 	
-	public class ExpandPanel2 extends JLabelTextFill {
+	public static final javafx.scene.image.Image SIDE_ARROW = SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png"), null);
+	
+	public class ExpandPanel extends Canvas {
 		
 		private boolean expanded;
 		
-		public ExpandPanel2(String text) {
-			super(text);
-			this.setHorizontalTextPosition(CENTER);
-			this.setVerticalTextPosition(CENTER);
-			addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					expanded = !expanded;
-					revalidate();
-					repaint();
-				}
-				
-				@Override
-			    public void mouseExited(MouseEvent e) {
-					setForeground(Color.GRAY);
-				}
-
-			    @Override
-			    public void mouseEntered(MouseEvent e) {
-			    	setForeground(Color.BLACK);
-			    }
-			});
-			setForeground(Color.GRAY);
-		}
-		
-		
-		@Override
-		protected void paintComponent(Graphics g) {
-	        Point center = getTextCenter(this);
-	        Graphics2D g2d = (Graphics2D) g;
-	        //g2d.drawOval(center.x, center.y, 50, 50);
-			AffineTransform saveAT = g2d.getTransform();
-			if(expanded) {
-		        AffineTransform at = new AffineTransform();
-		        at.concatenate(saveAT);
-		        at.rotate(Math.toRadians(90), center.x, center.y);
-		        g2d.setTransform(at);
-			}
-			super.paintComponent(g2d);
-			g2d.setTransform(saveAT);
-			g2d.dispose();
-		}
-		
-		public boolean activated() {
-			return expanded;
-		}
-	}
-	
-	public static final Image SIDE_ARROW = ImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png");
-	
-	public class ExpandPanel extends JPanel {
-		
-		private boolean expanded;
+		private Color color;
 		
 		//private final Image SIDE_ARROW = ImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png");
 		
 		public ExpandPanel() {
-			addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					expanded = !expanded;
-					revalidate();
-					repaint();
-				}
-				
-				@Override
-			    public void mouseExited(MouseEvent e) {
-					setForeground(Color.GRAY);
-				}
-
-			    @Override
-			    public void mouseEntered(MouseEvent e) {
-			    	setForeground(Color.BLACK);
-			    }
+            widthProperty().addListener(evt -> draw());
+            heightProperty().addListener(evt -> draw());
+			
+            
+            this.setOnMouseClicked(e -> {
+				System.out.println("llll");
+				expanded = !expanded;
+				draw();
 			});
-			setForeground(Color.GRAY);
-			setBorder(BorderFactory.createLineBorder(Color.RED));
+			
+			
+            
+            /*
+            this.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+				System.out.println("llll");
+				expanded = !expanded;
+				draw();
+			});
+            */
+            
+			this.setOnMouseExited(e -> {
+				color = Color.GRAY;
+				draw();
+			});
+			this.setOnMouseEntered(e -> {
+				System.out.println("fffff");
+				color = Color.BLACK;
+				draw();
+			});
+			color = Color.GRAY;
+			draw();
+			/*this.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
+					BorderWidths.DEFAULT)));*/
 		}
 		
-		
-		@Override
-		protected void paintComponent(Graphics g) {
-			super.paintComponent(g);
-            int x = getWidth() / 2;
-            int y = getHeight() / 2;
+		private void draw() {
+            int x = (int) (getWidth() / 2);
+            int y = (int) (getHeight() / 2);
 			Point center = new Point(x, y);
 					//getTextCenter(this);
-	        Graphics2D g2d = (Graphics2D) g;
+			//System.out.println("Heeerrr");
+	        GraphicsContext gc = getGraphicsContext2D();
+	        gc.clearRect(0, 0, getWidth(), getHeight());
+	        gc.save();
 	        //g2d.drawOval(center.x, center.y, 50, 50);
-			AffineTransform saveAT = g2d.getTransform();
+			Affine saveAT = gc.getTransform();
+			
 			if(expanded) {
-		        AffineTransform at = new AffineTransform();
-		        at.concatenate(saveAT);
-		        at.rotate(Math.toRadians(90), center.x, center.y);
-		        g2d.setTransform(at);
+		        Affine at = new Affine(saveAT);
+		        Rotate rotate = new Rotate(Math.toRadians(90), center.x, center.y);
+		        //at.appendRotation(90);
+		        at.appendRotation(90, center.x, center.y);
+		        //gc.rotate(90);
+		        gc.setTransform(at);
 			}
-			g2d.drawImage(SIDE_ARROW, 0, 0, getWidth(), getHeight(), this);
-			g2d.setTransform(saveAT);
-			g2d.dispose();
+			
+			Lighting lighting = new Lighting(new Light.Distant(45, 90, color));
+			ColorAdjust bright = new ColorAdjust(0, 1, 1, 1);
+			lighting.setContentInput(bright);
+			lighting.setSurfaceScale(0.0);
+
+			gc.setEffect(lighting);
+			
+			gc.setFill(color);
+			gc.setStroke(color);
+			gc.drawImage(SIDE_ARROW, 0, 0, getWidth(), getHeight());
+			gc.restore(); // back to original state (before rotation)
+			//gc.setTransform(saveAT);
 		}
 		
 		public boolean activated() {
@@ -189,17 +188,9 @@ public class SideFilesList extends JScrollPane {
 		}
 	}
 	
-	public class SideFilePanel extends JPanel {
+	public class SideFilePanel extends VBox {
 		
-		private static final double V_RATIO = 0.15; //0.15; 
-		
-		private JPanel subFolderPanel;
-		
-		private boolean r;
-		
-		public SideFilePanel(File root) {
-			setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-			setOpaque(false);
+		private SideFilePanel(File root) {
 			File[] list = root.listFiles();
 			for(File file : list)
 				if(file.isDirectory()) {
@@ -208,229 +199,153 @@ public class SideFilesList extends JScrollPane {
 					pnl.setAlignmentY(TOP_ALIGNMENT);
 					pnl.setAlignmentX(LEFT_ALIGNMENT);
 					add(pnl);*/
+					_SideFilePanel sidePnl = new _SideFilePanel(file);
+					getChildren().add(sidePnl);
 					
-					add(new SideFilePanel(file, false));
 				}
 			r = true;
 			//setBorder(BorderFactory.createLineBorder(Color.GREEN));
 		}
-		
-		private SideFilePanel(File file, boolean sub) {
-			setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-			setOpaque(false);
-			setAlignmentX(LEFT_ALIGNMENT);
-			setAlignmentY(TOP_ALIGNMENT);
-			setOpaque(false);
-			final Image image = getImage(file);
-			JPanel img = new JPanel() {
-
-				@Override
-				public void paintComponent(Graphics g) {
-					super.paintComponent(g);
-					if(image != null)
-						g.drawImage(image, 0, 0, getWidth(), getHeight(), this);
-				}
+		private class _SideFilePanel extends HBox {
+			
+			private _SideFilePanel(File file) {
+				this.setAlignment(Pos.TOP_LEFT);
+				final Image image = getImage(file);
+				ImageView img = new ImageView();
+				img.setPreserveRatio(true);
+				img.fitWidthProperty().bind(SideFilesList.this.widthProperty().multiply(0.15));
+				img.fitHeightProperty().bind(SideFilesList.this.heightProperty().multiply(V_RATIO));
 				
-				@Override
-				public Dimension getPreferredSize() {
-					return FocusPaneView.getRatioDimensionWithoutLayout(this, 0.15, V_RATIO);
-				}
-			};
-			img.setOpaque(false);
-			JLabel text = new JLabel(file.getName());
-			JPopupMenu jp = new JPopupMenu() {
+				/*if(image instanceof BufferedImage)
+					img.setImage(SwingFXUtils.toFXImage((BufferedImage) image, null));*/
 				
-				@Override
-				public Dimension getPreferredSize() {
-					Dimension size = super.getPreferredSize();
-					Dimension textSize = text.getSize(); 
-					return new Dimension(size.width, textSize.height);
-				}
 				
-			};
-			JLabel pop = new JLabel(text.getText());
-			pop.addMouseListener(new MouseAdapter() {
-				
-				@Override
-				public void mouseClicked(MouseEvent e) {
+				Label text = new Label(file.getName());
+				ContextMenu jp = new ContextMenu();
+				//jp.prefHeightProperty().bind(text.prefHeightProperty());
+				Label pop = new Label(text.getText());
+				pop.setOnMouseClicked(e -> {
 					System.out.println(file);
 					explorer.setMainPanel(file);
-				}
+				});
+				pop.setCursor(Cursor.HAND);
+				MenuItem cut = new MenuItem();
+				cut.setGraphic(pop);
+				jp.getItems().addAll(cut);
+				pop.addEventHandler(MouseEvent.MOUSE_EXITED, new EventHandler<MouseEvent>() {
+		            @Override
+		            public void handle(MouseEvent event) {
+		            	
+		            	Bounds boundsInScene = pop.localToScreen(pop.getBoundsInLocal());
+						System.out.println("Bye " + boundsInScene);
+						System.out.println(event.getScreenX() + " , " + event.getScreenY());
+		            	if(!boundsInScene.contains(event.getScreenX(), event.getScreenY()))
+							jp.hide();
+		            }
+		        });
+				BorderPane fileWithName = new BorderPane();
+				fileWithName.prefHeightProperty().bind(SideFilesList.this.heightProperty().multiply(V_RATIO));
 				
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					System.out.println("Bravo");
-					/*System.out.println("inside2");
-					System.out.println(fileWithName.getPreferredSize());
-					System.out.println(fileWithName.getSize());*/
-					//System.out.println(e);
-				}
-				
-				/*@Override
-				public void mouseExited(MouseEvent e) {
-					System.out.println(e);
-				}*/
-			});
-			pop.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-			jp.setLayout(new BorderLayout());
-			jp.add(pop);
-			jp.addMouseListener(new MouseAdapter() {
 
-				@Override
-				public void mouseExited(MouseEvent e) {
-					if(!jp.getVisibleRect().contains(e.getPoint()))
-						jp.setVisible(false);
-				}
-				
-			});
-			JPanel fileWithName = new JPanel() {
-				@Override
-				public Dimension getPreferredSize() {
-					return FocusPaneView.getVerticalRatioDimension(this, V_RATIO, super.getPreferredSize());
-				}
-			};
-			//fileWithName.setLayout(new BoxLayout(fileWithName, BoxLayout.LINE_AXIS));
-			fileWithName.setLayout(new BorderLayout(0, 0));
-			fileWithName.add(img, BorderLayout.LINE_START);
-			fileWithName.add(text, BorderLayout.CENTER);
-			
-			/*img.setAlignmentY(TOP_ALIGNMENT);
-			fileWithName.add(img);
-			text.setAlignmentY(TOP_ALIGNMENT);
-			fileWithName.add(text);*/
-			
-			fileWithName.setOpaque(false);
-			fileWithName.setBorder(BorderFactory.createLineBorder(Color.RED));
-			fileWithName.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-			JPanel fileWithNamePnl = new JPanel(/*new BorderLayout()*/);
-			fileWithNamePnl.setLayout(new BorderLayout());
-			
-			
-			fileWithNamePnl.addMouseListener(new MouseAdapter() {
-				
-				@Override
-				public void mouseClicked(MouseEvent e) {
+				fileWithName.setLeft(img);
+				fileWithName.setCenter(text);
+				fileWithName.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
+						BorderWidths.DEFAULT)));
+				fileWithName.setCursor(Cursor.HAND);
+				BorderPane fileWithNamePnl = new BorderPane();
+				fileWithNamePnl.setOnMouseClicked(e -> {
 					System.out.println(file);
 					explorer.setMainPanel(file);
-				}
+				});
+				fileWithNamePnl.setLeft(fileWithName);
 				
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					System.out.println("Bravo");
-					/*System.out.println("inside2");
-					System.out.println(fileWithName.getPreferredSize());
-					System.out.println(fileWithName.getSize());*/
-					//System.out.println(e);
-				}
+				VBox filesPanel = new VBox();
 				
-				/*@Override
-				public void mouseExited(MouseEvent e) {
-					System.out.println(e);
-				}*/
-			});
-			
-			//fileWithNamePnl.setLayout(new BoxLayout(fileWithNamePnl, BoxLayout.LINE_AXIS));
-			//fileWithNamePnl.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			fileWithNamePnl.add(fileWithName, BorderLayout.LINE_START);
-			//fileWithNamePnl.add(fileWithName)
-			
-			text.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					//System.out.println(text.getPreferredSize().width +  ">" +  text.getSize().width);
-					System.out.println("Text");
-					System.out.println(text.getPreferredSize());
-					System.out.println(text.getSize());
-					//if(text.getPreferredSize().width > text.getSize().width)
-					if(fileWithName.getSize().width > fileWithNamePnl.getVisibleRect().width)
-						jp.show(text, 0, 0);
-				}
-			});
-			
-			//text.setToolTipText(text.getText());
-			
-			fileWithNamePnl.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					System.out.println("Border " + fileWithNamePnl.getVisibleRect().getSize());
-					System.out.println(fileWithNamePnl.getPreferredSize());
-					System.out.println(fileWithNamePnl.getSize());
-					System.out.println("inside: "  + fileWithName.getVisibleRect().getSize());
-					System.out.println(fileWithName.getPreferredSize());
-					System.out.println(fileWithName.getSize());
-				}
-			});
-			
-			fileWithNamePnl.setAlignmentX(LEFT_ALIGNMENT);
-			fileWithNamePnl.setAlignmentY(TOP_ALIGNMENT);
-			fileWithNamePnl.setOpaque(false);
-			
-			
-			/*fileWithNamePnl.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseEntered(MouseEvent e) {
-					System.out.println("Border");
-					System.out.println(fileWithNamePnl.getPreferredSize());
-					System.out.println(fileWithNamePnl.getSize());
-				}
-			});*/
-			
-			
-			JPanel filesPanel = new JPanel();
-			filesPanel.setLayout(new BoxLayout(filesPanel, BoxLayout.PAGE_AXIS));
-			filesPanel.add(fileWithNamePnl);
-			ExpandPanel expand = new ExpandPanel() {
-				@Override
-				public Dimension getPreferredSize() {
-					Dimension size = FocusPaneView.getRatioDimensionWithoutLayout(this, 0.1, V_RATIO);
-					if(size != null) 
-						return size;
-					return super.getPreferredSize();
-				}
-				
-				@Override
-				public Dimension getMinimumSize() {
-					return getPreferredSize();
-				}
-				
-				@Override
-				public Dimension getMaximumSize() {
-					return getPreferredSize();
-				}
-			};
-			expand.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					filesPanel.remove(subFolderPanel);
-					subFolderPanel.removeAll();
-					if(expand.activated()) {
-						subFolderPanel = new SideFilePanel(file);
-						subFolderPanel.setAlignmentX(LEFT_ALIGNMENT);
-						subFolderPanel.setAlignmentY(TOP_ALIGNMENT);
-						if(subFolderPanel.getComponentCount() != 0)
-							filesPanel.add(subFolderPanel);
+				text.setOnMouseEntered(e -> {
+					Bounds scrollBound = getVisibleBounds(SideFilesList.this.getContent());
+					Bounds insideScrollBounds = getBoundsInAncestor(fileWithNamePnl, this);
+					if(insideScrollBounds.getMaxX() > scrollBound.getMaxX()) {
+						Bounds inScreen = fileWithNamePnl.localToScreen(fileWithNamePnl.getBoundsInLocal());
+						jp.show(text, inScreen.getMaxX(), inScreen.getMinY());
 					}
-					revalidate();
-					repaint();
-				}
-			});
-			
-			expand.setBorder(BorderFactory.createLineBorder(Color.GREEN));
-			expand.setAlignmentY(TOP_ALIGNMENT);
-			filesPanel.setAlignmentY(TOP_ALIGNMENT);
-			expand.setOpaque(false);
-			add(expand);
-			//add(Box.createHorizontalStrut(20));
-			/*JPanel pnl = new JPanel(new BorderLayout());
-			pnl.add(filesPanel);
-			pnl.setAlignmentY(TOP_ALIGNMENT);
-			add(pnl);*/
-			add(filesPanel);
-			filesPanel.setOpaque(false);
-			subFolderPanel = new JPanel();
-			subFolderPanel.setLayout(new BoxLayout(subFolderPanel, BoxLayout.PAGE_AXIS));
-			subFolderPanel.setAlignmentX(LEFT_ALIGNMENT);
+				});
+				
+				text.setOnMouseExited(event -> {
+	            	Bounds boundsInScene = text.localToScreen(text.getBoundsInLocal());
+					System.out.println("Bye " + boundsInScene);
+					System.out.println(event.getScreenX() + " , " + event.getScreenY());
+	            	if(!boundsInScene.contains(event.getScreenX(), event.getScreenY())) {
+	            		Bounds popBounds = pop.localToScreen(pop.getBoundsInLocal());
+        				if(popBounds == null || !popBounds.contains(event.getScreenX(), event.getScreenY()))
+        					jp.hide();
+	            	}
+				});
+				
+				filesPanel.getChildren().add(fileWithNamePnl);
+				ExpandPanel expand = new ExpandPanel();
+				
+				expand.widthProperty().bind(SideFilesList.this.widthProperty().multiply(0.5/*0.1*/));
+				expand.heightProperty().bind(SideFilesList.this.heightProperty().multiply(V_RATIO));
+				
+				EventHandler<? super MouseEvent> prevEvent = expand.getOnMouseClicked();
+				
+				
+				
+				/*
+				expand.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+					//prevEvent.handle(e);
+					System.out.println("kkkk");
+					if(expand.activated()) {
+						if(subFolderPanel == null)
+							subFolderPanel = new SideFilePanel(file);
+						else {
+							filesPanel.getChildren().remove(subFolderPanel);
+							subFolderPanel.getChildren().clear();
+						}
+						if(!subFolderPanel.getChildren().isEmpty())
+							filesPanel.getChildren().add(subFolderPanel);
+					}
+				});
+				
+				*/
+				
+				
+				expand.setOnMouseClicked(e -> {
+					prevEvent.handle(e);
+					System.out.println("kkkk");
+					if(expand.activated()) {
+						if(subFolderPanel == null)
+							subFolderPanel = new SideFilePanel(file);
+						else {
+							System.out.println("Remove");
+							filesPanel.getChildren().remove(subFolderPanel);
+							//System.out.println(filesPanel.getChildren().remove(subFolderPanel));
+							System.out.println(filesPanel.getChildren());
+							//filesPanel.getChildren().clear();
+							//subFolderPanel.getChildren().clear();
+						}
+						System.out.println("hiii");
+						if(!subFolderPanel.getChildren().isEmpty())
+							filesPanel.getChildren().add(subFolderPanel);
+					}
+					else {
+						if(subFolderPanel != null)
+							filesPanel.getChildren().remove(subFolderPanel);
+					}
+				});
+				
+				
+				
+				getChildren().add(expand);
+				getChildren().add(filesPanel);
+			}
 		}
+		
+		private static final double V_RATIO = 0.15; //0.15; 
+		
+		private SideFilePanel subFolderPanel;
+		
+		private boolean r;
 		
 		public Image getImage(File file) {
 			File imageFile = null;
@@ -476,4 +391,33 @@ public class SideFilesList extends JScrollPane {
         );
         return ImageUtils.getRectCenter(textR.getBounds());
 	}
+	
+    public static Bounds getVisibleBounds(Node aNode)
+    {
+        // If node not visible, return empty bounds
+        if(!aNode.isVisible()) return new BoundingBox(0,0,-1,-1);
+        //System.out.println(aNode);
+        // If node has clip, return clip bounds in node coords
+        if(aNode.getClip()!=null) return aNode.getClip().getBoundsInParent();
+
+        // If node has parent, get parent visible bounds in node coords
+        Bounds bounds = aNode.getParent()!=null? getVisibleBounds(aNode.getParent()) : null;
+        if(bounds!=null && !bounds.isEmpty()) bounds = aNode.parentToLocal(bounds);
+        return bounds;
+    }
+    
+    public static Bounds getBoundsInAncestor(Node node, Node ancestor)
+    {
+    	Bounds bounds = node.getBoundsInParent();
+    	node = node.getParent();
+    	while(node != null) {
+    		bounds = node.localToParent(bounds);
+    		if(ancestor.equals(node))
+    			break;
+    		else
+    			node = node.getParent();
+    		//System.out.println(aNode.getClip()!=null);
+    	}
+    	return bounds;
+    }
 }

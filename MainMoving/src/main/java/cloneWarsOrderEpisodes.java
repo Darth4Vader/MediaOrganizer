@@ -37,14 +37,14 @@ public class cloneWarsOrderEpisodes {
 		File json = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\colenT.json");
 		List<NameInfo> nameInfoList = OrderEpisodesUtils.loadFile(json);
 		
-		File folder = new File("E:\\Clone Wars\\input");
+		/*File folder = new File("E:\\Clone Wars\\input");
 		List<FileInfo> fileInfos = new ArrayList<>();
 		for(File file : folder.listFiles()) {
 			FileInfo fileInfo = new FileInfo(file);
 			if(file.isDirectory())
 				fileInfos.add(fileInfo);
 		}
-		OrderEpisodesUtils.setOrderForEpisodes(fileInfos, nameInfoList);
+		OrderEpisodesUtils.setOrderForEpisodes(fileInfos, nameInfoList);*/
 	}
 	
 	public static final String SEARCH_AGENT = "Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6";

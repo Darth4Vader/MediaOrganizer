@@ -11,7 +11,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -52,6 +51,7 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileSystemView;
@@ -69,47 +69,57 @@ import SwingUtilities.FocusContainer;
 import SwingUtilities.FocusPaneView;
 import SwingUtilities.SwingUtils;
 import SwingUtilities.TraverseContainer;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 
 public class FileExplorer extends BorderPane {
 
 	private RenameFilePanel infoPanel;
-	private final JPanel mainPanel;
+	private final BorderPane mainPanel;
 	private final ManageFolder move;
 	private FilePanel filePanel;
 	private File folder;
 
 	public FileExplorer(ManageFolder move) {
 		this.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
+		
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		double width = screenSize.getWidth();
 		double height = screenSize.getHeight();
 		this.setPrefSize((int) (width * 0.445), (int) (height * 0.445));
 		this.toolMap = new HashMap<>();
 		
-		//this.mainPanel = new JPanel(new BorderLayout());
-		this.mainPanel = new FocusPaneView();
-		this.mainPanel.setLayout(new BorderLayout());
+		this.mainPanel = new BorderPane();
 		
-		mainPanel.setOpaque(false);
 		this.move = move;
 		this.infoPanel = new RenameFilePanel(this);
 		
 		
-		JScrollPane scroll = new JScrollPane(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		scroll.setAlignmentY(Component.TOP_ALIGNMENT);
-		scroll.setOpaque(false);
-		scroll.getViewport().setOpaque(false);
+		ScrollPane scroll = new ScrollPane(mainPanel);
+		scroll.setVbarPolicy(ScrollBarPolicy.ALWAYS);
+		scroll.setHbarPolicy(ScrollBarPolicy.NEVER);
 		this.setCenter(scroll);
-		scroll.setViewportView(mainPanel);
-		scroll.addFocusListener(SwingUtils.ScrollPaneFocus);
-		
+		BorderPane.setAlignment(scroll, Pos.TOP_CENTER);
 		
 		//this.add(mainPanel, BorderLayout.CENTER);
 		//JPanel toolPanel = createToolPanels();
@@ -141,19 +151,11 @@ public class FileExplorer extends BorderPane {
 	    });
 	}
 	
-	private JPanel getSearchPnl() {
-		JPanel pnl = new TraverseContainer() {
-			
-			@Override
-			public Dimension getPreferredSize() {
-				return SwingUtils.getVerticalRatioSize(this, 0.15);
-			}
-			
-		};
-		pnl.setOpaque(false);
-		pnl.setLayout(new BorderLayout());
-		pnl.add(createToolPanels(), BorderLayout.CENTER);
-		pnl.add(new SearchPanel(this), BorderLayout.LINE_END);
+	private BorderPane getSearchPnl() {
+		BorderPane pnl = new BorderPane();
+		pnl.prefHeightProperty().bind(this.heightProperty().multiply(0.15));
+		pnl.setCenter(createToolPanels());
+		pnl.setRight(new SearchPanel(this));
 		return pnl;
 	}
 	
@@ -162,7 +164,7 @@ public class FileExplorer extends BorderPane {
 	}
 	
 	private void addInfoPanel(ToolName tool) {
-		this.remove(infoPanel);
+		this.getChildren().remove(infoPanel);
 		Component component = null;
 		switch (tool) {
 		case ORGANIZE_FOLDER:
@@ -173,7 +175,7 @@ public class FileExplorer extends BorderPane {
 		case RENAME_FILE:
 			infoPanel.setPanel(filePanel);
 			if(infoPanel != null && !infoPanel.isDisplayable()) {
-				this.add(infoPanel, BorderLayout.LINE_END);
+				this.setRight(infoPanel);
 			}
 			break;
 		case SET_LOGO:
@@ -183,7 +185,6 @@ public class FileExplorer extends BorderPane {
 		default:
 			break;
 		}
-		refreshFrame();
 	}
 
 	private void setMainPanel(String path) {
@@ -195,73 +196,37 @@ public class FileExplorer extends BorderPane {
 	}
 	
 	private void setMainPanel(File folder, File toFocus) {
-		this.mainPanel.removeAll();
+		this.mainPanel.getChildren().removeAll();
 		this.folder = folder;
-		JPanel pnl = new TraverseContainer(true, true);
-		pnl.setLayout(new GridLayout(0, 5));
-		pnl.setOpaque(false);
+		GridPane pnl = new GridPane();
 		File[] files = folder.listFiles();
 		for (File file : files) {
 			if(!FilesUtils.isSystemFile(file)) {
 				FilePanel filePnl = new FilePanel(file);
-				pnl.add(filePnl);
+				pnl.getChildren().add(filePnl);
 				if(toFocus != null && file.equals(toFocus)) {
-					filePnl.requestFocusInWindow();
+					filePnl.requestFocus();
 				}
 			}
 		}
-		this.mainPanel.add(pnl, BorderLayout.CENTER);
-		refreshFrame();
+		this.mainPanel.setCenter(pnl);
 	}
 	
 	private void goToParentFile(File file) {
 		setMainPanel(file.getParentFile(), file);
 	}
-
-	public void refreshFrame() {
-		revalidate();
-		repaint();
-	}
 	
 	private final Map<ToolName, ToolPanel> toolMap;
 	
-	private JComponent createToolPanels() {
-		JPanel pnl = new TraverseContainer();
-		/*JToolBar pnl = new JToolBar() {
-			
-			@Override
-			public Dimension getPreferredSize() {
-				return SwingUtils.getRatioSize(this, SwingUtils.H_RATIO, 0.15);
-			}
-			
-		};*/
-		pnl.setLayout(new BoxLayout(pnl, BoxLayout.LINE_AXIS));
-		pnl.setOpaque(false);
-		//pnl.setBackground(Color.GRAY);
+	private HBox createToolPanels() {
+		HBox pnl = new HBox();
 		for(ToolName tool : ToolName.values())
 			this.toolMap.put(tool, new ToolPanel(tool));
-		pnl.add(toolMap.get(ToolName.ORGANIZE_FOLDER));
-		pnl.add(toolMap.get(ToolName.RENAME_FILE));
-		pnl.add(toolMap.get(ToolName.REFRESH_LOGO));
-		pnl.add(toolMap.get(ToolName.SET_LOGO));
-		pnl.add(toolMap.get(ToolName.SET_SUBTITLES));
-		
-		
-		
-		/*pnl.add(new ToolPanel(ToolName.ORGANIZE_FOLDER));
-		pnl.add(new ToolPanel(ToolName.RENAME_FILE));
-		pnl.add(new ToolPanel(ToolName.REFRESH_LOGO));
-		pnl.add(new ToolPanel(ToolName.SET_LOGO));
-		pnl.add(new ToolPanel(ToolName.SET_SUBTITLES));*/
-		
-		
-		/*pnl.add(new ToolPanel("Organize Folder", "Organize Folder"));
-		pnl.add(new ToolPanel("Refresh File Logo", "Refresh File Logo"));
-		pnl.add(new ToolPanel("Rename file", "Rename file"));
-		pnl.add(new ToolPanel("Set File Logo", "Set File Logo"));
-		pnl.add(new ToolPanel("set main subtitles language", "set main subtitles language"));*/
-		/*pnl.add();
-		pnl.add();*/
+		pnl.getChildren().add(toolMap.get(ToolName.ORGANIZE_FOLDER));
+		pnl.getChildren().add(toolMap.get(ToolName.RENAME_FILE));
+		pnl.getChildren().add(toolMap.get(ToolName.REFRESH_LOGO));
+		pnl.getChildren().add(toolMap.get(ToolName.SET_LOGO));
+		pnl.getChildren().add(toolMap.get(ToolName.SET_SUBTITLES));
 		return pnl;
 	}
 	
@@ -271,7 +236,6 @@ public class FileExplorer extends BorderPane {
 		for(ToolPanel tool : this.toolMap.values() ) {
 			tool.setUsage(file);
 		}
-		refreshFrame();
 	}
 	
 	
@@ -300,7 +264,7 @@ public class FileExplorer extends BorderPane {
 		}	
 	}
 	
-	private class ToolPanel extends FocusContainer /* JPanel */ implements MouseListener, FocusListener { 
+	private class ToolPanel extends BorderPane { 
 		
 		private final ToolName tool;
 		private boolean canUse;
@@ -308,10 +272,8 @@ public class FileExplorer extends BorderPane {
 		public ToolPanel(ToolName tool) {
 			this.tool = tool;
 			this.canUse = false;
-			this.setLayout(new BorderLayout());
-			this.setOpaque(false);
-			final Image img = ImageUtils.loadImage("Data\\Images\\" + tool.getID());
-			final BufferedImage image = img != null ? ImageUtils.paintImageInColor(img, Color.BLACK) : null;
+			final java.awt.Image img = ImageUtils.loadImage("Data\\Images\\" + tool.getID());
+			final BufferedImage image = img != null ? ImageUtils.paintImageInColor(img, java.awt.Color.BLACK) : null;
 			JPanel lblIcon = new JPanel() {
 				
 				@Override
@@ -325,11 +287,29 @@ public class FileExplorer extends BorderPane {
 				
 			};
 			lblIcon.setOpaque(false);
-			add(lblIcon, BorderLayout.CENTER);
-			JLabel lblName = new JLabel(tool.getName());
-			add(lblName, BorderLayout.PAGE_END);
-			addFocusListener(this);
-			addMouseListener(this);
+			this.setCenter(lblIcon);
+			Label lblName = new Label(tool.getName());
+			this.setTop(lblName);
+			setOnMouseClicked(e -> {
+				activate();
+				if(canUse)
+					this.requestFocus();
+			});
+			setOnMouseEntered(e -> {
+				this.setBackground(new Background(new BackgroundFill(new Color(211, 211, 211, 60), CornerRadii.EMPTY, Insets.EMPTY)));
+			});
+			setOnMouseExited(e -> {
+				this.setBackground(null);
+			});
+			this.focusedProperty().addListener((obs, oldValue, newValue) -> {
+				if(newValue) {
+					this.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
+							BorderWidths.DEFAULT)));
+				}
+				else {
+					this.setBorder(null);
+				}
+			});
 		}
 		
 		@Override
@@ -354,99 +334,41 @@ public class FileExplorer extends BorderPane {
 			if(canUse)
 				addInfoPanel(tool);
 		}
-
-		@Override
-		public void focusGained(FocusEvent e) {
-			this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			refreshFrame();
-		}
-
-		@Override
-		public void focusLost(FocusEvent e) {
-			this.setBorder(null);
-			refreshFrame();
-		}
-
-
-		@Override
-		public void mouseClicked(MouseEvent e) {
-			activate();
-			if(canUse)
-				this.requestFocusInWindow();
-		}
-
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			this.setOpaque(true);
-			this.setBackground(new Color(211, 211, 211, 60));
-			refreshFrame();
-		}
-
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			this.setOpaque(false);
-			this.setBackground(null);
-			refreshFrame();
-		}
 	}
 	
-	public class FilePanel extends BorderPane implements FocusListener {
+	public class FilePanel extends BorderPane {
 		
 		private File file;
 		private final FileName text;
-		private Image image;
+		private ImageView imageView;
 		private Icon icon;
 		
 		public FilePanel(File file) {
 			this.file = file;
-			this.icon = FileSystemView.getFileSystemView().getSystemIcon(file);
-			setLayout(new BorderLayout());
-			setOpaque(false);
+			prefWidthProperty().bind(mainPanel.widthProperty().multiply(0.5));
+			prefHeightProperty().bind(mainPanel.heightProperty().multiply(0.5));
+			imageView = new ImageView();
+			imageView.setPreserveRatio(true);
 			updateImage();
-			JPanel img = new JPanel() {
-
-				@Override
-				public void paintComponent(Graphics g) {
-					super.paintComponent(g);
-					if(image != null)
-						g.drawImage(image, 0, 0, getWidth(), getHeight(), this);
-				}
-			};
-			img.setOpaque(false);
 			this.text = new FileName(file);
-			setCenter(img);
-			setBottom(text);
-			addFocusListener(this);
+			this.setCenter(imageView);
+			this.setBottom(text);
+			this.focusedProperty().addListener((obs, oldValue, newValue) -> {
+				if(newValue) {
+					updateToolPanels(this);
+					this.setBorder(new Border(new BorderStroke(Color.PINK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
+							BorderWidths.DEFAULT)));
+				}
+				else {
+					this.setBorder(null);
+				}
+			});
 			setOnMouseClicked(e -> {
 				this.requestFocus();
 				if(e.getClickCount() == 2 && e.isSecondaryButtonDown()) {
 					setMainPanel(file);
 				}
 			});
-		}
-		
-		@Override
-		public Dimension getPreferredSize() {
-			Dimension size = FocusPaneView.getRatioDimension(this, 0.5, 0.5);
-			if(size != null) 
-				return size;
-			return super.getPreferredSize();
 		}
 		
 		public File getFile() {
@@ -462,6 +384,7 @@ public class FileExplorer extends BorderPane {
 			File imageFile = null;
 			if(this.file.isDirectory())
 				imageFile = FilesUtils.getFileLogo(file);
+			java.awt.Image image;
 			if(imageFile != null)
 				image = ImageUtils.loadImage(imageFile.getPath());
 			else {
@@ -472,23 +395,10 @@ public class FileExplorer extends BorderPane {
 					Graphics2D g = ((BufferedImage) image).createGraphics(); icon.paintIcon(null, g, 0, 0);
 					g.dispose();
 				}
-			}			
+			}
+			if(image instanceof BufferedImage)
+				imageView.setImage(SwingFXUtils.toFXImage((BufferedImage) image, null));
 		}
-
-		@Override
-		public void focusGained(FocusEvent e) {
-			//System.out.println("Remrember  ");
-			updateToolPanels(this);
-			this.setBorder(BorderFactory.createLineBorder(Color.PINK));
-		}
-
-		@Override
-		public void focusLost(FocusEvent e) {
-			// TODO Auto-generated method stub
-			this.setBorder(null);
-			refreshFrame();
-		}
-		
 	}
 
 	class FileName extends TextField {
