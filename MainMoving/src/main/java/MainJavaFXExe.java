@@ -2,6 +2,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 
+import DataStructures.ManageFolder;
+import JavaFXInterface.FileExplorer;
 import JavaFXInterface.SideFilesList;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -24,7 +26,10 @@ public class MainJavaFXExe extends Application {
     	
     	File file = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main");
     	
-    	SideFilesList list = new SideFilesList(file);
+    	//SideFilesList list = new SideFilesList(file);
+    	
+    	FileExplorer list = new FileExplorer(new ManageFolder(file.getAbsolutePath()));
+    	
     	//list.setPrefWidth(400);
     	//list.setPrefHeight(500);
     	Scene scene = new Scene(list);

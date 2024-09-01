@@ -23,10 +23,9 @@ import javax.swing.text.Document;
 
 import DataStructures.FileInfo;
 import DataStructures.NameInfo.NameInfoType;
-import Interface.FileExplorer.FilePanel;
-import Interface.FileInfoPanel.InfoField;
 import SwingUtilities.DocumantFilterList;
 import SwingUtilities.SwingUtils;
+import javafx.scene.control.Button;
 
 public class RenameFilePanel extends FileInfoPanel {
 	
@@ -35,23 +34,15 @@ public class RenameFilePanel extends FileInfoPanel {
 	public RenameFilePanel(FileExplorer explorer) {
 		super();
 		this.explorer = explorer;
-		JButton btn = new JButton("Update");
-		btn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					updateChanges();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+		Button btn = new Button("Update");
+		btn.setOnAction(e -> {
+			try {
+				updateChanges();
+			} catch (IOException e1) {
+				e1.printStackTrace();
 			}
 		});
-		add(btn, BorderLayout.PAGE_END);
-	}
-
-	@Override
-	public Dimension getPreferredSize() {
-		return SwingUtils.getRatioSize(this, 0.3, SwingUtils.V_RATIO);
+		setBottom(btn);
 	}
 	
 	public void updateChanges() throws IOException {

@@ -29,7 +29,9 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -69,16 +71,22 @@ import SwingUtilities.FocusContainer;
 import SwingUtilities.FocusPaneView;
 import SwingUtilities.SwingUtils;
 import SwingUtilities.TraverseContainer;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
@@ -91,6 +99,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.util.Callback;
 
 public class FileExplorer extends BorderPane {
 
@@ -99,8 +108,48 @@ public class FileExplorer extends BorderPane {
 	private final ManageFolder move;
 	private FilePanel filePanel;
 	private File folder;
+	
+	private ListView<FileRow> fileListView;
+	private ObservableList<FileRow> fileList;
+	
+	private static FileExplorer fileExpolrer;
+	
+	public static FileExplorer getFileExplorer() {
+		return fileExpolrer;
+	}
+	
+	public void UpdatelistViewAsGridPage(List<File> list) {
+		fileList.clear();
+		int i = 0;
+		//The maximum number of items in one row.
+		final int MAX = 5;
+		FileRow fileRow = new FileRow();
+		for(File file : list) {
+			if(file != null) {
+				fileRow.add(file);
+				i++;
+				if(i == MAX) {
+					fileList.add(fileRow);
+					fileRow = new FileRow();
+					i = 0;
+				}
+			}
+		}
+		if(!fileRow.getFiles().isEmpty()) {
+			fileList.add(fileRow);
+		}
+	}
 
 	public FileExplorer(ManageFolder move) {
+		FileExplorer.fileExpolrer = this;
+		
+		fileList = FXCollections.observableArrayList();
+		
+		final int MAX = 5;
+		fileListView = new ListView<FileRow>(fileList);
+		fileListView.setCellFactory(x -> new FileTableCellEditor(fileListView, MAX));
+		fileListView.setSelectionModel(null);
+		
 		this.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
 		
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -113,7 +162,8 @@ public class FileExplorer extends BorderPane {
 		
 		this.move = move;
 		this.infoPanel = new RenameFilePanel(this);
-		
+		infoPanel.prefWidthProperty().bind(this.widthProperty().multiply(0.3));
+		infoPanel.prefHeightProperty().bind(this.heightProperty());
 		
 		ScrollPane scroll = new ScrollPane(mainPanel);
 		scroll.setVbarPolicy(ScrollBarPolicy.ALWAYS);
@@ -128,34 +178,32 @@ public class FileExplorer extends BorderPane {
 		this.setTop(getSearchPnl());
 		
 		
-		JScrollPane sidePnl = new SideFilesList(this, new File(move.getMainFolderPath())) {
-			
-			@Override
-			public Dimension getPreferredSize() {
-				return SwingUtils.getHorizontalRatioSize(this, 0.3);
-			}
-		};
+		ScrollPane sidePnl = new SideFilesList(this, new File(move.getMainFolderPath()));
+		
+		sidePnl.prefWidthProperty().bind(this.widthProperty().multiply(0.3));
+		sidePnl.prefHeightProperty().bind(this.heightProperty());
 		this.setLeft(sidePnl);
 		
 		
 		this.setVisible(true);
 		setMainPanel(move.getMainFolderPath());
-		this.mainPanel.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "Exist");
-		this.mainPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "Exist");
-		this.mainPanel.getActionMap().put("Exist", new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		
+		
+		this.mainPanel.setOnKeyPressed(e -> {
+		    if (e.getCode() == KeyCode.BACK_SPACE) {
 				goToParentFile(folder);
 				//setMainPanel(folder.getParent());
-			}
-	    });
+		    }
+		});
 	}
 	
 	private BorderPane getSearchPnl() {
 		BorderPane pnl = new BorderPane();
 		pnl.prefHeightProperty().bind(this.heightProperty().multiply(0.15));
 		pnl.setCenter(createToolPanels());
-		pnl.setRight(new SearchPanel(this));
+		SearchPanel searchPnl = new SearchPanel(this);
+		pnl.setRight(searchPnl);
+		searchPnl.prefWidthProperty().bind(pnl.widthProperty().multiply(0.2));
 		return pnl;
 	}
 	
@@ -174,7 +222,7 @@ public class FileExplorer extends BorderPane {
 			break;
 		case RENAME_FILE:
 			infoPanel.setPanel(filePanel);
-			if(infoPanel != null && !infoPanel.isDisplayable()) {
+			if(infoPanel != null && this.getRight() != null) {
 				this.setRight(infoPanel);
 			}
 			break;
@@ -198,18 +246,9 @@ public class FileExplorer extends BorderPane {
 	private void setMainPanel(File folder, File toFocus) {
 		this.mainPanel.getChildren().removeAll();
 		this.folder = folder;
-		GridPane pnl = new GridPane();
 		File[] files = folder.listFiles();
-		for (File file : files) {
-			if(!FilesUtils.isSystemFile(file)) {
-				FilePanel filePnl = new FilePanel(file);
-				pnl.getChildren().add(filePnl);
-				if(toFocus != null && file.equals(toFocus)) {
-					filePnl.requestFocus();
-				}
-			}
-		}
-		this.mainPanel.setCenter(pnl);
+		UpdatelistViewAsGridPage(Arrays.asList(files));
+		this.mainPanel.setCenter(fileListView);
 	}
 	
 	private void goToParentFile(File file) {
@@ -230,7 +269,7 @@ public class FileExplorer extends BorderPane {
 		return pnl;
 	}
 	
-	private void updateToolPanels(FilePanel filePanel) {
+	public void updateToolPanels(FilePanel filePanel) {
 		this.filePanel = filePanel;
 		File file = filePanel.getFile();
 		for(ToolPanel tool : this.toolMap.values() ) {
@@ -270,23 +309,26 @@ public class FileExplorer extends BorderPane {
 		private boolean canUse;
 		
 		public ToolPanel(ToolName tool) {
+			this.setOpacity(0.1);
+			
+			
+			
+			
+			
 			this.tool = tool;
 			this.canUse = false;
 			final java.awt.Image img = ImageUtils.loadImage("Data\\Images\\" + tool.getID());
 			final BufferedImage image = img != null ? ImageUtils.paintImageInColor(img, java.awt.Color.BLACK) : null;
-			JPanel lblIcon = new JPanel() {
-				
-				@Override
-				protected void paintComponent(Graphics g) {
-					super.paintComponent(g);
-					if(image != null) {
-						Rectangle rect = SwingUtils.getComponentCenterRect(this, 0.6, 0.6);
-					    g.drawImage(image, rect.x, rect.y, rect.width, rect.height, null);
-					}
-				}
-				
-			};
-			lblIcon.setOpaque(false);
+			//Canvas lblIcon = new C
+			BorderPane lblIcon = new BorderPane();
+			ImageView iconImg = new ImageView();
+			iconImg.fitWidthProperty().bind(lblIcon.widthProperty().multiply(0.6));
+			iconImg.fitHeightProperty().bind(lblIcon.heightProperty().multiply(0.6));
+			if(image != null) {
+				iconImg.setImage(SwingFXUtils.toFXImage(image, null));
+			}
+			lblIcon.setCenter(iconImg);
+			
 			this.setCenter(lblIcon);
 			Label lblName = new Label(tool.getName());
 			this.setTop(lblName);
@@ -296,7 +338,7 @@ public class FileExplorer extends BorderPane {
 					this.requestFocus();
 			});
 			setOnMouseEntered(e -> {
-				this.setBackground(new Background(new BackgroundFill(new Color(211, 211, 211, 60), CornerRadii.EMPTY, Insets.EMPTY)));
+				this.setBackground(new Background(new BackgroundFill(Color.rgb(211, 211, 211, 0.6), CornerRadii.EMPTY, Insets.EMPTY)));
 			});
 			setOnMouseExited(e -> {
 				this.setBackground(null);
@@ -312,7 +354,7 @@ public class FileExplorer extends BorderPane {
 			});
 		}
 		
-		@Override
+		/*@Override
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			if(!canUse) {
@@ -320,7 +362,7 @@ public class FileExplorer extends BorderPane {
 				float opacity = 0.1f;
 				g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 			}
-		}
+		}*/
 		
 		public void setUsage(File file) {
 			//System.out.println("Useage:   ");
@@ -336,6 +378,7 @@ public class FileExplorer extends BorderPane {
 		}
 	}
 	
+	/*
 	public class FilePanel extends BorderPane {
 		
 		private File file;
@@ -384,13 +427,13 @@ public class FileExplorer extends BorderPane {
 			File imageFile = null;
 			if(this.file.isDirectory())
 				imageFile = FilesUtils.getFileLogo(file);
-			java.awt.Image image;
+			java.awt.Image image = null;
 			if(imageFile != null)
 				image = ImageUtils.loadImage(imageFile.getPath());
 			else {
 				if(icon instanceof ImageIcon)
 					image = ((ImageIcon) icon).getImage();
-				else { 
+				else if(icon != null) { 
 					image = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
 					Graphics2D g = ((BufferedImage) image).createGraphics(); icon.paintIcon(null, g, 0, 0);
 					g.dispose();
@@ -433,5 +476,7 @@ public class FileExplorer extends BorderPane {
 			setText(text);
 		}
 	}
+	
+	*/
 
 }

@@ -11,46 +11,36 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import SwingUtilities.SwingUtils;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 
-public class SearchPanel extends JPanel {
+public class SearchPanel extends BorderPane {
 
 	private FileExplorer explorer;
 	private boolean advencedSearchActive;
 	
 	public SearchPanel(FileExplorer explorer) {
-		setLayout(new BorderLayout());
 		this.explorer = explorer;
-		JTextField searchText = new JTextField();
+		TextField searchText = new TextField();
 		//JPanel advencedSearch = new JPanel();
 		//FileInfoPanel fileInfoPnl = new FileInfoPanel();
-		JButton advencedSearch = new JButton("AdvencedSearch") {
-			@Override
-			public Dimension getPreferredSize() {
-				return SwingUtils.getHorizontalRatioSize(this, 0.2);
-			}
-		};
-		advencedSearch.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				activateAdvancedSearch();
-			}
+		Button advencedSearch = new Button("AdvencedSearch");
+		advencedSearch.prefWidthProperty().bind(this.widthProperty().multiply(0.2));
+		advencedSearch.setOnAction(e -> {
+			activateAdvancedSearch();
 		});
-		add(searchText, BorderLayout.CENTER);
-		add(advencedSearch, BorderLayout.LINE_END);
-	}
-	
-	@Override
-	public Dimension getPreferredSize() {
-		return SwingUtils.getHorizontalRatioSize(this, 0.2);
+		setCenter(searchText);
+		setRight(advencedSearch);
 	}
 	
 	private synchronized void activateAdvancedSearch() {
 		if(advencedSearchActive) return;
 		this.advencedSearchActive = true;
 		FileInfoPanel filePnl = new FileInfoPanel();
-		explorer.add(filePnl, BorderLayout.LINE_END);
-		explorer.refreshFrame();
+		filePnl.prefWidthProperty().bind(explorer.widthProperty().multiply(0.3));
+		filePnl.prefHeightProperty().bind(explorer.heightProperty());
+		explorer.setRight(filePnl);
 	}
 	
 }

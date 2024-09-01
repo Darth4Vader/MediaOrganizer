@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -23,45 +24,43 @@ import javax.swing.text.Document;
 
 import DataStructures.FileInfo;
 import DataStructures.NameInfo.NameInfoType;
-import Interface.FileExplorer.FilePanel;
 import SwingUtilities.DocumantFilterList;
 import SwingUtilities.SwingUtils;
+import SwingUtilities.DocumantFilterList.StringFilter;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.control.TextFormatter.Change;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
-public class FileInfoPanel extends JPanel {
+public class FileInfoPanel extends BorderPane {
 	
 	protected FileInfo info;
 	protected FilePanel pnl;
-	private final JPanel infoFields;
+	private final VBox infoFields;
 	protected final Map<NameInfoType, InfoField> map;
 	
 	public FileInfoPanel() {
-		setLayout(new BorderLayout());
 		this.pnl = null;
 		this.map = new HashMap<>();
 		createMap();
 		this.infoFields = createInfoFields();
-		this.infoFields.setLayout(new BoxLayout(this.infoFields, BoxLayout.PAGE_AXIS));
-		add(infoFields, BorderLayout.CENTER);
-	}
-
-	@Override
-	public Dimension getPreferredSize() {
-		return SwingUtils.getRatioSize(this, 0.3, SwingUtils.V_RATIO);
+		setCenter(infoFields);
 	}
 
 	public void createMap() {
 		for (NameInfoType type : NameInfoType.values()) {
 			final InfoField field = new InfoField(type);
 			map.put(type, field);
-			Document document = field.field.getDocument();
-			if (document instanceof AbstractDocument) {
-				AbstractDocument doc = (AbstractDocument) document;
-				DocumantFilterList filter = new DocumantFilterList();
-				if (type == NameInfoType.YEAR || type == NameInfoType.SEASON || type == NameInfoType.EPISODE)
-					filter.addFilter(DocumantFilterList.documentDigitsFilter());
-				filter.addFilter(DocumantFilterList.documentSizeFilter(field.getNameInfoType().getInfoLength()));
-				doc.setDocumentFilter(filter);
-			}
+			TextFormatter<String> formatter;
+			int size = field.getNameInfoType().getInfoLength();
+			if (type == NameInfoType.YEAR || type == NameInfoType.SEASON || type == NameInfoType.EPISODE)
+				formatter = new AlphaNumericTextFormatter(size);
+			else
+				formatter = new MaxLengthTextFormatter(size);
+			field.field.setTextFormatter(formatter);
 		}
 	}
 	
@@ -74,25 +73,6 @@ public class FileInfoPanel extends JPanel {
 
 	private void setPanel() {
 		setPanel(info.createInfoMap());
-	}
-
-	private void setPanel(Map<NameInfoType, String> map, Component container) {
-		if (container instanceof Container) {
-			Component[] arr = ((Container) container).getComponents();
-			if (arr != null)
-				for (Component component : arr) {
-					if (component instanceof InfoField) {
-						InfoField field = (InfoField) component;
-						String text = map.get(field.getNameInfoType());
-						if (text != null) {
-							field.setInfoText(text);
-						}
-					} else
-						setPanel(map, component);
-				}
-		}
-		revalidate();
-		repaint();
 	}
 
 	private void setPanel(Map<NameInfoType, String> map) {
@@ -108,49 +88,18 @@ public class FileInfoPanel extends JPanel {
 		updateInfoFields();
 	}
 
-	private JPanel createInfoFields() {
-		JPanel pnl = new JPanel();
-		pnl.setLayout(new BoxLayout(pnl, BoxLayout.PAGE_AXIS));
-		pnl.add(map.get(NameInfoType.NAME));
-		pnl.add(map.get(NameInfoType.YEAR));
+	private VBox createInfoFields() {
+		VBox pnl = new VBox();
+		pnl.getChildren().add(map.get(NameInfoType.NAME));
+		pnl.getChildren().add(map.get(NameInfoType.YEAR));
 		
-		JPanel series = new JPanel();
-		series.setLayout(new BoxLayout(series, BoxLayout.LINE_AXIS));
-		series.add(map.get(NameInfoType.SEASON));
+		HBox series = new HBox();
+		series.getChildren().add(map.get(NameInfoType.SEASON));
 		InfoField episode = map.get(NameInfoType.EPISODE);
-
-		episode.field.getDocument().addDocumentListener(new DocumentListener() {
-
-			private boolean show = false;
-
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				addEpisodeName(e);
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				addEpisodeName(e);
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				addEpisodeName(e);
-			}
-
-			public void addEpisodeName(DocumentEvent e) {
-				String text = episode.field.getText();
-				if (text.isEmpty()) {
-					show = false;
-				} else if (show != true) {
-					show = true;
-				}
-			}
-		});
-
-		series.add(map.get(NameInfoType.EPISODE));
-		pnl.add(series);
-		pnl.add(map.get(NameInfoType.DESCRIPTION));
+		
+		series.getChildren().add(map.get(NameInfoType.EPISODE));
+		pnl.getChildren().add(series);
+		pnl.getChildren().add(map.get(NameInfoType.DESCRIPTION));
 		return pnl;
 
 		/*
@@ -161,38 +110,36 @@ public class FileInfoPanel extends JPanel {
 	}
 	
 	private void updateInfoFields() {
-		this.infoFields.removeAll();
-		this.infoFields.add(map.get(NameInfoType.NAME));
-		this.infoFields.add(map.get(NameInfoType.YEAR));
+		this.infoFields.getChildren().removeAll();
+		this.infoFields.getChildren().add(map.get(NameInfoType.NAME));
+		this.infoFields.getChildren().add(map.get(NameInfoType.YEAR));
 		if(info.hasEpisode()) {
-			JPanel series = new JPanel();
-			series.setLayout(new BoxLayout(series, BoxLayout.LINE_AXIS));
-			series.add(map.get(NameInfoType.SEASON));
-			series.add(map.get(NameInfoType.EPISODE));
-			this.infoFields.add(series);
-			this.infoFields.add(map.get(NameInfoType.DESCRIPTION));
+			HBox series = new HBox();
+			series.getChildren().add(map.get(NameInfoType.SEASON));
+			series.getChildren().add(map.get(NameInfoType.EPISODE));
+			this.infoFields.getChildren().add(series);
+			this.infoFields.getChildren().add(map.get(NameInfoType.DESCRIPTION));
 		}
 		else if(info.hasSeason()) {
-			this.infoFields.add(map.get(NameInfoType.SEASON));
+			this.infoFields.getChildren().add(map.get(NameInfoType.SEASON));
 		}
 	}
 
-	class InfoField extends JPanel {
+	class InfoField extends BorderPane {
 
 		private final NameInfoType type;
-		private final JLabel lbl;
-		public final JTextField field;
+		private final Label lbl;
+		public final TextField field;
 
 		public InfoField(NameInfoType type) {
-			setLayout(new BorderLayout());
 			this.type = type;
-			this.lbl = new JLabel(type.getInfoName());
-			this.field = new JTextField();
+			this.lbl = new Label(type.getInfoName());
+			this.field = new TextField();
 			if(type == NameInfoType.EPISODE || type == NameInfoType.SEASON) {
 				this.field.setEditable(false);
 			}
-			add(lbl, BorderLayout.LINE_START);
-			add(field, BorderLayout.CENTER);
+			setLeft(lbl);
+			setCenter(field);
 		}
 		
 		public void setEditable(boolean edit) {
