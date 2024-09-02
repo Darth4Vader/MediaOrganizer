@@ -95,7 +95,7 @@ public class SideFilesList extends ScrollPane {
 	
 	public SideFilesList(FileExplorer explorer, File root) {
 		this.setVbarPolicy(ScrollBarPolicy.ALWAYS);
-		this.setHbarPolicy(ScrollBarPolicy.NEVER);
+		//this.setHbarPolicy(ScrollBarPolicy.NEVER);
 		this.explorer = explorer;
 		this.view = new BorderPane();
 		view.setCenter(new SideFilePanel(root));

@@ -33,6 +33,9 @@ public class MainJavaFXExe extends Application {
     	//list.setPrefWidth(400);
     	//list.setPrefHeight(500);
     	Scene scene = new Scene(list);
+    	scene.focusOwnerProperty().addListener((obs) -> {
+    		System.out.println(obs);
+    	});
     	stage.setScene(scene);
     	
     	stage.setWidth(400);

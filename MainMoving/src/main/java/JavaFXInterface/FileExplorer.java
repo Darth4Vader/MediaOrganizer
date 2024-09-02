@@ -83,6 +83,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -149,6 +150,13 @@ public class FileExplorer extends BorderPane {
 		fileListView = new ListView<FileRow>(fileList);
 		fileListView.setCellFactory(x -> new FileTableCellEditor(fileListView, MAX));
 		fileListView.setSelectionModel(null);
+		fileListView.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+		
+		fileListView.setStyle("-fx-focus-color: -fx-control-inner-background ; -fx-faint-focus-color: -fx-control-inner-background ;");
+		fileListView.setFocusTraversable(false);
+		/*fileListView.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+		});*/
+		
 		
 		this.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
 		
@@ -158,18 +166,21 @@ public class FileExplorer extends BorderPane {
 		this.setPrefSize((int) (width * 0.445), (int) (height * 0.445));
 		this.toolMap = new HashMap<>();
 		
-		this.mainPanel = new BorderPane();
 		
 		this.move = move;
 		this.infoPanel = new RenameFilePanel(this);
 		infoPanel.prefWidthProperty().bind(this.widthProperty().multiply(0.3));
 		infoPanel.prefHeightProperty().bind(this.heightProperty());
 		
-		ScrollPane scroll = new ScrollPane(mainPanel);
+		/*ScrollPane scroll = new ScrollPane(mainPanel);
 		scroll.setVbarPolicy(ScrollBarPolicy.ALWAYS);
 		scroll.setHbarPolicy(ScrollBarPolicy.NEVER);
-		this.setCenter(scroll);
-		BorderPane.setAlignment(scroll, Pos.TOP_CENTER);
+		scroll.setFitToWidth(true);*/
+		
+		this.mainPanel = new BorderPane();
+		
+		this.setCenter(mainPanel);
+		BorderPane.setAlignment(mainPanel, Pos.TOP_CENTER);
 		
 		//this.add(mainPanel, BorderLayout.CENTER);
 		//JPanel toolPanel = createToolPanels();
@@ -183,6 +194,8 @@ public class FileExplorer extends BorderPane {
 		sidePnl.prefWidthProperty().bind(this.widthProperty().multiply(0.3));
 		sidePnl.prefHeightProperty().bind(this.heightProperty());
 		this.setLeft(sidePnl);
+		
+		this.mainPanel.prefWidthProperty().bind(this.widthProperty().subtract(sidePnl.widthProperty()));
 		
 		
 		this.setVisible(true);
@@ -249,6 +262,7 @@ public class FileExplorer extends BorderPane {
 		File[] files = folder.listFiles();
 		UpdatelistViewAsGridPage(Arrays.asList(files));
 		this.mainPanel.setCenter(fileListView);
+		fileListView.requestFocus();
 	}
 	
 	private void goToParentFile(File file) {
@@ -274,6 +288,12 @@ public class FileExplorer extends BorderPane {
 		File file = filePanel.getFile();
 		for(ToolPanel tool : this.toolMap.values() ) {
 			tool.setUsage(file);
+		}
+	}
+	
+	public void restartToolPanels() {
+		for(ToolPanel tool : this.toolMap.values() ) {
+			tool.setUsage(null);
 		}
 	}
 	
@@ -310,7 +330,6 @@ public class FileExplorer extends BorderPane {
 		
 		public ToolPanel(ToolName tool) {
 			this.setOpacity(0.1);
-			
 			
 			
 			
@@ -366,10 +385,15 @@ public class FileExplorer extends BorderPane {
 		
 		public void setUsage(File file) {
 			//System.out.println("Useage:   ");
-			if(file.isDirectory())
+			if(file != null && file.isDirectory())
 				this.canUse = true;
 			else
 				this.canUse = false;
+			if(!canUse) {
+				this.setOpacity(0.1);
+			}
+			else
+				this.setOpacity(1);
 		}
 		
 		public void activate() {
