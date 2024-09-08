@@ -8,6 +8,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.filechooser.FileSystemView;
 
+import DataStructures.FolderInfo;
+import DataStructures.ManageFolder;
 import FileUtilities.FilesUtils;
 import OtherUtilities.ImageUtils;
 import javafx.embed.swing.SwingFXUtils;
@@ -33,7 +35,7 @@ public class AppUtils {
 				g.dispose();
 			}
 		}
-		System.out.println(image.getClass());
+		//System.out.println(image.getClass());
 		if(image instanceof BufferedImage)
 			return SwingFXUtils.toFXImage((BufferedImage) image, null);
 		return null;

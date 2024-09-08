@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import DataStructures.FileInfoType.FolderType;
 import FileUtilities.FileFormats;
@@ -61,8 +63,10 @@ public class ManageFolder {
 			FolderType type = getMainFolderType(file);
 			if(type != FolderType.NONE)
 				addToMap(new FolderInfo(file), type);
-			else
+			else {
+				System.out.println("NONE: " + file);
 				setMap(file.getAbsolutePath());
+			}
 		}
 		if(!read.contains(new File(checkStartingPath(DEFAULT_OUTPUT))))
 			setMap(checkStartingPath(DEFAULT_OUTPUT));
@@ -73,26 +77,116 @@ public class ManageFolder {
 	}
 	
 	private void setMap(String path) {
-		setMap(checkStartingPath(path), false);
-	}
-	
-	private void setMap(String path, boolean checkInPath) {
 		File[] arr = new File(path).listFiles();
 		if(arr != null) for(File file : arr) {
 			String fileName = file.getName();
 			if(file.isDirectory()) {
-				if(!checkInPath && !file.isHidden() && 
+				/*(fileName.equals("W-Keep") != true && fileName.equals("input") != true && fileName.equals("W-Input") != true && fileName.equals("Icons") != true
+				&& fileName.equals("W-Output") != true && fileName.equals("Input") != true))//&& fileName.equals("w Movies") != true*/
+				if(!file.isHidden() && 
+						Arrays.asList(DEFAULT_OUTPUT, DEFAULT_INPUT, "W-Keep")
+										.stream()
+										.noneMatch(e -> e.equalsIgnoreCase(fileName))) {
+					toAddInsideMap(file);
+				}
+			}
+		}
+	}
+	
+	public FolderType toAddInsideMap(File folder) {
+		if(folder == null || !folder.isDirectory())
+			return null;
+		return toAddInsideMap(new FileInfo(folder));
+	}
+	
+	public FolderType toAddInsideMap(FileInfo parentInfo) {
+		File folder = parentInfo.getFile();
+		FolderType typeOfFolder = parentInfo.getFolderType();
+		FolderType typeByInfo = parentInfo.getFolderTypeByInfo();
+		//System.out.println(typeOfFolder + " " +typeByInfo);
+		if(typeOfFolder != FolderType.MAIN_FOLDER && typeOfFolder != FolderType.NONE) {
+			return typeOfFolder;
+		}
+		else if(typeByInfo == FolderType.TV_EPISODE)
+			return typeByInfo;
+		File[] arr = folder.listFiles();
+		FileInfo childInfo;
+		Set<FolderType> types = new HashSet<>();
+		if(arr != null) for(File file : arr) {
+			String fileName = file.getName();
+			if(file.isDirectory()) {
+				FileInfo fileInfo = new FileInfo(file);
+				FolderType childType = toAddInsideMap(fileInfo);
+				if(folder.getName().contains("Bonus")) {
+					System.out.println(folder.getName() + " " + childType);
+				}
+				if(childType != null) {
+					if(parentInfo.isPartOf(fileInfo))
+						types.add(childType);
+				}
+				/*childInfo = toAddInsideMap(file);
+				if(childInfo != null) {
+					FolderType typeOfChildFolder = childInfo.getFolderType();
+					FolderType typeByChildInfo = childInfo.getFolderTypeByInfo();
+					if(typeOfChildFolder != FolderType.MAIN_FOLDER && typeOfChildFolder != FolderType.NONE) {
+						types.add(typeOfChildFolder);
+					}
+					else if(typeByChildInfo == FolderType.TV_EPISODE)
+						types.add(typeByChildInfo);
+					//types.add(typeOfChildFolder);
+				}*/
+				
+				
+				/*System.out.println(type + " " + file);
+				System.out.println(info.getFolderTypeByInfo());
+				System.out.println(type + " " + new FileInfo(file).getFolderType());*/
+				
+				
+				
+				/*
+				if(!file.isHidden() && 
 						Arrays.asList(DEFAULT_OUTPUT, DEFAULT_INPUT, "W-Keep")
 										.stream()
 										.noneMatch(e -> e.equalsIgnoreCase(fileName)))
 						/*(fileName.equals("W-Keep") != true && fileName.equals("input") != true && fileName.equals("W-Input") != true && fileName.equals("Icons") != true
 						&& fileName.equals("W-Output") != true && fileName.equals("Input") != true))//&& fileName.equals("w Movies") != true*/
+				
+				/*
 						setMap(file.getAbsolutePath(), true);
 				
-				if(checkInPath && file.isDirectory())
-					addToMap(file);
+				if(file.isDirectory())
+					addToMap(file);*/
 			}
 		}
+		if(types.isEmpty()) {
+			return null;
+		}
+		//System.out.println(typeOfFolder + " " +typeByInfo);
+		System.out.println(folder.getName() + " " + types);
+		if(typeByInfo == FolderType.TV_SERIES) {
+			return typeByInfo;
+		}
+		
+		//here we add it to the map
+		FolderType mainType = getFolderTypeFromChildTypes(types);
+		if(mainType != FolderType.NONE)
+			addToMap(new FolderInfo(folder), mainType);
+		
+		return null;
+	}
+	
+	private FolderType getFolderTypeFromChildTypes(Set<FolderType> types) {
+		if(types.containsAll(Arrays.asList(FolderType.TV_SERIES, FolderType.MOVIE)))
+			return FolderType.TV_SERIES_AND_MOVIE;
+		else if(types.containsAll(Arrays.asList(FolderType.TV_SERIES)))
+			return FolderType.TV_SERIES;
+		else if(types.containsAll(Arrays.asList(FolderType.MOVIE)))
+			return FolderType.MOVIE;
+		else if(types.containsAll(Arrays.asList(FolderType.TV_EPISODE)))
+			return FolderType.MINI_SERIES;
+		else if(types.containsAll(Arrays.asList(FolderType.EXTRAS)))
+			return FolderType.MAIN_FOLDER;
+		return FolderType.NONE;
 	}
 	
 	private void addToMap(File file) {
@@ -104,7 +198,12 @@ public class ManageFolder {
 	private void addToMap(FolderInfo info, FolderType type) {
 		System.out.println(type + " Addddd: " + info.getFile());
 		info.setFolderType(type);
-		this.getMainDefaultMap(type).put(info.getMapName(), info);
+		if(type == FolderType.TV_SERIES_AND_MOVIE) {
+			movieMap.put(info.getMapName(), info);
+			TVMap.put(info.getMapName(), info);
+		}
+		else
+			this.getMainDefaultMap(type).put(info.getMapName(), info);
 	}
 	
 	private String checkStartingPath(String path) {
@@ -146,7 +245,7 @@ public class ManageFolder {
 			return this.TVMap;
 		if(type == FolderType.MOVIE)
 			return this.movieMap;
-		if(type == FolderType.NONE)
+		if(type == FolderType.NONE || type == FolderType.MAIN_FOLDER)
 			return unkownMediaMap;
 		return null;
 	}
@@ -181,6 +280,8 @@ public class ManageFolder {
 	 */
 	public List<Exception> setIconsToFolder() {
 		File mainIconFolder = new File(FilesUtils.checkPath(urlParent)+ICONS);
+		if(!mainIconFolder.exists())
+			mainIconFolder.mkdir();
 		File[] arr = mainIconFolder.listFiles();
 		List<Exception> list = new ArrayList<>();
 		if(arr != null)

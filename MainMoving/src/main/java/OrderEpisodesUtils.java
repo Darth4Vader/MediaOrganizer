@@ -4,9 +4,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,9 +23,21 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import DataStructures.FileInfo;
 import DataStructures.FolderInfo;
 import DataStructures.NameInfo;
+import DataStructures.NameInfo.NameInfoType;
 import DataStructures.FileInfoType.FolderType;
 
 public class OrderEpisodesUtils {
+	
+	public static void setOrderForEpisodes(File jsonFile, File folder) throws IOException {
+		List<NameInfo> nameInfoList = loadFile(jsonFile);
+		List<FileInfo> fileInfos = new ArrayList<>();
+		for(File file : folder.listFiles()) {
+			FileInfo fileInfo = new FileInfo(file);
+			if(file.isDirectory())
+				fileInfos.add(fileInfo);
+		}
+		setOrderForEpisodes(fileInfos, nameInfoList);
+	}
 	
 	public static void setOrderForEpisodes(FolderInfo folderInfo, List<NameInfo> episodesOrderList) {
 		for(NameInfo nameInfo : episodesOrderList) {
@@ -32,6 +46,31 @@ public class OrderEpisodesUtils {
 					File file = folderInfo.getFolderByType(nameInfo, FolderType.TV_EPISODE);
 					if(file.isDirectory()) {
 						FileInfo fileInfo = new FileInfo(file);
+						try {
+							renameToIndex(fileInfo, nameInfo);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public static void setOrderForEpisodes2(List<FileInfo> fileInfos, List<NameInfo> episodesOrderList) {
+		for(NameInfo nameInfo : episodesOrderList) {
+			if(nameInfo.hasIndex() && nameInfo.hasName()) {
+				FileInfo fileInfo = fileInfos.stream().filter(p -> 
+							nameInfo.equalsBasedOnCriteria(p, NameInfoType.NAME, NameInfoType.SEASON, NameInfoType.EPISODE))
+							.findFirst().orElse(null);
+				/*FileInfo fileInfo = fileInfos.stream().filter(p -> 
+							nameInfo.getName().equals(p.getName()) && nameInfo.getEpisode().equals(p.getEpisode()) && nameInfo.getSeason().equals(p.getSeason()))
+							.findFirst().orElse(null);*/
+				if(fileInfo != null) {
+					File file = fileInfo.getFile();
+					System.out.println("Man " + file);
+					if(file.isDirectory()) {
 						try {
 							renameToIndex(fileInfo, nameInfo);
 						} catch (IOException e) {
@@ -87,16 +126,11 @@ public class OrderEpisodesUtils {
 				.header("Accept-Language", "en-US").get();
 	}
 	
-	private static void writeToFile(File file, String text) throws IOException {
-        try {
-        	FileWriter fileWriter = new FileWriter(file);
-        	BufferedWriter writer = new BufferedWriter(fileWriter);
-            writer.write(text);
-            writer.close();
-        }
-        catch ( IOException e){
-        	e.printStackTrace();
-        }
+	public static void writeToFile(File file, String text) throws IOException {
+    	FileWriter fileWriter = new FileWriter(file);
+    	BufferedWriter writer = new BufferedWriter(fileWriter);
+        writer.write(text);
+        writer.close();
 	}
 
 	public static List<NameInfo> loadFile(File file) throws IOException {

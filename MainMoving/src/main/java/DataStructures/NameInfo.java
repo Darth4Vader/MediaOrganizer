@@ -148,6 +148,66 @@ public class NameInfo {
 		}
 	}
 	
+	public boolean equalsBasedOnCriteria(NameInfo nameInfo, NameInfoType... types) {
+		if(types == null)
+			return false;
+		boolean bol = true;
+		for(NameInfoType type : types) {
+			bol &= equalsBasedOnCriteria(nameInfo, type);
+		}
+		return bol;
+	}
+	
+	private boolean equalsBasedOnCriteria(NameInfo nameInfo, NameInfoType type) {
+		boolean bol;
+		switch (type) {
+		case NAME: bol = hasName() && nameInfo.hasName() && this.name.equals(nameInfo.name);
+			break;
+		case YEAR: bol = hasYear() && nameInfo.hasYear() && this.year.equals(nameInfo.year);
+			break;
+		case SEASON: bol = hasSeason() && nameInfo.hasSeason() && this.season.equals(nameInfo.season);
+			break;
+		case EPISODE: bol = hasEpisode() && nameInfo.hasEpisode() && this.episode.equals(nameInfo.episode);
+			break;
+		case DESCRIPTION: bol = hasDescription() && nameInfo.hasDescription() && this.episodeName.equals(nameInfo.episodeName);
+			break;
+		default:
+			bol = false;
+			break;
+		}
+		return bol;
+	}
+	
+	public boolean equalsPartOfBasedOnCriteria(NameInfo nameInfo, NameInfoType... types) {
+		if(types == null)
+			return false;
+		boolean bol = true;
+		for(NameInfoType type : types) {
+			bol &= equalsPartOfBasedOnCriteria(nameInfo, type);
+		}
+		return bol;
+	}
+	
+	private boolean equalsPartOfBasedOnCriteria(NameInfo nameInfo, NameInfoType type) {
+		boolean bol;
+		switch (type) {
+		case NAME: bol = hasName() ? nameInfo.hasName() && this.name.equals(nameInfo.name) : !nameInfo.hasName();
+			break;
+		case YEAR: bol = hasYear() ? nameInfo.hasYear() && this.year.equals(nameInfo.year) : !nameInfo.hasYear();
+			break;
+		case SEASON: bol = hasSeason() ? nameInfo.hasSeason() && this.season.equals(nameInfo.season) : !nameInfo.hasDescription();
+			break;
+		case EPISODE: bol = hasEpisode() ? nameInfo.hasEpisode() && this.episode.equals(nameInfo.episode) : !nameInfo.hasEpisode();
+			break;
+		case DESCRIPTION: bol = hasDescription() ? nameInfo.hasDescription() && this.episodeName.equals(nameInfo.episodeName) : !nameInfo.hasDescription();
+			break;
+		default:
+			bol = false;
+			break;
+		}
+		return bol;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public <T extends NameInfo> T setName(String name) {
 		this.name = name;

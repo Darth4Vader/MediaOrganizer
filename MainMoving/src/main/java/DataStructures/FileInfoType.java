@@ -14,6 +14,7 @@ public class FileInfoType {
 		MOVIE("Movie"),
 		TV_SERIES,
 		MINI_SERIES,
+		TV_SERIES_AND_MOVIE,
 		TV_EPISODE,
 		EXTRAS("-Extras"),
 		POSTERS("Poster"),

@@ -201,10 +201,12 @@ public class FolderInfo extends FileInfo {
 			miniSeriesType.addHierarchy(episode, extras);
 			FolderTypeHierarchy TVSeriesType = createMediaMain(FolderType.TV_SERIES);
 			TVSeriesType.addHierarchy(season, extras);
+			FolderTypeHierarchy TVSeriesAndMovieType = createMediaMain(FolderType.TV_SERIES_AND_MOVIE);
+			TVSeriesAndMovieType.addHierarchy(season, movie, extras);
 			FolderTypeHierarchy noneType = new FolderTypeHierarchy(FolderType.NONE);
 			noneType.addHierarchy(extras);
 			FolderTypeHierarchy hierarchy = new FolderTypeHierarchy(FolderType.MAIN_FOLDER);
-			hierarchy.addHierarchy(movieType, miniSeriesType, TVSeriesType, noneType);
+			hierarchy.addHierarchy(movieType, miniSeriesType, TVSeriesType, TVSeriesAndMovieType, noneType);
 			return hierarchy;
 		}
 		

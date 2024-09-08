@@ -61,7 +61,7 @@ public class FileHandle {
 	}
 	
 	public String getNameWithoutType() {
-		System.out.println("hhh " + nameWithoutType);
+		//System.out.println("hhh " + nameWithoutType);
 		return this.nameWithoutType;
 	}
 	

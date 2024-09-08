@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import DataStructures.FileInfo;
 import DataStructures.FileInfoType;
 import DataStructures.FileInfoType.FolderType;
+import DataStructures.NameInfo.NameInfoType;
 import DataStructures.FolderInfo;
 import DataStructures.ManageFolder;
 import DataStructures.NameInfo;
@@ -34,8 +35,21 @@ import DataStructures.NameInfo;
 public class cloneWarsOrderEpisodes {
 	
 	public static void main(String[] args) throws IOException {
-		File json = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars\\colenT.json");
-		List<NameInfo> nameInfoList = OrderEpisodesUtils.loadFile(json);
+		File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars");
+		//List<NameInfo> nameInfoList = OrderEpisodesUtils.loadFile(json);
+		
+		File folder = new File(mainFolder, "Clone Wars\\Full");
+		
+		File jsonFile = new File(mainFolder, THE_CLONE_WARS+".json"); 
+		//createEmptyOrderedFiles(jsonFile, folder);
+		
+		
+		
+		//folder = new File("E:\\Clone Wars\\input");
+		OrderEpisodesUtils.setOrderForEpisodes(jsonFile, folder);
+		
+		
+		//createCloneWarsOrder(json);
 		
 		/*File folder = new File("E:\\Clone Wars\\input");
 		List<FileInfo> fileInfos = new ArrayList<>();
@@ -107,12 +121,67 @@ public class cloneWarsOrderEpisodes {
 		*/
 	}
 	
+	private static void createEmptyOrderedFiles(File json, File destFolder) throws IOException {
+		List<NameInfo> nameInfoList = OrderEpisodesUtils.loadFile(json);
+		for(NameInfo nameInfo : nameInfoList) {
+			File file = new File(destFolder, nameInfo.getFullName());
+			file.mkdir();
+			File child = new File(file, file.getName()+".srt");
+			OrderEpisodesUtils.writeToFile(child, "");
+			System.out.println(nameInfo.getFullName());
+		}	
+	}
+	
 	private static final String THE_CLONE_WARS = "The Clone Wars";
 	
 	public static void createCloneWarsOrder(File jsonFolder) throws IOException {
 		final String search = "https://www.starwars.com/news/star-wars-the-clone-wars-chronological-episodeorder";
 		Document googlePage = OrderEpisodesUtils.loadPage(search);
 		List<NameInfo> nameInfoList = new ArrayList<>();
+		Elements tables = googlePage.getElementsByTag("table");
+		Element table = tables.first();
+		Elements rows = table.getElementsByTag("tr");
+		int orderNumber = 0;
+		for(Element row : rows) {
+			Elements columns = row.getElementsByTag("td");
+			if(columns.size() >= 3) {
+				Element orderNumberElm = columns.get(0);
+				Element episodeNumberElm = columns.get(1);
+				Element episodeNameElm = columns.get(2);
+				if(orderNumberElm != null && episodeNumberElm != null
+						&& episodeNameElm != null) {
+					//String orderNumber = orderNumberElm.text();
+					String episodeNumber = episodeNumberElm.text();
+					Element episodeNameLinkElm = episodeNameElm.getElementsByTag("a").first();
+					if(episodeNameLinkElm != null) {
+						String episodeName = episodeNameLinkElm.ownText();
+						//System.out.println(orderNumber + " " + episodeNumber + " " + episodeName);
+						NameInfo nameInfo = new NameInfo();
+						orderNumber++;
+						nameInfo.setIndex(""+orderNumber);
+						if(!episodeNumber.strip().equals("T")) {
+							System.out.println(episodeNumber.strip());
+							nameInfo.setName(THE_CLONE_WARS);
+							nameInfo.setSeason(""+episodeNumber.charAt(0));
+							nameInfo.setEpisode(""+episodeNumber.substring(1));
+							nameInfo.setEpisodeName(episodeNameGood(episodeName));
+						}
+						else {
+							nameInfo.setName(episodeName);
+						}
+						nameInfoList.add(nameInfo);
+					}
+				}
+			}
+		}
+		OrderEpisodesUtils.saveMedia(nameInfoList, jsonFolder, THE_CLONE_WARS);
+	}
+	
+	public static void createCloneWarsOrderTester(File jsonFolder) throws IOException {
+		List<NameInfo> nameInfoList = OrderEpisodesUtils.loadFile(new File(jsonFolder, THE_CLONE_WARS+".json"));
+		
+		final String search = "https://www.starwars.com/news/star-wars-the-clone-wars-chronological-episodeorder";
+		Document googlePage = OrderEpisodesUtils.loadPage(search);
 		Elements tables = googlePage.getElementsByTag("table");
 		Element table = tables.first();
 		Elements rows = table.getElementsByTag("tr");
@@ -134,20 +203,33 @@ public class cloneWarsOrderEpisodes {
 						if(!episodeNumber.strip().equals("T")) {
 							System.out.println(episodeNumber.strip());
 							nameInfo.setName(THE_CLONE_WARS);
-							nameInfo.setIndex(orderNumber);
 							nameInfo.setSeason(""+episodeNumber.charAt(0));
 							nameInfo.setEpisode(""+episodeNumber.substring(1));
 							nameInfo.setEpisodeName(episodeNameGood(episodeName));
+							
+							NameInfo fileInfo = nameInfoList.stream().filter(p -> 
+							nameInfo.equalsBasedOnCriteria(p, NameInfoType.NAME, NameInfoType.SEASON, NameInfoType.EPISODE))
+									.findFirst().orElse(null);
+							if(fileInfo != null) {
+								int i1 = getInteger(fileInfo.getIndex());
+								int i2 = getInteger(orderNumber);
+								if(i2 >= 3)
+									i2++;
+								if(i1 == i2) {
+									System.err.println(i1 + " != " + i2 +" (" +(i1==i2)+")");
+									System.err.println(orderNumber+" t : " + fileInfo.getFullNameWithIndex());
+								}
+							}
+							else
+								System.err.println(nameInfo);
 						}
 						else {
 							nameInfo.setName(episodeName);
 						}
-						nameInfoList.add(nameInfo);
 					}
 				}
 			}
 		}
-		OrderEpisodesUtils.saveMedia(nameInfoList, jsonFolder, THE_CLONE_WARS);
 	}
 	
 	public static String episodeNameGood(String episodeName) {
