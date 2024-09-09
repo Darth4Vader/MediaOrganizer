@@ -65,10 +65,10 @@ public class ManageFolder {
 				addToMap(new FolderInfo(file), type);
 			else {
 				System.out.println("NONE: " + file);
-				setMap(file.getAbsolutePath());
+				setMap(file);
 			}
 		}
-		if(!read.contains(new File(checkStartingPath(DEFAULT_OUTPUT))))
+		if(!read.contains(checkStartingPath(DEFAULT_OUTPUT)))
 			setMap(checkStartingPath(DEFAULT_OUTPUT));
 	}
 	
@@ -76,8 +76,8 @@ public class ManageFolder {
 		return this.urlParent;
 	}
 	
-	private void setMap(String path) {
-		File[] arr = new File(path).listFiles();
+	private void setMap(File folder) {
+		File[] arr = folder.listFiles();
 		if(arr != null) for(File file : arr) {
 			String fileName = file.getName();
 			if(file.isDirectory()) {
@@ -206,12 +206,15 @@ public class ManageFolder {
 			this.getMainDefaultMap(type).put(info.getMapName(), info);
 	}
 	
-	private String checkStartingPath(String path) {
-		String newPath = path.startsWith(urlParent) ? path : FilesUtils.checkPath(urlParent) + path;
-		File file = new File(newPath);
+	private File checkStartingPath(String path) {
+		File file;
+		if(path.startsWith(urlParent))
+			file = new File(path);
+		else
+			file = new File(urlParent, path);
 		if(!file.exists())
 			file.mkdir();
-		return file.getAbsolutePath();
+		return file;
 	}
 	
 	/**
@@ -265,10 +268,9 @@ public class ManageFolder {
 		if(seasonFile != null) /* because the mini series becomes the first season */
 			return;
 		seasonFile = folderInfo.createFolderByType(seasonInfo, FolderType.TV_SERIES); /* create inside the folder */
-		String destPath = FilesUtils.checkPath(seasonFile.getAbsolutePath());
 		if(folder.isDirectory()) for(File file : folder.listFiles())
 			if(!file.equals(seasonFile) && file.isDirectory())
-				Files.move(file.toPath(), Paths.get(destPath + file.getName()));
+				Files.move(file.toPath(), new File(seasonFile, file.getName()).toPath());
 		renameFiles(seasonFile, seasonInfo); /* rename every child */
 	}
 	
@@ -279,7 +281,7 @@ public class ManageFolder {
 	 * @param file an icon file
 	 */
 	public List<Exception> setIconsToFolder() {
-		File mainIconFolder = new File(FilesUtils.checkPath(urlParent)+ICONS);
+		File mainIconFolder = checkStartingPath(ICONS);
 		if(!mainIconFolder.exists())
 			mainIconFolder.mkdir();
 		File[] arr = mainIconFolder.listFiles();
@@ -325,7 +327,7 @@ public class ManageFolder {
 	
 	private File getDefaultOutputFolder(FolderType type) {
 		String str = getDefaultOutputName(type);
-		File folder = new File(FilesUtils.checkPath(checkStartingPath(DEFAULT_OUTPUT)) + str);
+		File folder = new File(checkStartingPath(DEFAULT_OUTPUT), str);
 		if(!folder.exists())
 			folder.mkdir();
 		return folder;
@@ -370,16 +372,15 @@ public class ManageFolder {
 		default:
 			break;
 		}
-		String filePath = path;
 		File dir = new File(path);
 		if(!dir.exists()) {
 			dir.mkdir();
 		}
-		if(fileName != null) {
-			path = FilesUtils.checkPath(path);
-			filePath = path + name;
-		}
-		File file = new File(filePath);
+		File file;
+		if(fileName != null)
+			file = new File(path, name);
+		else
+			file = new File(path);
 		if(!createIfNotExists)
 			return file.exists() ? file : null;
 		else if(file.exists()) return file;
@@ -395,7 +396,7 @@ public class ManageFolder {
 	}
 	
 	private void moveFiles(String path, FileInfo parentInfo) {
-		File parent = new File(checkStartingPath(path));
+		File parent = checkStartingPath(path);
 		moveFiles(parent, parentInfo);
 	}
 	
@@ -630,7 +631,7 @@ public class ManageFolder {
 					checkMap.remove(mapName);
 					if(inDefult(mainFolder)) { //change to new default folder. 
 						File destTypeFolder = getDefaultOutputFolder(folderInfoType);
-						File moveTo = new File(FilesUtils.checkPath(destTypeFolder.getAbsolutePath()) + mainFolder.getName());
+						File moveTo = new File(destTypeFolder, mainFolder.getName());
 						mainFolder.renameTo(moveTo);
 						mainInfo.setFileInformation(moveTo);
 					}
@@ -899,7 +900,7 @@ public class ManageFolder {
 			return file;
 		fileInfo.renameNameInfo(newNameInfo);
 		String name = fileInfo.getFullNameWithMime();
-		File newFile = new File(FilesUtils.checkPath(file.getParent()) + name);
+		File newFile = new File(file.getParent(), name);
 		file.renameTo(newFile);
 		fileInfo.setFileInformation(newFile);
 		if(newFile.isDirectory()) {
@@ -907,7 +908,7 @@ public class ManageFolder {
 			if(folderIcon != null) {
 				File dir = folderIcon.getParentFile();
 				File mainIconFolder = dir.getParentFile();
-				if(mainIconFolder.equals(new File(checkStartingPath(ICONS)))) {
+				if(mainIconFolder.equals(checkStartingPath(ICONS))) {
 					FileInfo iconInfo = new FileInfo(folderIcon);
 					iconInfo.renameNameInfo(newNameInfo);
 					File newIcon = new File(folderIcon.getParent(), iconInfo.getFullNameWithMime());
@@ -939,7 +940,8 @@ public class ManageFolder {
 			File mainFile = new File(filePath);
 			if(!mainFile.exists())
 				return;
-			new File(outputPath).mkdir();
+			File outputFolder = new File(outputPath);
+			outputFolder.mkdir();
 			for(File file : mainFile.listFiles()) {
 				try {
 					String fullName = file.getName();
@@ -958,13 +960,14 @@ public class ManageFolder {
 								String firstName = firstFile.getName();
 								firstName = firstName.substring(firstName.lastIndexOf('.'));
 								String newName = name + firstName;
-								Files.move(Paths.get(firstFile.getAbsolutePath()), Paths.get(FilesUtils.checkPath(outputPath)+newName));
+								Files.move(firstFile.toPath(), new File(outputFolder, newName).toPath());
+								//Files.move(Paths.get(firstFile.getAbsolutePath()), Paths.get(FilesUtils.checkPath(outputPath)+newName));
 							}
 						}
 					}
 					else {
 						if(MimeUtils.isMimeContentGroup(file, MimeContent.VIDEO))
-							Files.move(file.toPath(), Paths.get(FilesUtils.checkPath(outputPath) + file.getName()));
+							Files.move(file.toPath(), new File(outputFolder, file.getName()).toPath());
 					}
 				}
 				catch(Exception exp) {exp.printStackTrace();}
@@ -1251,7 +1254,7 @@ public class ManageFolder {
 			List<File> arr = file.isDirectory() ? Arrays.asList(file.listFiles()) : Arrays.asList(file);
 			if(moveType == FolderType.POSTERS && !file.isDirectory()) {
 				System.out.println("See This: " + fileInfo.getFullNameWithMime());
-				FileOperationHandler action = new FileOperationHandler(this, file, FilesUtils.checkPath(destFolder.getAbsolutePath()) + fileInfo.getFullNameWithMime());
+				FileOperationHandler action = new FileOperationHandler(this, file, new File(destFolder, fileInfo.getFullNameWithMime()).getAbsolutePath());
 				moveList.add(action);
 			}
 			else for(File child : arr) {
@@ -1263,7 +1266,7 @@ public class ManageFolder {
 				System.out.println(childInfo.getFolderType());
 				if(childInfo.getFolderType() == moveType) {
 					//if(child)
-					FileOperationHandler action = new FileOperationHandler(this, child, FilesUtils.checkPath(destFolder.getAbsolutePath()) + child.getName());
+					FileOperationHandler action = new FileOperationHandler(this, child, new File(destFolder, child.getName()).getAbsolutePath());
 					moveList.add(action);
 				}
 			}
@@ -1277,30 +1280,30 @@ public class ManageFolder {
 				mediaFolder = renameFiles(mediaFolder, fileInfo);
 			}
 			if(mediaFolder != null) {
-				String finalPath = FilesUtils.checkPath(mediaFolder.getAbsolutePath()) + fileInfo.getFullNameWithMime();
+				String finalPath = new File(mediaFolder, fileInfo.getFullNameWithMime()).getAbsolutePath();
 				moveList.add(new FileOperationHandler(file, finalPath));
 			}
 		}
 		
 		private void moveIcon() {
-			File mainIconFolder = new File(checkStartingPath(ICONS));
+			File mainIconFolder = checkStartingPath(ICONS);
 			setIconFolder();
 			if(canDoIconActions()) {
-				File iconFolder = new File(FilesUtils.checkPath(mainIconFolder) + folderInfo.getName());
+				File iconFolder = new File(mainIconFolder, folderInfo.getName());
 				if(!iconFolder.exists())
 					iconFolder.mkdir();	
 				String name = MimeUtils.createNameWithMime(folderInfo.getNameSeason(fileInfo) + FolderType.LOGO.getFolderName(), MimeUtils.MIME_ICON);
-				String destPath = FilesUtils.checkPath(iconFolder) + name;
+				String destPath = new File(iconFolder, name).getAbsolutePath();
 				moveList.add(new FileOperationHandler(this, fileInfo.getFile(), destPath, FileOperation.MOVE));
 			}
 		}
 		
 		private void createIcon() {
-			File iconFolder = new File(checkStartingPath(DEFAULT_INPUT));
+			File iconFolder = checkStartingPath(DEFAULT_INPUT);
 			setIconFolder();
 			if(canDoIconActions()) {
 				String destFile = folderInfo.getFullNameWithMime(fileInfo, FolderType.LOGO, MimeUtils.MIME_ICON);
-				String destPath = FilesUtils.checkPath(iconFolder) + destFile;
+				String destPath = new File(iconFolder, destFile).getAbsolutePath();
 				moveList.add(new FileOperationHandler(this, fileInfo.getFile(), destPath, FileOperation.CREATE_ICON));
 			}
 		}
