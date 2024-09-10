@@ -14,7 +14,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.InjectableValues;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import DataStructures.FileInfoType.FolderType;
 import FileUtilities.FileFormats;
@@ -23,6 +33,8 @@ import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
 import FileUtilities.MimeUtils.MimeContent;
 import OtherUtilities.ImageUtils;
+import OtherUtilities.JSONUtils;
+import OtherUtilities.JSoupUtils;
 
 public class ManageFolder {
 	
@@ -59,6 +71,13 @@ public class ManageFolder {
 			if(add)
 				read.add(child);
 		}
+		System.out.println(read);
+		
+		if(read.contains(checkStartingPath(DEFAULT_OUTPUT))) {
+			read.remove(checkStartingPath(DEFAULT_OUTPUT));
+		}
+		setMap(checkStartingPath(DEFAULT_OUTPUT));
+		
 		for(File file : read) {
 			FolderType type = getMainFolderType(file);
 			if(type != FolderType.NONE)
@@ -68,8 +87,6 @@ public class ManageFolder {
 				setMap(file);
 			}
 		}
-		if(!read.contains(checkStartingPath(DEFAULT_OUTPUT)))
-			setMap(checkStartingPath(DEFAULT_OUTPUT));
 	}
 	
 	public String getMainFolderPath() {
@@ -78,6 +95,7 @@ public class ManageFolder {
 	
 	private void setMap(File folder) {
 		File[] arr = folder.listFiles();
+		System.out.println(folder + " to: " + arr);
 		if(arr != null) for(File file : arr) {
 			String fileName = file.getName();
 			if(file.isDirectory()) {
@@ -87,6 +105,7 @@ public class ManageFolder {
 						Arrays.asList(DEFAULT_OUTPUT, DEFAULT_INPUT, "W-Keep")
 										.stream()
 										.noneMatch(e -> e.equalsIgnoreCase(fileName))) {
+					System.out.println(file);
 					toAddInsideMap(file);
 				}
 			}
@@ -305,6 +324,185 @@ public class ManageFolder {
 				}
 			}
 		return list;
+	}
+	
+	public static ObjectMapper getObjectMapperSerialization() {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper = JsonMapper.builder().build();
+		
+		
+		
+		mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
+                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+                .withCreatorVisibility(JsonAutoDetect.Visibility.ANY));
+		//mapper.addMixIn(MediaSimple.class, MediaSimpleMixIn.class);
+		//MapType type = TypeFactory.defaultInstance().constructMapType(Map.class, String.class, MediaSimple.class);
+		
+		
+		mapper.setSerializationInclusion(Include.NON_EMPTY);
+		
+		mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
+		return mapper;
+	}
+	
+	public static ObjectMapper getObjectMapperDeserialization() {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper = JsonMapper.builder().build();
+		
+		
+		
+		mapper.setVisibility(mapper.getDeserializationConfig().getDefaultVisibilityChecker()
+                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+                .withCreatorVisibility(JsonAutoDetect.Visibility.ANY));
+		//mapper.addMixIn(MediaSimple.class, MediaSimpleMixIn.class);
+		//MapType type = TypeFactory.defaultInstance().constructMapType(Map.class, String.class, MediaSimple.class);
+		
+		
+		mapper.setSerializationInclusion(Include.NON_EMPTY);
+		
+		mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
+		return mapper;
+	}
+	
+	private FolderInformation loadFolderInformation(FolderInfo folderInfo, FileInfo fileInfo) {
+		File informationFile = getFolderInformationFile(folderInfo, fileInfo);
+		try {
+			ObjectMapper mapper = getObjectMapperSerialization();
+			setFolderInformationInjection(mapper, folderInfo);
+			FolderInformation folderInformation = mapper.readValue(informationFile, FolderInformation.class);
+			return folderInformation;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private void setFolderInformationInjection(ObjectMapper mapper, FolderInfo folderInfo) {
+		if(folderInfo != null) {
+			InjectableValues inj = new InjectableValues.Std().addValue(FolderInfo.class, folderInfo);
+			mapper.setInjectableValues(inj);
+		}
+	}
+	
+	private void createFolderInformation(FolderInfo folderInfo, FileInfo fileInfo, FolderInformation folderInformation) {
+		File informationFolder = folderInfo.createFolderByType(fileInfo, FolderType.INFORMATION);
+		File informationFile = new File(informationFolder, "information.json");
+		try {
+			ObjectMapper mapper = getObjectMapperDeserialization();
+			setFolderInformationInjection(mapper, folderInfo);
+			mapper.writeValue(informationFile, folderInformation);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private File getFolderInformationFile(FolderInfo folderInfo, FileInfo fileInfo) {
+		File informationFolder = folderInfo.getFolderByType(fileInfo, FolderType.INFORMATION);
+		if(informationFolder == null)
+			return null;
+		File informationFile = new File(informationFolder, "information.json");
+		return informationFile;
+	}
+	
+	private String getPathFromFolder(FolderInfo folderInfo, File file) {
+		File folder = folderInfo.getFile();
+		Path filePath = file.toPath();
+		Path folderPath = folder.toPath();
+		if(filePath.startsWith(folderPath)) {
+			System.out.println("Hello");
+			return filePath.subpath(folderPath.getNameCount(), filePath.getNameCount()).toString();
+		}
+		return null;
+	}
+	
+	private FolderInformation getFolderInformation(FolderInfo folderInfo, FileInfo fileInfo) {
+		FolderInformation folderInformation = loadFolderInformation(folderInfo, fileInfo);
+		if(folderInformation == null) {
+			createFolderInformation(folderInfo, fileInfo, new FolderInformation());
+			folderInformation = loadFolderInformation(folderInfo, fileInfo);
+		}
+		return folderInformation;
+	}
+	
+	public void setIconToFolder(File folder, File poster) {
+		FileInfo fileInfo = new FileInfo(folder);
+		FolderInfo folderInfo = getMainFolderInPath(fileInfo);
+		FolderInformation folderInformation = getFolderInformation(folderInfo, fileInfo);
+		if(folderInformation != null) {
+			Map<FileInfo, File> posterMap = folderInformation.getPostersOfFolders();
+			System.out.println("JH: " + posterMap);
+			if(posterMap == null) {
+				posterMap = new HashMap<>();
+				folderInformation.setPostersOfFolders(posterMap);
+			}
+			File originalPoster = null;
+			for(Entry<FileInfo, File> entry : posterMap.entrySet()) {
+				File entryFile = entry.getKey().getFile();
+				if(entryFile.equals(folder)) {
+					originalPoster = posterMap.get(fileInfo);
+					posterMap.remove(entry.getKey());
+					break;
+				}
+			}
+			posterMap.put(fileInfo, poster);
+			if(originalPoster != null && !poster.equals(originalPoster) && posterMap.containsValue(originalPoster)) {
+				System.out.println("Miss me");
+			}
+			System.out.println("End here");
+			System.out.println(posterMap);
+			createFolderInformation(folderInfo, fileInfo, folderInformation);
+			System.out.println("Saved");
+		}
+	}
+	
+	/*private boolean isIconInside() {
+		
+	}*/
+	
+	public void createIconToFolder(File file) {
+		FileInfo fileInfo = new FileInfo(file);
+		FolderInfo folderInfo = getMainFolderInPath(fileInfo);
+		System.out.println(folderInfo);
+		File posterFolder = folderInfo.getFolderByType(fileInfo, FolderType.POSTERS);
+		System.out.println(posterFolder);
+		if(posterFolder != null) {
+			File[] arr = posterFolder.listFiles();
+			File poster = null;
+			if(arr != null) {
+				for(File child : arr) {
+					System.out.println(child + " " + FileInfoType.getFolderType(child));
+					if(FileInfoType.getFolderType(child) == FolderType.POSTERS) {
+						poster = child;
+						System.out.println("Good: " + child);
+						break;
+					}
+				}
+				if(poster == null)
+					for(File child : arr) {
+						System.out.println(child + " " + FileFormats.comapreFileFormats(child, FileFormat.IMAGE));
+						if(FileFormats.comapreFileFormats(child, FileFormat.IMAGE)) {
+							poster = child;
+							System.out.println("Good: " + child);
+							break;
+						}
+					}
+				if(poster != null) {
+					System.out.println("Good");
+					ManageFile moveFile = new ManageFile(new FileInfo(poster), FileOperation.CREATE_ICON);
+					try {
+						moveFile.printFileMoves();
+					} catch (IOException | ActionAlreadyActivatedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
 	}
 	
 	/*private static File getFile(String... paths) {

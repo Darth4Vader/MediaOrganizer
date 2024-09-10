@@ -25,7 +25,6 @@ public class TestMovingJavaFXActivate extends Application {
     	
     	//SideFilesList list = new SideFilesList(file);
     	
-    	//TestMovingJavaFX list = new TestMovingJavaFX(new ManageFolder(file.getAbsolutePath(), Arrays.asList(file.listFiles())));
     	
     	ManageFolder manage = new ManageFolder(mainFolder.getAbsolutePath(), Arrays.asList(mainFolder.listFiles()));
     	

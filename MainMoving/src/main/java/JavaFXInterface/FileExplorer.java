@@ -240,6 +240,7 @@ public class FileExplorer extends BorderPane {
 			}
 			break;
 		case SET_LOGO:
+			move.createIconToFolder(filePanel.getFile());
 			break;
 		case SET_SUBTITLES:
 			break;
@@ -292,6 +293,7 @@ public class FileExplorer extends BorderPane {
 	}
 	
 	public void restartToolPanels() {
+		//this.filePanel = null;
 		for(ToolPanel tool : this.toolMap.values() ) {
 			tool.setUsage(null);
 		}

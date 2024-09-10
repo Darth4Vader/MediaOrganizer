@@ -190,7 +190,7 @@ public class FolderInfo extends FileInfo {
 		
 		public static FolderTypeHierarchy createHierarchy() {
 			FolderTypeHierarchy extras = new FolderTypeHierarchy(FolderType.EXTRAS);
-			extras.addHierarchy(FolderType.FEATURETTES, FolderType.POSTERS, FolderType.CHARACTER_POSTERS);
+			extras.addHierarchy(FolderType.FEATURETTES, FolderType.POSTERS, FolderType.CHARACTER_POSTERS, FolderType.INFORMATION);
 			FolderTypeHierarchy movie = new FolderTypeHierarchy(FolderType.MOVIE);
 			FolderTypeHierarchy episode = new FolderTypeHierarchy(FolderType.TV_EPISODE);
 			FolderTypeHierarchy season = new FolderTypeHierarchy(FolderType.TV_SERIES);

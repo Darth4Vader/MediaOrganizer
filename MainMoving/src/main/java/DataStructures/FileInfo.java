@@ -172,4 +172,6 @@ public class FileInfo extends NameInfo {
 	public boolean hasType() {
 		return !getType().equals("");
 	}
+	
+	
 }

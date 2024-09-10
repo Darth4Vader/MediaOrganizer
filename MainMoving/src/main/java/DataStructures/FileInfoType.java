@@ -20,7 +20,7 @@ public class FileInfoType {
 		POSTERS("Poster"),
 		FEATURETTES("Featurette"),
 		CHARACTER_POSTERS("Character Poster"),
-		INFORMATION("Information"),
+		INFORMATION("-Information"),
 		LOGO("Logo"),
 		NONE;
 		
@@ -40,7 +40,7 @@ public class FileInfoType {
 				if(!name.startsWith("-"))
 					name = "- " + name;
 				if(!name.endsWith("s"))
-					if(this != MOVIE & this != LOGO)
+					if(this != MOVIE & this != LOGO & this != INFORMATION)
 						name += "s";
 				name = " " + name;
 			}
