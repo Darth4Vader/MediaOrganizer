@@ -36,7 +36,7 @@ import OtherUtilities.ImageUtils;
 import OtherUtilities.JSONUtils;
 import OtherUtilities.JSoupUtils;
 
-public class ManageFolder {
+public class ManageFolder2 {
 	
 	private final String urlParent;
 	public Map<String, FolderInfo> movieMap = new HashMap<>();
@@ -49,13 +49,13 @@ public class ManageFolder {
 	public static final String OUTPUT_TV = "TV", OUTPUT_MOVIE = "Movies", OUTPUT_UNKOWN = "Media";
 	
 	
-	public ManageFolder(String mainFolderPath) {
+	public ManageFolder2(String mainFolderPath) {
 		this.urlParent = mainFolderPath;
 		this.sideMovesList = new ArrayList<>();
 		setMap(checkStartingPath(DEFAULT_OUTPUT));
 	}
 	
-	public ManageFolder(String mainFolderPath, List<File> readDirectory) {
+	public ManageFolder2(String mainFolderPath, List<File> readDirectory) {
 		this.urlParent = mainFolderPath;
 		this.sideMovesList = new ArrayList<>();
 		List<File> read = new ArrayList<>();
@@ -375,9 +375,8 @@ public class ManageFolder {
 			setFolderInformationInjection(mapper, folderInfo);
 			FolderInformation folderInformation = mapper.readValue(informationFile, FolderInformation.class);
 			return folderInformation;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
-			System.err.println(informationFile);
 		}
 		return null;
 	}
@@ -433,12 +432,6 @@ public class ManageFolder {
 	public void setIconToFolder(File folder, File poster) {
 		FileInfo fileInfo = new FileInfo(folder);
 		FolderInfo folderInfo = getMainFolderInPath(fileInfo);
-		setIconToFolder(folderInfo, fileInfo, poster);
-	}
-	
-	public void setIconToFolder(FolderInfo folderInfo, FileInfo fileInfo, File poster) {
-		File fileToSetIcon = fileInfo.getFile();
-		System.out.println("People: " + folderInfo);
 		FolderInformation folderInformation = getFolderInformation(folderInfo, fileInfo);
 		if(folderInformation != null) {
 			Map<FileInfo, File> posterMap = folderInformation.getPostersOfFolders();
@@ -450,7 +443,7 @@ public class ManageFolder {
 			File originalPoster = null;
 			for(Entry<FileInfo, File> entry : posterMap.entrySet()) {
 				File entryFile = entry.getKey().getFile();
-				if(entryFile.equals(fileToSetIcon)) {
+				if(entryFile.equals(folder)) {
 					originalPoster = posterMap.get(entry.getKey());
 					posterMap.remove(entry.getKey());
 					break;
@@ -473,10 +466,10 @@ public class ManageFolder {
 					}
 				}
 			}
-			FileInfo logo = isPosterOnListAsLogo(poster, folderInfo, fileInfo);
+			File logo = isPosterOnListAsLogo(poster, folderInfo, fileInfo);
 			if(logo != null) {
 				System.out.println("hohohoho");
-				ManageFile manage = getSetIcon(logo, fileToSetIcon);
+				ManageFile manage = new ManageFile(logo, FileOperation.SET_ICON, folderInfo);
 				try {
 					manage.printFileMoves();
 				} catch (IOException | ActionAlreadyActivatedException e) {
@@ -484,7 +477,6 @@ public class ManageFolder {
 				}
 			}
 			else if(addNewPosterAsLogo) {
-				System.out.println("Mad");
 				FileInfo newPosterInfo = new FileInfo(poster);
 				ManageFile manage = new ManageFile(newPosterInfo, FileOperation.CREATE_ICON, folderInfo);
 				try {
@@ -505,7 +497,7 @@ public class ManageFolder {
 		}
 	}
 	
-	private FileInfo isPosterOnListAsLogo(File poster, FolderInfo folderInfo, FileInfo fileInfo) {
+	private File isPosterOnListAsLogo(File poster, FolderInfo folderInfo, FileInfo fileInfo) {
 		FileInfo posterInfo = new FileInfo(poster);
 		File infoFolder = folderInfo.getFolderByType(fileInfo, FolderType.INFORMATION);
 		File[] infoFiles = infoFolder.listFiles();
@@ -513,7 +505,7 @@ public class ManageFolder {
 			FileInfo infoFileInfo = new FileInfo(infoFile);
 			if(infoFileInfo.getFolderType() == FolderType.LOGO) {
 				if(infoFileInfo.equalsFullName(posterInfo)) {
-					return infoFileInfo;
+					return infoFile;
 				}
 			}
 		}
@@ -524,23 +516,9 @@ public class ManageFolder {
 		
 	}*/
 	
-	public void createIconToFolder() {
-		for(FolderInfo folderInfo : movieMap.values()) {
-			System.out.println(folderInfo);
-			createIconToFolder(folderInfo, folderInfo);
-		}
-		for(FolderInfo folderInfo : TVMap.values()) {
-			createIconToFolder(folderInfo, folderInfo);
-		}
-	}
-	
 	public void createIconToFolder(File file) {
 		FileInfo fileInfo = new FileInfo(file);
 		FolderInfo folderInfo = getMainFolderInPath(fileInfo);
-		createIconToFolder(folderInfo, fileInfo);
-	}
-	
-	public void createIconToFolder(FolderInfo folderInfo, FileInfo fileInfo) {
 		System.out.println(folderInfo);
 		File posterFolder = folderInfo.getFolderByType(fileInfo, FolderType.POSTERS);
 		System.out.println(posterFolder);
@@ -566,8 +544,14 @@ public class ManageFolder {
 						}
 					}
 				if(poster != null) {
-					setIconToFolder(folderInfo, fileInfo, poster);
 					System.out.println("Good");
+					ManageFile moveFile = new ManageFile(new FileInfo(poster), FileOperation.CREATE_ICON);
+					try {
+						moveFile.printFileMoves();
+					} catch (IOException | ActionAlreadyActivatedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -1338,9 +1322,8 @@ public class ManageFolder {
 		}
 		
 		private void setIcon() throws IOException {
-			if(moveFileInfo.canDoIconActions()) {
-				FilesUtils.setIniFileIcon(new File(destPath), sourceFile);
-			}
+			if(moveFileInfo.canDoIconActions())
+				FilesUtils.setIniFileIcon(new File(destPath), sourceFile);		
 		}
 		
 		private void replaceIcon() throws IOException {
@@ -1367,17 +1350,11 @@ public class ManageFolder {
 		return new ManageFile(new File(path), action);
 	}*/
 	
-	public ManageFile getSetIcon(FileInfo sourceIconInfo, File destFolder) {
-		ManageFile manage = new ManageFile(sourceIconInfo, FileOperation.SET_ICON);
-		manage.iconFolder = destFolder;
-		return manage;
-	}
 	
 	public class ManageFile {
 		
 		//private FileInfo movedFile; //can be a featurette video
-		private FileInfo sorceFileInfo;
-		private FileInfo destFileInfo;
+		private FileInfo fileInfo;
 		private FolderInfo folderInfo;
 		private FolderType moveType;
 		private FileOperation action;
@@ -1386,16 +1363,16 @@ public class ManageFolder {
 		private File iconFolder;
 		private boolean valid;
 		
-		public ManageFile(File sourceFile, FileOperation action) {
-			this(new FileInfo(sourceFile), action);
+		public ManageFile(File file, FileOperation action) {
+			this(new FileInfo(file), action);
 		}
 		
-		public ManageFile(File sourceFile, FileOperation action, FolderInfo folderInfo) {
-			this(new FileInfo(sourceFile), action, folderInfo);
+		public ManageFile(File file, FileOperation action, FolderInfo folderInfo) {
+			this(new FileInfo(file), action, folderInfo);
 		}
 		
-		public ManageFile(FileInfo sourceFileInfo, FileOperation action) {
-			initilize(sourceFileInfo, action, true);
+		public ManageFile(FileInfo info, FileOperation action) {
+			initilize(info, action, true);
 			searchFolderInfo(true);
 		}
 		
@@ -1404,29 +1381,29 @@ public class ManageFolder {
 			searchFolderInfo(true);
 		}*/
 		
-		public ManageFile(FileInfo sourceFileInfo, FileOperation action, FolderInfo folderInfo) {
+		public ManageFile(FileInfo info, FileOperation action, FolderInfo folderInfo) {
 			this.folderInfo = folderInfo;
-			initilize(sourceFileInfo, action, true);
+			initilize(info, action, true);
 			if(folderInfo == null)
 				searchFolderInfo(true);
 		}
 		
-		private void initilize(FileInfo sourceFileInfo, FileOperation action, boolean validate) {
+		private void initilize(FileInfo info, FileOperation action, boolean validate) {
 			this.valid = true;
 			this.moveList = new ArrayList<>();
-			this.sorceFileInfo = sourceFileInfo;
-			this.moveType = sorceFileInfo.getFolderType();
+			this.fileInfo = info;
+			this.moveType = fileInfo.getFolderType();
 			this.action = action;
 			if(validate) {
 				if(moveType == FolderType.NONE) {
-					if(FileFormats.getFileFormat(sourceFileInfo.getFile()) == FileFormat.IMAGE) {
+					if(FileFormats.getFileFormat(info.getFile()) == FileFormat.IMAGE) {
 						System.out.println("Spedd: " + folderInfo);
 						if(folderInfo == null)
 							searchFolderInfo(false);
 						System.out.println("Spedd: " + folderInfo);
 						if(exp != null || folderInfo != null) {
-							sorceFileInfo.setFolderType(FolderType.POSTERS);
-							this.moveType = sorceFileInfo.getFolderType();
+							fileInfo.setFolderType(FolderType.POSTERS);
+							this.moveType = fileInfo.getFolderType();
 						}
 					}
 				}
@@ -1438,7 +1415,7 @@ public class ManageFolder {
 		private void searchFolderInfo(boolean createIfMissing) {
 			if(valid) {
 				try {
-					this.folderInfo = getMainFolder(sorceFileInfo, createIfMissing);
+					this.folderInfo = getMainFolder(fileInfo, createIfMissing);
 					if(folderInfo == null)
 						this.valid = false;
 				} catch (FlagSearchMainFolderExeception e) {
@@ -1468,14 +1445,14 @@ public class ManageFolder {
 				return;
 			if(this.folderInfo != null)
 				try {
-					confingInfoFromFolderInfo(folderInfo, sorceFileInfo, true);
+					confingInfoFromFolderInfo(folderInfo, fileInfo, true);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			System.out.println("Start");
 			//System.out.println(fileInfo.);
-			System.out.println(sorceFileInfo.getFolderType());
+			System.out.println(fileInfo.getFolderType());
 			if(action == FileOperation.MOVE) {
 				System.out.println(moveType);
 				switch (moveType) {
@@ -1522,12 +1499,12 @@ public class ManageFolder {
 					&& moveType != FolderType.POSTERS) {
 				throw new IllegalArgumentException(getFolderTypeExceptionMessage(moveType));
 			}
-			File file = sorceFileInfo.getFile();
-			File destFolder = folderInfo.createFolderByType(sorceFileInfo, moveType);
+			File file = fileInfo.getFile();
+			File destFolder = folderInfo.createFolderByType(fileInfo, moveType);
 			List<File> arr = file.isDirectory() ? Arrays.asList(file.listFiles()) : Arrays.asList(file);
 			if(moveType == FolderType.POSTERS && !file.isDirectory()) {
-				System.out.println("See This: " + sorceFileInfo.getFullNameWithMime());
-				FileOperationHandler action = new FileOperationHandler(this, file, new File(destFolder, sorceFileInfo.getFullNameWithMime()).getAbsolutePath());
+				System.out.println("See This: " + fileInfo.getFullNameWithMime());
+				FileOperationHandler action = new FileOperationHandler(this, file, new File(destFolder, fileInfo.getFullNameWithMime()).getAbsolutePath());
 				moveList.add(action);
 			}
 			else for(File child : arr) {
@@ -1546,14 +1523,14 @@ public class ManageFolder {
 		}
 		
 		private void moveMedia() throws IOException {
-			File file = sorceFileInfo.getFile();
+			File file = fileInfo.getFile();
 			System.out.println("ffffffff " + folderInfo.getFile());
-			File mediaFolder = folderInfo.createFolderByType(sorceFileInfo, moveType);
+			File mediaFolder = folderInfo.createFolderByType(fileInfo, moveType);
 			if(moveType == FolderType.TV_EPISODE) {
-				mediaFolder = renameFiles(mediaFolder, sorceFileInfo);
+				mediaFolder = renameFiles(mediaFolder, fileInfo);
 			}
 			if(mediaFolder != null) {
-				String finalPath = new File(mediaFolder, sorceFileInfo.getFullNameWithMime()).getAbsolutePath();
+				String finalPath = new File(mediaFolder, fileInfo.getFullNameWithMime()).getAbsolutePath();
 				moveList.add(new FileOperationHandler(file, finalPath));
 			}
 		}
@@ -1565,9 +1542,9 @@ public class ManageFolder {
 				File iconFolder = new File(mainIconFolder, folderInfo.getName());
 				if(!iconFolder.exists())
 					iconFolder.mkdir();	
-				String name = MimeUtils.createNameWithMime(folderInfo.getNameSeason(sorceFileInfo) + FolderType.LOGO.getFolderName(), MimeUtils.MIME_ICON);
+				String name = MimeUtils.createNameWithMime(folderInfo.getNameSeason(fileInfo) + FolderType.LOGO.getFolderName(), MimeUtils.MIME_ICON);
 				String destPath = new File(iconFolder, name).getAbsolutePath();
-				moveList.add(new FileOperationHandler(this, sorceFileInfo.getFile(), destPath, FileOperation.MOVE));
+				moveList.add(new FileOperationHandler(this, fileInfo.getFile(), destPath, FileOperation.MOVE));
 			}
 		}
 		
@@ -1576,10 +1553,10 @@ public class ManageFolder {
 			System.out.println("Hello icon");
 			System.out.println(FilesUtils.getFileLogo(iconFolder));
 			if(canDoIconActions()) {
-				File mainIconFolder = folderInfo.createFolderByType(sorceFileInfo, FolderType.INFORMATION);
-				String name = MimeUtils.createNameWithMime(folderInfo.getNameSeason(sorceFileInfo) + FolderType.LOGO.getFolderName(), MimeUtils.MIME_ICON);
+				File mainIconFolder = folderInfo.createFolderByType(fileInfo, FolderType.INFORMATION);
+				String name = MimeUtils.createNameWithMime(folderInfo.getNameSeason(fileInfo) + FolderType.LOGO.getFolderName(), MimeUtils.MIME_ICON);
 				String destPath = new File(mainIconFolder, name).getAbsolutePath();
-				moveList.add(new FileOperationHandler(this, sorceFileInfo.getFile(), destPath, FileOperation.MOVE));
+				moveList.add(new FileOperationHandler(this, fileInfo.getFile(), destPath, FileOperation.MOVE));
 			}
 		}
 		
@@ -1587,26 +1564,16 @@ public class ManageFolder {
 			File iconFolder = checkStartingPath(DEFAULT_INPUT);
 			setIconFolder();
 			if(canDoIconActions()) {
-				String destFile = folderInfo.getFullNameWithMime(sorceFileInfo, FolderType.LOGO, MimeUtils.MIME_ICON);
+				String destFile = folderInfo.getFullNameWithMime(fileInfo, FolderType.LOGO, MimeUtils.MIME_ICON);
 				String destPath = new File(iconFolder, destFile).getAbsolutePath();
-				moveList.add(new FileOperationHandler(this, sorceFileInfo.getFile(), destPath, FileOperation.CREATE_ICON));
+				moveList.add(new FileOperationHandler(this, fileInfo.getFile(), destPath, FileOperation.CREATE_ICON));
 			}
 		}
 		
 		private void setIcon() {
 			setIconFolder();
-			if(canDoIconActions()) {
-				String relativeIconPath = FolderInformation.getPathFromFolder(folderInfo.getFile(), sorceFileInfo.getFile());
-				String relativeFolderPath = FolderInformation.getPathFromFolder(folderInfo.getFile(), iconFolder);
-				if(relativeIconPath != null && relativeFolderPath != null) {
-					Path relativePath = Paths.get(relativeFolderPath).relativize(Paths.get(relativeIconPath));
-					System.out.println("Reli: " + relativeIconPath + " | " + relativeFolderPath + " | " + relativePath);
-					System.out.println(new File(relativeFolderPath).toPath().relativize(new File(relativeIconPath).toPath()));
-					moveList.add(new FileOperationHandler(this, new File(relativePath.toString()), this.iconFolder.getAbsolutePath(), FileOperation.SET_ICON));
-				}
-				else
-					moveList.add(new FileOperationHandler(this, sorceFileInfo.getFile(), this.iconFolder.getAbsolutePath(), FileOperation.SET_ICON));
-			}
+			if(canDoIconActions())
+				moveList.add(new FileOperationHandler(this, fileInfo.getFile(), this.iconFolder.getAbsolutePath(), FileOperation.SET_ICON));
 		}
 		
 		public boolean canDoIconActions() {
@@ -1614,12 +1581,11 @@ public class ManageFolder {
 		}
 		
 		private void setIconFolder() {
-			if(this.iconFolder != null) return;
-			FolderType type = sorceFileInfo.getFolderType();
+			FolderType type = fileInfo.getFolderType();
 			if(type == FolderType.LOGO) {
-				type = sorceFileInfo.getFolderTypeByInfo();
+				type = fileInfo.getFolderTypeByInfo();
 			}
-			this.iconFolder = folderInfo.getFolderByType(sorceFileInfo, type);
+			this.iconFolder = folderInfo.getFolderByType(fileInfo, type);
 		}
 		
 		public List<FileOperationHandler> getFileMoves() {
@@ -1628,7 +1594,7 @@ public class ManageFolder {
 		
 		public void printFileMoves() throws IOException, ActionAlreadyActivatedException {
 			System.out.println(" Start valid: " + valid);
-			System.out.println(sorceFileInfo.getFile());
+			System.out.println(fileInfo.getFile());
 			System.out.println(action);
 			System.out.println(moveType);
 			if(!valid)
@@ -1637,7 +1603,7 @@ public class ManageFolder {
 			System.out.println("OK Man");
 			System.out.println(moveList);
 			System.out.println(this.action);
-			System.out.println(sorceFileInfo.getFile());
+			System.out.println(fileInfo.getFile());
 			createMoveInfo();
 			System.out.println(moveList);
 			for(FileOperationHandler han : moveList)

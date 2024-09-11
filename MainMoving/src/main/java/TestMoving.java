@@ -18,14 +18,20 @@ public class TestMoving {
 		File destFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\New folder (2)\\Main2024");
 		copyOnlyFolders(folder, destFolder);*/
 		
-    	/*File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\New folder (2)\\Main2024");
+    	File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\New folder (2)\\Main2024");
     	
-    	File file = new File(mainFolder, "Star Wars");*/
 		
-		//ManageFolder manage = new ManageFolder(mainFolder.getAbsolutePath(), Arrays.asList(mainFolder.listFiles()));
 		
-		//manage.toAddInsideMap(file);
+    	File file = new File(mainFolder, "Star Wars");
+		
+		ManageFolder manage = new ManageFolder(mainFolder.getAbsolutePath(), Arrays.asList(mainFolder.listFiles()));
+		
+		manage.toAddInsideMap(file);
+		
+		manage.createIconToFolder();
     	
+		
+		/*
 		File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main");
     	ManageFolder manage = new ManageFolder(mainFolder.getAbsolutePath(), Arrays.asList(mainFolder.listFiles()));
     	
@@ -33,10 +39,29 @@ public class TestMoving {
     	
     	File ahsokaFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main\\W-Output\\TV\\Ahsoka (2024)");
     	
-    	manage.setIconToFolder(ahsokaFolder, poster);
+    	//manage.setIconToFolder(ahsokaFolder, poster);
+    	
+    	File episode2 = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main\\W-Output\\TV\\Ahsoka (2024)\\Ahsoka (2024) - E02");
+    	
+    	//manage.setIconToFolder(episode2, poster);
+    	
+    	manage.createIconToFolder();
+    	
+    	System.out.println(new File("../../../PAY").getCanonicalPath());
+    	
+    	System.out.println(new File("/Ahsoka (2024) -Extras/Ahsoka (2024) -Information/Ahsoka (2024) - Logo.ico").toPath().relativize(new File("/Ahsoka (2024)/Ahsoka (2024) -Extras/Ahsoka (2024) -Information/Ahsoka (2024) - Logo.ico").toPath()));
+    	
+    	System.out.println(new File("Ahsoka (2024)/Ahsoka (2024) -Extras/Ahsoka (2024) -Information/Ahsoka (2024) - Logo.ico").toPath().relativize(new File("Ahsoka (2024) -Extras/Ahsoka (2024) -Information/Ahsoka (2024) - Logo.ico").toPath()));
+    	
+    	System.out.println(
+    			new File("Ahsoka (2024)/Ahsoka (2024) -Extras/Ahsoka (2024) -Information/Ahsoka (2024) - Logo.ico")
+    			.toPath().relativize(new File("Ahsoka (2024)/Ahsoka (2024) - E02").toPath()));
+    	
+    	System.out.println(new File("Ahsoka (2024)/Ahsoka (2024) - E02").toPath()
+    			.relativize(new File("Ahsoka (2024)/Ahsoka (2024) -Extras/Ahsoka (2024) -Information/Ahsoka (2024) - Logo.ico").toPath()));
     	
     	//System.out.println(getPathFromFolder(ahsokaFolder, poster));
-    	
+    	 */
 	}
 	
 	private static String getPathFromFolder(File folder, File file) {

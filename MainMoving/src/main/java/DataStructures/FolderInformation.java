@@ -158,7 +158,7 @@ public class FolderInformation {
 		}
 	}
 	
-	private static String getPathFromFolder(File folder, File file) {
+	public static String getPathFromFolder(File folder, File file) {
 		Path filePath = file.toPath();
 		Path folderPath = folder.toPath();
 		if(filePath.startsWith(folderPath)) {
