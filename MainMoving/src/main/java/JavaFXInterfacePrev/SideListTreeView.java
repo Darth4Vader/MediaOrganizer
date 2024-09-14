@@ -1,4 +1,4 @@
-package JavaFXInterface;
+package JavaFXInterfacePrev;
 
 public class SideListTreeView {
 

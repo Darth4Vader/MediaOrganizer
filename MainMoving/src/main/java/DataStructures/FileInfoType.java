@@ -20,7 +20,7 @@ public class FileInfoType {
 		POSTERS("Poster"),
 		FEATURETTES("Featurette"),
 		CHARACTER_POSTERS("Character Poster"),
-		INFORMATION("-Information"),
+		INFORMATION("-Info"),
 		LOGO("Logo"),
 		NONE;
 		

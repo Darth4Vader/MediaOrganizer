@@ -24,6 +24,8 @@ import javax.swing.text.Document;
 
 import DataStructures.FileInfo;
 import DataStructures.NameInfo.NameInfoType;
+import JavaFXInterface.utils.AlphaNumericTextFormatter;
+import JavaFXInterface.utils.MaxLengthTextFormatter;
 import SwingUtilities.DocumantFilterList;
 import SwingUtilities.SwingUtils;
 import SwingUtilities.DocumantFilterList.StringFilter;

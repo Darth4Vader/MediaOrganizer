@@ -8,13 +8,27 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.filechooser.FileSystemView;
 
+import org.controlsfx.control.GridCell;
+import org.controlsfx.control.cell.ColorGridCell;
+import org.controlsfx.tools.Borders;
+import org.controlsfx.tools.Borders.LineBorders;
+
 import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
+import JavaFXInterface.controlsfx.NodeCellSetter;
 import OtherUtilities.ImageUtils;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.Cell;
+import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
@@ -31,106 +45,102 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-public class FilePanel {
-
-    public BorderPane b;
+public class FilePanel extends VBox implements NodeCellSetter<File> {
+	
 	private File file;
 	private final FileName text;
 	public ImageView imageView;
-	private ChangeListener<? super Boolean> focusListener;
+	private BooleanProperty isSelected;
+	private BorderPane mainPane;
 	
-	public FilePanel(Region sizePane) {
+	public FilePanel() {
 		this.file = null;
-		b = new BorderPane();
-		
-		vb = new VBox();
-		
-		b.prefHeightProperty().bind(vb.heightProperty().add(100));
-		
-		b.setCenter(vb);
-		vb.prefWidthProperty().bind(b.prefWidthProperty().subtract(20));
-		/*vb.maxWidthProperty().bind(vb.prefWidthProperty());*/
-		
-		//vb.prefWidthProperty().bind(b.prefWidthProperty());
-		vb.maxWidthProperty().bind(vb.prefWidthProperty());
-		
-		//vb.prefHeightProperty().bind(vb.prefHeightProperty().subtract(10));
-		vb.maxHeightProperty().bind(vb.prefHeightProperty().subtract(50));
-		vb.setAlignment(Pos.TOP_CENTER);
-		
-		//b.prefWidthProperty().bind(sizePane.widthProperty().multiply(0.5));
-		//b.prefHeightProperty().bind(sizePane.heightProperty().multiply(0.5));
+		this.text = new FileName();
 		imageView = new ImageView();
 		imageView.setPreserveRatio(true);
-		imageView.fitHeightProperty().bind(sizePane.heightProperty().multiply(0.4));
-		//imageView.fitWidthProperty().bind(b.widthProperty());
-		imageView.fitWidthProperty().bind(vb.prefWidthProperty());
-		this.text = new FileName();
-		vb.getChildren().add(imageView);
-		vb.getChildren().add(text);
-		
-		/*b.setBorder(new Border(new BorderStroke(Color.PINK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
-				BorderWidths.DEFAULT, Insets.EMPTY)));*/
-		
-		b.setOnMouseEntered(e -> {
-			if(!isSelected)
-				b.setBackground(Background.fill(Color.rgb(185, 209, 234, 0.3)));
+		imageView.fitHeightProperty().bind(heightProperty().subtract(text.heightProperty()));
+		imageView.fitWidthProperty().bind(prefWidthProperty());
+		getChildren().add(imageView);
+		getChildren().add(text);
+		mainPane = new BorderPane(this);
+		mainPane.setBackground(Background.fill(Color.WHITE));
+		setBackgroundHover(mainPane, Color.rgb(185, 209, 234, 0.3));
+		setAlignment(Pos.TOP_CENTER);
+		this.isSelected = new SimpleBooleanProperty();
+		isSelected.addListener(c -> setSelectedState(isSelected.get()));
+	}
+	
+	private void setBackgroundHover(Region node, Color color) {
+		final SimpleObjectProperty<Background> defaultBackground = new SimpleObjectProperty<>(node.getBackground());
+		node.setOnMouseEntered(e -> {
+			defaultBackground.set(node.getBackground());
+			if(!isSelected.get()) {
+				node.setBackground(Background.fill(color));
+			}
 		});
 		
-		b.setOnMouseExited(e -> {
-			if(!isSelected)
-				b.setBackground(null);
+		node.setOnMouseExited(e -> {
+			if(!isSelected.get()) {
+				node.setBackground(getBackground(false, color, defaultBackground));
+			}
 		});
 	}
 	
-	private VBox vb;
+	private Background getBackground(boolean set, Color colorSet, ObjectProperty<Background> defaultBackground) {
+		if(set)
+			return Background.fill(colorSet);
+		else {
+			if(defaultBackground != null) {
+				Background background = defaultBackground.get();
+				if(background != null)
+					return background;
+			}
+			return Background.fill(Color.WHITE);
+		}
+	}
 	
-	private boolean isSelected;
+	@Override
+	public void set(File item) {
+		set(item, null);
+	}
 	
-	public void set(File file) {
+	@Override
+	public void set(File file, Cell<File> cell) {
 		this.file = file;
 		imageView.setImage(AppUtils.getImageOfFile(file));
 		text.updateText(file);
-		focusListener = (obs, oldValue, newValue) -> {
-			isSelected = newValue;
-			if(newValue) {
-				FileExplorer.getFileExplorer().updateToolPanels(this);
-				b.setBackground(Background.fill(Color.rgb(185, 209, 234)));
-				b.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
-						BorderWidths.DEFAULT, Insets.EMPTY)));
-				/*vb.setBorder(new Border(new BorderStroke(Color.PINK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
-						BorderWidths.DEFAULT, Insets.EMPTY)));*/
-			}
-			else {
-				FileExplorer.getFileExplorer().restartToolPanels();
-				b.setBackground(null);
-				b.setBorder(null);
-			}
-		};
-		b.focusWithinProperty().addListener(focusListener);
-		b.setOnMouseClicked(e -> {
-			System.out.println("Clicked "+ e.getClickCount());
-			System.out.println(e.getButton());
-			System.out.println(e.getClickCount() == 2);
-			//System.out.println(e.butt());
-			b.requestFocus();
+		final SimpleObjectProperty<Background> defaultBackground = new SimpleObjectProperty<>(this.getBackground());
+		setOnMouseClicked(e -> {
+			requestFocus();
 			if(e.getClickCount() == 2 && e.getButton() == MouseButton.PRIMARY) {
 				FileExplorer.getFileExplorer().setMainPanel(file);
 			}
 		});
+		if(cell != null)
+			this.isSelected.bind(cell.selectedProperty());
 	}
 	
-	public void clean() {
+	private void setSelectedState(boolean selected) {
+		if(selected) {
+			FileExplorer.getFileExplorer().updateToolPanels(this);
+			setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
+					BorderWidths.DEFAULT, Insets.EMPTY)));
+		}
+		else {
+			FileExplorer.getFileExplorer().restartToolPanels();
+			setBorder(null);
+		}
+		mainPane.setBackground(getBackground(selected, Color.rgb(185, 209, 234), null));
+	}
+	
+	public void reset() {
 		this.file = null;
 		imageView.setImage(null);
 		text.updateText("");
-		isSelected = false;
-		if(focusListener != null)
-			b.focusWithinProperty().removeListener(focusListener);
-		focusListener = null;
-		b.setOnMouseClicked(null);
-		b.setBorder(null);
-		b.setBackground(null);
+		setOnMouseClicked(null);
+		setBorder(null);
+		setBackground(null);
+		this.isSelected.unbind();
 	}
 	
 	public File getFile() {
@@ -174,5 +184,23 @@ public class FilePanel {
 			this.text = text;
 			setText(text);
 		}
+	}
+
+	@Override
+	public Node getView() {
+		return mainPane;
+	}
+
+	@Override
+	public void bindWidth(ReadOnlyDoubleProperty property) {
+		mainPane.prefWidthProperty().bind(property);
+		prefWidthProperty().bind(mainPane.prefWidthProperty().subtract(50));
+		maxWidthProperty().bind(prefWidthProperty());
+	}
+
+	@Override
+	public void bindHeight(ReadOnlyDoubleProperty property) {
+		mainPane.prefHeightProperty().bind(property);
+		prefHeightProperty().bind(mainPane.heightProperty().subtract(20));
 	}
 }

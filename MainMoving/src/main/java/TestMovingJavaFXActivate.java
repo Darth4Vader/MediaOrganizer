@@ -19,7 +19,7 @@ public class TestMovingJavaFXActivate extends Application {
 		/*FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open Resource File");
 		fileChooser.showOpenDialog(stage);*/
-    	File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\New folder (2)\\Main2024");
+    	File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
     	
     	File file = new File(mainFolder, "Star Wars");
     	
@@ -28,7 +28,7 @@ public class TestMovingJavaFXActivate extends Application {
     	
     	ManageFolder manage = new ManageFolder(mainFolder.getAbsolutePath(), Arrays.asList(mainFolder.listFiles()));
     	
-    	manage.setIconsToFolder();
+    	//manage.setIconsToFolder();
     	
     	TestMovingJavaFX list = new TestMovingJavaFX(manage);
     	

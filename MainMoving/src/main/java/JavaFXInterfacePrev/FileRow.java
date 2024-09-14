@@ -1,4 +1,4 @@
-package JavaFXInterface;
+package JavaFXInterfacePrev;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -7,6 +7,8 @@ import java.util.List;
 public class FileRow {
 
     private List<File> files;
+    
+    private Integer selectedFile;
 
     public FileRow() {
         this.files = new ArrayList<>();
@@ -28,4 +30,14 @@ public class FileRow {
     public void setFiles(List<File> files) {
         this.files = files;
     }
+
+	public File getSelectedFile() {
+		return files.get(selectedFile);
+	}
+
+	public void setSelectedFile(Integer selectedFile) {
+		if(selectedFile < 0 || selectedFile >= files.size())
+			throw new IllegalArgumentException("The index \""+selectedFile+"\" is not allowed for an array in the size of \""+files.size()+"\"");
+		this.selectedFile = selectedFile;
+	}
 }

@@ -103,6 +103,7 @@ public class FolderInformation {
 				FolderInfo folderInfo = (FolderInfo) folderInfoObj;
 				File file = getFileFromFolder(folderInfo, key);
 				System.out.println("Time: " + key);
+				System.out.println(file);
 				return new FileInfo(file);
 			}
 	        
@@ -150,7 +151,7 @@ public class FolderInformation {
 			String writeVal = null;
 			if(folderInfo != null) {
 				writeVal = getPathFromFolder(folderInfo.getFile(), value.getFile());
-				System.out.println("Own: " + folderInfo);
+				System.out.println("Own: " + writeVal + " " + folderInfo.getFile());
 			}
 			
 			gen.writeFieldName(writeVal);

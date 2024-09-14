@@ -1,4 +1,4 @@
-package JavaFXInterface;
+package JavaFXInterface.utils;
 
 import java.util.function.UnaryOperator;
 

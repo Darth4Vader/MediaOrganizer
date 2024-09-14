@@ -15,11 +15,9 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
@@ -31,13 +29,16 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -60,24 +61,41 @@ import javax.swing.filechooser.FileSystemView;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 
+import org.controlsfx.control.CheckComboBox;
+import org.controlsfx.control.GridCell;
+import org.controlsfx.control.GridView;
+import org.controlsfx.control.cell.ImageGridCell;
+import org.controlsfx.control.spreadsheet.SpreadsheetView;
+import org.controlsfx.control.spreadsheet.SpreadsheetViewSelectionModel;
+
 import DataStructures.FileInfo;
 import DataStructures.ManageFolder;
 import DataStructures.NameInfo.NameInfoType;
 import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
+import JavaFXInterface.controlsfx.GridViewSelection;
 import OtherUtilities.ImageUtils;
 import SwingUtilities.DocumantFilterList;
 import SwingUtilities.FocusContainer;
 import SwingUtilities.FocusPaneView;
 import SwingUtilities.SwingUtils;
 import SwingUtilities.TraverseContainer;
+import impl.org.controlsfx.skin.GridCellSkin;
+import impl.org.controlsfx.skin.GridViewSkin;
+import impl.org.controlsfx.spreadsheet.GridCellEditor;
+import impl.org.controlsfx.spreadsheet.GridViewBehavior;
+import impl.org.controlsfx.spreadsheet.SpreadsheetGridView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Cell;
+import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -88,6 +106,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
@@ -110,8 +129,8 @@ public class FileExplorer extends BorderPane {
 	private FilePanel filePanel;
 	private File folder;
 	
-	private ListView<FileRow> fileListView;
-	private ObservableList<FileRow> fileList;
+	private GridView<File> fileListView;
+	private ObservableList<File> fileList;
 	
 	private static FileExplorer fileExpolrer;
 	
@@ -124,7 +143,8 @@ public class FileExplorer extends BorderPane {
 		int i = 0;
 		//The maximum number of items in one row.
 		final int MAX = 5;
-		FileRow fileRow = new FileRow();
+		fileList.addAll(list);
+		/*FileRow fileRow = new FileRow();
 		for(File file : list) {
 			if(file != null) {
 				fileRow.add(file);
@@ -138,7 +158,7 @@ public class FileExplorer extends BorderPane {
 		}
 		if(!fileRow.getFiles().isEmpty()) {
 			fileList.add(fileRow);
-		}
+		}*/
 	}
 
 	public FileExplorer(ManageFolder move) {
@@ -147,17 +167,33 @@ public class FileExplorer extends BorderPane {
 		fileList = FXCollections.observableArrayList();
 		
 		final int MAX = 5;
-		fileListView = new ListView<FileRow>(fileList);
-		fileListView.setCellFactory(x -> new FileTableCellEditor(fileListView, MAX));
-		fileListView.setSelectionModel(null);
+		fileListView = new GridViewSelection<File>(fileList);
+		fileListView.setCellFactory(x -> new FileTableCellEditor());
+		//fileListView.setSelectionModel(null);
 		fileListView.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+		
 		
 		fileListView.setStyle("-fx-focus-color: -fx-control-inner-background ; -fx-faint-focus-color: -fx-control-inner-background ;");
 		fileListView.setFocusTraversable(false);
 		/*fileListView.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
 		});*/
 		
+		fileListView.cellWidthProperty().bind(fileListView.widthProperty().multiply(0.4));
+		fileListView.cellHeightProperty().bind(fileListView.heightProperty().multiply(0.4));
 		
+		//fileListView.setCellWidth(100);
+		//fileListView.setCellHeight(150);
+		
+		/*CheckComboBox<T>m
+		
+		SpreadsheetViewSelectionModel f;
+		//new SpreadsheetView(fileListView.);
+		Spreadsheet
+        SpreadsheetViewSelectionModel selectionModel = new SpreadsheetViewSelectionModel(this,cellsView);
+        cellsView.setSelectionModel(selectionModel);
+        selectionModel.setCellSelectionEnabled(true);
+        selectionModel.setSelectionMode(SelectionMode.MULTIPLE);
+		*/
 		this.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
 		
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -176,6 +212,8 @@ public class FileExplorer extends BorderPane {
 		scroll.setVbarPolicy(ScrollBarPolicy.ALWAYS);
 		scroll.setHbarPolicy(ScrollBarPolicy.NEVER);
 		scroll.setFitToWidth(true);*/
+		
+		
 		
 		this.mainPanel = new BorderPane();
 		

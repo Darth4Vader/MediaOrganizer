@@ -486,7 +486,7 @@ public class ManageFolder {
 			else if(addNewPosterAsLogo) {
 				System.out.println("Mad");
 				FileInfo newPosterInfo = new FileInfo(poster);
-				ManageFile manage = new ManageFile(newPosterInfo, FileOperation.CREATE_ICON, folderInfo);
+				ManageFile manage = getCreateIcon(newPosterInfo, folderInfo, fileToSetIcon); 
 				try {
 					manage.printFileMoves();
 				} catch (IOException | ActionAlreadyActivatedException e) {
@@ -1312,6 +1312,11 @@ public class ManageFolder {
 				break;
 			}
 			this.isFinished = true;
+			System.out.println("Green");
+			System.out.print("\u001B[32m");
+			System.out.print(sourceFile + " (" + action + ") -> " + destPath);
+			System.out.print("\u001B[0m");
+			System.out.println();
 		}
 		
 		private void move() throws IOException {
@@ -1369,6 +1374,12 @@ public class ManageFolder {
 	
 	public ManageFile getSetIcon(FileInfo sourceIconInfo, File destFolder) {
 		ManageFile manage = new ManageFile(sourceIconInfo, FileOperation.SET_ICON);
+		manage.iconFolder = destFolder;
+		return manage;
+	}
+	
+	public ManageFile getCreateIcon(FileInfo sourceIconInfo, FolderInfo folderInfo, File destFolder) {
+		ManageFile manage = new ManageFile(sourceIconInfo, FileOperation.CREATE_ICON, folderInfo);
 		manage.iconFolder = destFolder;
 		return manage;
 	}

@@ -8,6 +8,7 @@ import DataStructures.FileInfoType;
 import DataStructures.FolderInfo;
 import DataStructures.FileInfoType.FolderType;
 import DataStructures.ManageFolder;
+import DataStructures.NameInfo;
 import FileUtilities.FileFormats;
 import FileUtilities.FileFormats.FileFormat;
 
@@ -18,7 +19,7 @@ public class TestMoving {
 		File destFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\New folder (2)\\Main2024");
 		copyOnlyFolders(folder, destFolder);*/
 		
-    	File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\New folder (2)\\Main2024");
+    	File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
     	
 		
 		
@@ -29,6 +30,9 @@ public class TestMoving {
 		manage.toAddInsideMap(file);
 		
 		manage.createIconToFolder();
+    	
+    	
+    	//System.out.println(new NameInfo("The Bad Batch (2021) Season 1 S01 (1080p DSNP WEB-DL x265 HEVC 10bit EAC3 5.1 YOGI)").getName());
     	
 		
 		/*

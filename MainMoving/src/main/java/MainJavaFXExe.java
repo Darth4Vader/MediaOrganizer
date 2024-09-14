@@ -2,6 +2,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.controlsfx.control.cell.ColorGridCell;
+
 import DataStructures.ManageFolder;
 import JavaFXInterface.FileExplorer;
 import JavaFXInterface.SideFilesList;
@@ -24,11 +26,12 @@ public class MainJavaFXExe extends Application {
 		fileChooser.setTitle("Open Resource File");
 		fileChooser.showOpenDialog(stage);*/
     	
-    	File file = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main");
+    	File file = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
     	
     	//SideFilesList list = new SideFilesList(file);
     	
     	FileExplorer list = new FileExplorer(new ManageFolder(file.getAbsolutePath()));
+    	
     	
     	//list.setPrefWidth(400);
     	//list.setPrefHeight(500);
