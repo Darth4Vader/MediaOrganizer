@@ -17,12 +17,15 @@ import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
 import JavaFXInterface.controlsfx.NodeCellSetter;
 import OtherUtilities.ImageUtils;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.NumberBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -41,11 +44,12 @@ import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-public class FilePanel extends VBox implements NodeCellSetter<File> {
+public class FilePanel extends BorderPane /*VBox*/ implements NodeCellSetter<File> {
 	
 	private File file;
 	private final FileName text;
@@ -60,14 +64,17 @@ public class FilePanel extends VBox implements NodeCellSetter<File> {
 		imageView.setPreserveRatio(true);
 		imageView.fitHeightProperty().bind(heightProperty().subtract(text.heightProperty()));
 		imageView.fitWidthProperty().bind(prefWidthProperty());
-		getChildren().add(imageView);
-		getChildren().add(text);
+		setCenter(imageView);
+		setBottom(text);
 		mainPane = new BorderPane(this);
 		mainPane.setBackground(Background.fill(Color.WHITE));
 		setBackgroundHover(mainPane, Color.rgb(185, 209, 234, 0.3));
-		setAlignment(Pos.TOP_CENTER);
 		this.isSelected = new SimpleBooleanProperty();
 		isSelected.addListener(c -> setSelectedState(isSelected.get()));
+		prefHeightProperty().bind(mainPane.prefHeightProperty().subtract(20));
+		//prefHeightProperty().bind(mainPane.prefHeightProperty());
+		minHeightProperty().bind(prefHeightProperty());
+		maxHeightProperty().bind(prefHeightProperty());
 	}
 	
 	private void setBackgroundHover(Region node, Color color) {
@@ -197,10 +204,9 @@ public class FilePanel extends VBox implements NodeCellSetter<File> {
 		prefWidthProperty().bind(mainPane.prefWidthProperty().subtract(50));
 		maxWidthProperty().bind(prefWidthProperty());
 	}
-
+	
 	@Override
 	public void bindHeight(ReadOnlyDoubleProperty property) {
 		mainPane.prefHeightProperty().bind(property);
-		prefHeightProperty().bind(mainPane.heightProperty().subtract(20));
 	}
 }

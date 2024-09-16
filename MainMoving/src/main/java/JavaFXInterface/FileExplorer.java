@@ -178,8 +178,8 @@ public class FileExplorer extends BorderPane {
 		/*fileListView.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
 		});*/
 		
-		fileListView.cellWidthProperty().bind(fileListView.widthProperty().multiply(0.4));
-		fileListView.cellHeightProperty().bind(fileListView.heightProperty().multiply(0.4));
+		//fileListView.cellWidthProperty().bind(fileListView.widthProperty().multiply(0.4));
+		//fileListView.cellHeightProperty().bind(fileListView.heightProperty().multiply(0.4));
 		
 		//fileListView.setCellWidth(100);
 		//fileListView.setCellHeight(150);
@@ -200,6 +200,11 @@ public class FileExplorer extends BorderPane {
 		double width = screenSize.getWidth();
 		double height = screenSize.getHeight();
 		this.setPrefSize((int) (width * 0.445), (int) (height * 0.445));
+		
+		fileListView.setCellWidth(this.getPrefWidth()*0.4);
+		fileListView.setCellHeight(this.getPrefHeight()*0.4);
+		
+		
 		this.toolMap = new HashMap<>();
 		
 		

@@ -41,9 +41,24 @@ public class MainJavaFXExe extends Application {
     	});
     	stage.setScene(scene);
     	
-    	stage.setWidth(400);
-    	stage.setHeight(500);
+    	stage.setWidth(list.getWidth());
+    	stage.setHeight(list.getHeight());
+    	
+    	//stage.setWidth(400);
+    	//stage.setHeight(500);
     	System.out.println("hello");
     	stage.show();
+    	
+    	stage.setWidth(1200);
+    	stage.setHeight(1000);
+    	
+    	list.setPrefWidth(stage.getWidth());
+    	list.setPrefHeight(stage.getHeight());
+    	
+    	stage.setMinWidth(1200);
+    	stage.setMinHeight(1000);
+    	
+        //stage.minWidthProperty().bind(list.widthProperty());
+        //stage.minHeightProperty().bind(list.heightProperty());
     }
 }

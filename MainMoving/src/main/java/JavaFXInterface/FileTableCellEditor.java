@@ -24,7 +24,7 @@ public class FileTableCellEditor extends GridCellSelected<File> {
         }
         else {
         	cell.set(item, this);
-			System.out.println("Render");
+			System.out.println("Render " + item);
             setGraphic(cell.getView());
         }
         setAlignment(Pos.CENTER_LEFT);
