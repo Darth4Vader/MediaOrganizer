@@ -26,13 +26,23 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.nio.file.WatchEvent.Kind;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -71,6 +81,11 @@ import org.controlsfx.control.spreadsheet.SpreadsheetViewSelectionModel;
 import DataStructures.FileInfo;
 import DataStructures.ManageFolder;
 import DataStructures.NameInfo.NameInfoType;
+import DirectoryWatcher.FileChange;
+import DirectoryWatcher.FileChange.FileChaneType;
+import DirectoryWatcher.FileRename;
+import DirectoryWatcher.HandleFileChanges;
+import DirectoryWatcher.WatchExample;
 import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
 import JavaFXInterface.controlsfx.GridViewSelection;
@@ -85,8 +100,11 @@ import impl.org.controlsfx.skin.GridViewSkin;
 import impl.org.controlsfx.spreadsheet.GridCellEditor;
 import impl.org.controlsfx.spreadsheet.GridViewBehavior;
 import impl.org.controlsfx.spreadsheet.SpreadsheetGridView;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -126,10 +144,10 @@ public class FileExplorer extends BorderPane {
 	private RenameFilePanel infoPanel;
 	private final BorderPane mainPanel;
 	private final ManageFolder move;
-	private FilePanel filePanel;
+	private File filePanel;
 	private File folder;
 	
-	private GridView<File> fileListView;
+	private GridViewSelection<File> fileListView;
 	private ObservableList<File> fileList;
 	
 	private static FileExplorer fileExpolrer;
@@ -168,6 +186,7 @@ public class FileExplorer extends BorderPane {
 		
 		final int MAX = 5;
 		fileListView = new GridViewSelection<File>(fileList);
+		
 		fileListView.setCellFactory(x -> new FileTableCellEditor());
 		//fileListView.setSelectionModel(null);
 		fileListView.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
@@ -175,6 +194,30 @@ public class FileExplorer extends BorderPane {
 		
 		fileListView.setStyle("-fx-focus-color: -fx-control-inner-background ; -fx-faint-focus-color: -fx-control-inner-background ;");
 		fileListView.setFocusTraversable(false);
+		
+		fileListView.addSelectionListener(new ListChangeListener<File>() {
+
+			@Override
+			public void onChanged(Change<? extends File> c) {
+				if(c.next()) {
+					ObservableList<? extends File> list = c.getList();
+					if(c.wasRemoved()) {
+						System.out.println("alone " + list);
+						if(list.isEmpty())
+							FileExplorer.getFileExplorer().restartToolPanels();
+					}
+					if(c.wasAdded()) {
+						if(list.size() == 1)
+							FileExplorer.getFileExplorer().updateToolPanels(list.getFirst());
+						else if(list.size() > 1) {
+							
+						}
+					}
+				}
+			}
+			
+		});
+		
 		/*fileListView.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
 		});*/
 		
@@ -252,6 +295,54 @@ public class FileExplorer extends BorderPane {
 		    }
 		});
 	}
+	/*
+    public static void setupWatcher() throws IOException, InterruptedException {
+
+        System.out.println("Listening for changes to DATA.XML");
+
+        // Set the directory we want to watch for changes
+        Path dir = Paths.get("your/path");
+
+        // Create the WatchService
+        WatchService watchService = FileSystems.getDefault().newWatchService();
+
+        // Only watch for modifications (ignore new or deleted files)
+        dir.register(watchService, en);
+
+        Path pa;pa.register(watchService, null)
+        WatchEvent<T>
+        
+        // The WatchKey will collect any events from the WatchService. We want this to run indefinitely so we wrap in
+        // an infinite loop
+        while (true) {
+            // Gets the latest event
+            WatchKey watchKey = watchService.take();
+
+            // When a change is found, let's find out what kind and act appropriately
+            if (watchKey != null) {
+
+                // For each event triggered
+                watchKey.pollEvents().forEach(watchEvent -> {
+
+                    // Get the filename of the file that was modified
+                    String filename = watchEvent.context().toString();
+
+                    // If it is the file we care about, do something
+                    if (filename.equalsIgnoreCase("DATA.XML")) {
+
+                        // Do your update of the TableView here
+                        System.out.println("DATA.XML has been changed!");
+                    }
+
+                });
+
+                // After the event was processed, reset the watchKey
+                watchKey.reset();
+            }
+        }
+
+    }
+    */
 	
 	private BorderPane getSearchPnl() {
 		BorderPane pnl = new BorderPane();
@@ -278,12 +369,12 @@ public class FileExplorer extends BorderPane {
 			break;
 		case RENAME_FILE:
 			infoPanel.setPanel(filePanel);
-			if(infoPanel != null && this.getRight() != null) {
+			if(infoPanel != null && this.getRight() == null) {
 				this.setRight(infoPanel);
 			}
 			break;
 		case SET_LOGO:
-			move.createIconToFolder(filePanel.getFile());
+			move.createIconToFolder(filePanel);
 			break;
 		case SET_SUBTITLES:
 			break;
@@ -300,13 +391,69 @@ public class FileExplorer extends BorderPane {
 		setMainPanel(folder, null);
 	}
 	
+	private WatchExample w;
+	
 	private void setMainPanel(File folder, File toFocus) {
-		this.mainPanel.getChildren().removeAll();
+		this.mainPanel.getChildren().clear();
 		this.folder = folder;
 		File[] files = folder.listFiles();
 		UpdatelistViewAsGridPage(Arrays.asList(files));
 		this.mainPanel.setCenter(fileListView);
 		fileListView.requestFocus();
+		if(w != null)
+			w.shutdown();
+		Task<Void> task = new Task<Void>() {
+			
+			
+			@Override
+			protected Void call() throws Exception {
+			    Kind<?> [] kinds = { StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE};
+
+			    // Should launch WatchExample PER Filesystem:
+			    w = new WatchExample();
+			    w.register(kinds, folder.toPath());
+			    
+			    w.setHandleFileChanges(new HandleFileChanges() {
+					
+					@Override
+					public void handleFileChanges(List<FileChange> fileChanges) {
+						for(FileChange fileChange : fileChanges) {
+							Platform.runLater(() -> {
+								System.out.println(fileChange.getFileChaneType() + " " + fileChange.getPath());
+								FileChaneType type = fileChange.getFileChaneType();
+								File file = fileChange.getPath().toFile();
+								switch(type) {
+								case CREATED:
+									fileList.add(file);
+									break;
+								case DELETED:
+									fileList.remove(0);
+									break;
+								case RENAMED:
+									if(fileChange instanceof FileRename) {
+									    int itemIndex = fileList.indexOf(file);
+									    if (itemIndex != -1) {
+									    	File newFile = ((FileRename) fileChange).getNewPath().toFile();
+									        fileList.set(itemIndex, newFile);
+									    }
+									}
+									break;
+								case UPDATED:
+									break;
+								default:
+									break;
+								}
+							});
+						}
+					}
+				});
+			    
+			    // For 2 or more WatchExample use: new Thread(w[n]::run).start();
+			    w.run();
+				return null;
+			}
+		};
+		new Thread(task).start();
 	}
 	
 	private void goToParentFile(File file) {
@@ -327,9 +474,17 @@ public class FileExplorer extends BorderPane {
 		return pnl;
 	}
 	
-	public void updateToolPanels(FilePanel filePanel) {
+	/*public void updateToolPanels(FilePanel filePanel) {
 		this.filePanel = filePanel;
 		File file = filePanel.getFile();
+		for(ToolPanel tool : this.toolMap.values() ) {
+			tool.setUsage(file);
+		}
+	}*/
+	
+	public void updateToolPanels(File filePanel) {
+		this.filePanel = filePanel;
+		File file = filePanel;
 		for(ToolPanel tool : this.toolMap.values() ) {
 			tool.setUsage(file);
 		}

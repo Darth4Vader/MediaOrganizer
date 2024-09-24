@@ -1,6 +1,10 @@
+import java.awt.FileDialog;
 import java.io.File;
+import java.nio.file.WatchService;
 import java.util.Arrays;
 import java.util.Collections;
+
+import javax.swing.JFileChooser;
 
 import org.controlsfx.control.cell.ColorGridCell;
 
@@ -28,11 +32,13 @@ public class MainJavaFXExe extends Application {
     	
     	File file = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
     	
+    	file = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\New folder (2)");
+    	
     	//SideFilesList list = new SideFilesList(file);
     	
     	FileExplorer list = new FileExplorer(new ManageFolder(file.getAbsolutePath()));
     	
-    	
+    	//FileDialog
     	//list.setPrefWidth(400);
     	//list.setPrefHeight(500);
     	Scene scene = new Scene(list);

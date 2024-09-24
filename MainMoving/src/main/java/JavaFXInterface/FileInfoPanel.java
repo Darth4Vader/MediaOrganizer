@@ -40,7 +40,7 @@ import javafx.scene.layout.VBox;
 public class FileInfoPanel extends BorderPane {
 	
 	protected FileInfo info;
-	protected FilePanel pnl;
+	protected File pnl;
 	private final VBox infoFields;
 	protected final Map<NameInfoType, InfoField> map;
 	
@@ -66,9 +66,9 @@ public class FileInfoPanel extends BorderPane {
 		}
 	}
 	
-	public void setPanel(FilePanel pnl) {
+	public void setPanel(File pnl) {
 		this.pnl = pnl;
-		File file = pnl.getFile();
+		File file = pnl;
 		this.info = new FileInfo(file);
 		setPanel();
 	}
@@ -112,7 +112,8 @@ public class FileInfoPanel extends BorderPane {
 	}
 	
 	private void updateInfoFields() {
-		this.infoFields.getChildren().removeAll();
+		this.infoFields.getChildren().clear();
+		System.out.println("File " + pnl);
 		this.infoFields.getChildren().add(map.get(NameInfoType.NAME));
 		this.infoFields.getChildren().add(map.get(NameInfoType.YEAR));
 		if(info.hasEpisode()) {

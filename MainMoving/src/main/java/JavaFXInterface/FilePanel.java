@@ -129,12 +129,12 @@ public class FilePanel extends BorderPane /*VBox*/ implements NodeCellSetter<Fil
 	
 	private void setSelectedState(boolean selected) {
 		if(selected) {
-			FileExplorer.getFileExplorer().updateToolPanels(this);
+			//FileExplorer.getFileExplorer().updateToolPanels(this);
 			setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY,
 					BorderWidths.DEFAULT, Insets.EMPTY)));
 		}
 		else {
-			FileExplorer.getFileExplorer().restartToolPanels();
+			//FileExplorer.getFileExplorer().restartToolPanels();
 			setBorder(null);
 		}
 		mainPane.setBackground(getBackground(selected, Color.rgb(185, 209, 234), null));

@@ -51,7 +51,7 @@ public class DynamicIconGridExample  extends Application {
 
             // Create a TilePane to display the icons
             TilePane tilePane = new TilePane();
-            GridC
+
             tilePane.setHgap(10);
             tilePane.setVgap(10);
             tilePane.setPadding(new Insets(10));

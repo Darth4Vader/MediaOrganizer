@@ -52,6 +52,10 @@ public class GridViewSelection<T> extends GridView<T> {
 		});
 	}
 	
+	public void addSelectionListener(ListChangeListener<? super T> listener) {
+		selectionList.addListener(listener);
+	}
+	
     public void updateSelection(IndexedCell<T> cell) {
         if (cell.isEmpty()) return;
         int index = cell.getIndex();

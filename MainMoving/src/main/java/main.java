@@ -6,10 +6,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
+import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -83,6 +85,11 @@ public class main {
 	public static void main(String[] args) throws Exception {
 		
 		String str = "C:\\Users\\itay5\\OneDrive\\Pictures\\Main";
+		
+		
+		
+		
+		
 		//str = "F:\\";
 		//new moveFilesNewUI(str);
 		
@@ -90,6 +97,13 @@ public class main {
 		
 		//new moveFilesUISelect();
 		
+		
+        final JFrame frame2 = new JFrame();
+        frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame2.setLayout(new GridLayout(0, 1));
+        FileDialog fd = new FileDialog(frame2, "Test", FileDialog.LOAD);
+        fd.setDirectory("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
+        fd.setVisible(true);
 		
 		
 		

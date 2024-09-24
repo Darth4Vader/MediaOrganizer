@@ -133,7 +133,12 @@
     <version>11.2.1</version>
 </dependency>
 
-		
-		
-	</dependencies>
+
+
+		<dependency>
+			<groupId>MediaMarketplace</groupId>
+			<artifactId>MediaMarketplace</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+  </dependencies>
 </project>

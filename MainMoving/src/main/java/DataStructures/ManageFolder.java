@@ -906,8 +906,8 @@ public class ManageFolder {
 			}
 		}
 		
-		System.out.println();
-		System.out.println("PIMP " + mainInfo.getFile());
+		//System.out.println();
+		//System.out.println("PIMP " + mainInfo.getFile());
 		
 		
 		return mainInfo;

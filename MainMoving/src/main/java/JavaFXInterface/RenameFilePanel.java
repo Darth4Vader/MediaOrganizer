@@ -51,7 +51,9 @@ public class RenameFilePanel extends FileInfoPanel {
 			field.updateChanges();
 		}
 		File file = explorer.getFolderManager().renameFiles(info);
+		/*
 		if(this.pnl != null)
 			this.pnl.updateFile(file);
+		*/
 	}
 }
