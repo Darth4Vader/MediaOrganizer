@@ -39,11 +39,19 @@ public class WatchExample implements Runnable {
     }
 
     public WatchExample() {
-    	
+    	setToRun();
     }
     
     public void setListener(Listener listener) {
         this.listener = listener;
+    }
+    
+    public void setToRun() {
+        System.out.println("shutdown()");
+        created.clear();
+        updated.clear();
+        deleted.clear();
+        this.appIsRunning = true;
     }
 
     public void shutdown() {
@@ -97,6 +105,11 @@ public class WatchExample implements Runnable {
         }
 
         System.out.println("run() END watch");
+    }
+    
+    public void register(Path dir) throws IOException {
+    	Kind<?> [] kinds = { StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE};
+    	register(kinds, dir);
     }
 
     public void register(Kind<?> [] kinds, Path dir) throws IOException {

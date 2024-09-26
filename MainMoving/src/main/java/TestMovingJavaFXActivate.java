@@ -32,6 +32,8 @@ public class TestMovingJavaFXActivate extends Application {
     	
     	TestMovingJavaFX list = new TestMovingJavaFX(manage);
     	
+    	
+    	
     	//list.setPrefWidth(400);
     	//list.setPrefHeight(500);
     	Scene scene = new Scene(list);

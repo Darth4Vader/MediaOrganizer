@@ -101,6 +101,9 @@ import impl.org.controlsfx.spreadsheet.GridCellEditor;
 import impl.org.controlsfx.spreadsheet.GridViewBehavior;
 import impl.org.controlsfx.spreadsheet.SpreadsheetGridView;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableObjectValue;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -145,7 +148,7 @@ public class FileExplorer extends BorderPane {
 	private final BorderPane mainPanel;
 	private final ManageFolder move;
 	private File filePanel;
-	private File folder;
+	private SimpleObjectProperty<File> folder;
 	
 	private GridViewSelection<File> fileListView;
 	private ObservableList<File> fileList;
@@ -178,6 +181,54 @@ public class FileExplorer extends BorderPane {
 			fileList.add(fileRow);
 		}*/
 	}
+	
+	enum FileExplorerView {
+		DETAILS,
+		ICONS
+	}
+	
+	public void setFileExplorerView(FileExplorerView view) {
+		switch(view) {
+		case DETAILS:
+			break;
+		case ICONS:
+			fileListView = new GridViewSelection<File>(fileList);
+			
+			fileListView.setCellFactory(x -> new FileTableCellEditor());
+			//fileListView.setSelectionModel(null);
+			fileListView.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+			
+			
+			fileListView.setStyle("-fx-focus-color: -fx-control-inner-background ; -fx-faint-focus-color: -fx-control-inner-background ;");
+			fileListView.setFocusTraversable(false);
+			
+			fileListView.addSelectionListener(new ListChangeListener<File>() {
+
+				@Override
+				public void onChanged(Change<? extends File> c) {
+					if(c.next()) {
+						ObservableList<? extends File> list = c.getList();
+						if(c.wasRemoved()) {
+							System.out.println("alone " + list);
+							if(list.isEmpty())
+								FileExplorer.getFileExplorer().restartToolPanels();
+						}
+						if(c.wasAdded()) {
+							if(list.size() == 1)
+								FileExplorer.getFileExplorer().updateToolPanels(list.getFirst());
+							else if(list.size() > 1) {
+								
+							}
+						}
+					}
+				}
+				
+			});
+			break;
+		default:
+			break;
+		}
+	}
 
 	public FileExplorer(ManageFolder move) {
 		FileExplorer.fileExpolrer = this;
@@ -185,6 +236,7 @@ public class FileExplorer extends BorderPane {
 		fileList = FXCollections.observableArrayList();
 		
 		final int MAX = 5;
+		/*
 		fileListView = new GridViewSelection<File>(fileList);
 		
 		fileListView.setCellFactory(x -> new FileTableCellEditor());
@@ -216,6 +268,47 @@ public class FileExplorer extends BorderPane {
 				}
 			}
 			
+		});
+		*/
+		w = new WatchExample();
+	    w.setHandleFileChanges(new HandleFileChanges() {
+			
+			@Override
+			public void handleFileChanges(List<FileChange> fileChanges) {
+				for(FileChange fileChange : fileChanges) {
+					Platform.runLater(() -> {
+						System.out.println(fileChange.getFileChaneType() + " " + fileChange.getPath());
+						FileChaneType type = fileChange.getFileChaneType();
+						File file = fileChange.getPath().toFile();
+						switch(type) {
+						case CREATED:
+							fileList.add(file);
+							break;
+						case DELETED:
+							fileList.remove(0);
+							break;
+						case RENAMED:
+							if(fileChange instanceof FileRename) {
+							    int itemIndex = fileList.indexOf(file);
+							    if (itemIndex != -1) {
+							    	File newFile = ((FileRename) fileChange).getNewPath().toFile();
+							        fileList.set(itemIndex, newFile);
+							    }
+							}
+							break;
+						case UPDATED:
+							break;
+						default:
+							break;
+						}
+					});
+				}
+			}
+		});
+	    
+	    this.folder = new SimpleObjectProperty<>();
+		this.folder.addListener((obs, oldV, newV) -> {
+			w.shutdown();
 		});
 		
 		/*fileListView.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
@@ -290,7 +383,7 @@ public class FileExplorer extends BorderPane {
 		
 		this.mainPanel.setOnKeyPressed(e -> {
 		    if (e.getCode() == KeyCode.BACK_SPACE) {
-				goToParentFile(folder);
+				goToParentFile(folder.get());
 				//setMainPanel(folder.getParent());
 		    }
 		});
@@ -395,59 +488,20 @@ public class FileExplorer extends BorderPane {
 	
 	private void setMainPanel(File folder, File toFocus) {
 		this.mainPanel.getChildren().clear();
-		this.folder = folder;
+		this.folder.set(folder);
+		//this.folder = folder;
 		File[] files = folder.listFiles();
 		UpdatelistViewAsGridPage(Arrays.asList(files));
 		this.mainPanel.setCenter(fileListView);
 		fileListView.requestFocus();
-		if(w != null)
-			w.shutdown();
 		Task<Void> task = new Task<Void>() {
 			
 			
 			@Override
 			protected Void call() throws Exception {
-			    Kind<?> [] kinds = { StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE};
-
 			    // Should launch WatchExample PER Filesystem:
-			    w = new WatchExample();
-			    w.register(kinds, folder.toPath());
-			    
-			    w.setHandleFileChanges(new HandleFileChanges() {
-					
-					@Override
-					public void handleFileChanges(List<FileChange> fileChanges) {
-						for(FileChange fileChange : fileChanges) {
-							Platform.runLater(() -> {
-								System.out.println(fileChange.getFileChaneType() + " " + fileChange.getPath());
-								FileChaneType type = fileChange.getFileChaneType();
-								File file = fileChange.getPath().toFile();
-								switch(type) {
-								case CREATED:
-									fileList.add(file);
-									break;
-								case DELETED:
-									fileList.remove(0);
-									break;
-								case RENAMED:
-									if(fileChange instanceof FileRename) {
-									    int itemIndex = fileList.indexOf(file);
-									    if (itemIndex != -1) {
-									    	File newFile = ((FileRename) fileChange).getNewPath().toFile();
-									        fileList.set(itemIndex, newFile);
-									    }
-									}
-									break;
-								case UPDATED:
-									break;
-								default:
-									break;
-								}
-							});
-						}
-					}
-				});
-			    
+			    w.setToRun();
+				w.register(folder.toPath());
 			    // For 2 or more WatchExample use: new Thread(w[n]::run).start();
 			    w.run();
 				return null;
