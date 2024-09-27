@@ -1,29 +1,41 @@
 import java.awt.FileDialog;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileStoreAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.swing.JFileChooser;
 
+import org.apache.tika.Tika;
+import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.mime.MimeType;
+import org.apache.tika.mime.MimeTypes;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
 import org.apache.tika.parser.mp4.MP4Parser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.apache.tika.sax.ExpandedTitleContentHandler;
+import org.controlsfx.control.CheckListView;
 import org.controlsfx.control.cell.ColorGridCell;
 import org.gagravarr.flac.FlacFile;
 import org.gagravarr.tika.FlacParser;
@@ -33,23 +45,36 @@ import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.file.FileSystemMetadataReader;
 import com.drew.metadata.mp3.Mp3Descriptor;
 import com.drew.metadata.mp4.Mp4Context;
+import com.sun.jna.platform.win32.Advapi32Util;
+import com.sun.jna.platform.win32.WinReg;
 
 import DataStructures.ManageFolder;
+import FileUtilities.MimeUtils;
 import JavaFXInterface.FileExplorer;
 import JavaFXInterface.SideFilesList;
 import impl.org.controlsfx.spreadsheet.TableViewSpanSelectionModel;
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.stage.FileChooser;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -109,7 +134,9 @@ public class TestDetailsFileTable extends Application {
     
     private TableView<FileDetails> createTable(File file) throws IOException {
     	ObservableList<FileDetails> list = FXCollections.observableList(
-    			Arrays.asList(file.listFiles()).stream().map(f -> {
+    			Arrays.asList(file.listFiles()).stream()
+    			.filter((f) -> !f.isHidden())
+    			.map(f -> {
 					try {
 						return new FileDetails(f);
 					} catch (IOException | SAXException | TikaException e) {
@@ -120,14 +147,16 @@ public class TestDetailsFileTable extends Application {
 				}).filter(p -> p != null).collect(Collectors.toList()));
     	TableView<FileDetails> table = new TableView<>();
     	table.setItems(list);
-    	TableColumn<FileDetails, String> nameCol = new TableColumn<>();
-    	TableColumn<FileDetails, String> dateCol = new TableColumn<>();
-    	File file2 = null;//new File();
+    	Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().forEach((s) -> addRow(table, s.getName()));
+    	
+    	//TableColumn<FileDetails, String> nameCol = new TableColumn<>();
+    	//TableColumn<FileDetails, String> dateCol = new TableColumn<>();
+    	//File file2 = null;//new File();
     	//BasicFileAttributes attr = Files.readAttributes(file2.toPath(), BasicFileAttributes.class);
     	//nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
     	//nameCol.setCellValueFactory((file) -> file.getValue().getFile().getName());
     	//table.fact
-    	table.getColumns().add(nameCol);
+    	//table.getColumns().add(nameCol);
     	/*nameCol.setCellValueFactory(new Callback<CellDataFeatures<File, String>, ObservableValue<String>>() {
 		     public ObservableValue<String> call(CellDataFeatures<File, String> p) {
 		         return null;//p.getValue().getPhoneProperty();
@@ -135,72 +164,280 @@ public class TestDetailsFileTable extends Application {
 		});*/
     	//TableColumn<File, Contact> removeCol;
     	table.setEditable(false);
+    	
+    	/*
+    	table.setOnMouseClicked((e) -> {
+    		if(e.getButton() == MouseButton.SECONDARY) {
+    			System.out.println("Vanila");
+    			
+    			//DialogPane dialogPane = new DialogPane();
+    			Set<String> keys = list.stream().map(f -> f.getAllKeys()).flatMap(Set::stream).collect(Collectors.toSet());
+    			CheckListView<String> keysView = new CheckListView<>();
+    			keysView.setItems(FXCollections.observableArrayList(keys));
+    			//dialogPane.getChildren().add(keysView);
+    			
+    			Popup pop = new Popup();
+    			pop.getContent().add(keysView);
+    			
+    			pop.show(table.getScene().getWindow());
+    			pop.setAutoHide(true);
+    			
+    			//PopupBuilder.create().content(keysView).width(50).height(100).autoFix(true).build();
+    			//pop.show(stage);
+    			
+    			//Alert a;
+    			//dialogPane.
+    			System.out.println(keys);
+    		}
+    	});
+    	
+    	*/
+    	
     	return table;
+    }
+    
+    private void addRow(TableView<FileDetails> table, String name) {
+    	if(table.getColumns().stream().anyMatch((c) -> c.getId().equals(name)))
+    		return;
+    	TableColumn<FileDetails, String> nameCol = new TableColumn<>();
+        VBox colName = new VBox(new Label(name));
+        colName.setAlignment(Pos.CENTER);
+    	nameCol.setGraphic(colName);
+    	nameCol.setId(name);
+    	nameCol.setCellValueFactory((file) -> new SimpleStringProperty(file.getValue().getValue(name)));
+    	
+    	colName.setOnMouseClicked((e) -> {
+    	//nameCol.getGraphic().addEventFilter(MouseEvent.MOUSE_CLICKED, (e) -> {
+    		if(e.getButton() == MouseButton.SECONDARY) {
+    			System.out.println("Vanila");
+    			
+    			//DialogPane dialogPane = new DialogPane();
+    			Set<String> keys = nameCol.getTableView().getItems().stream().map(f -> f.getAllKeys()).flatMap(Set::stream).collect(Collectors.toSet());
+    			CheckListView<String> keysView = new CheckListView<>();
+    			keysView.setItems(FXCollections.observableArrayList(keys));
+    			//dialogPane.getChildren().add(keysView);
+    			
+    			Popup pop = new Popup();
+    			pop.getContent().add(keysView);
+    			
+    			pop.show(table.getScene().getWindow());
+    			pop.setAutoHide(true);
+    			
+    			//PopupBuilder.create().content(keysView).width(50).height(100).autoFix(true).build();
+    			//pop.show(stage);
+    			
+    			//Alert a;
+    			//dialogPane.
+    			System.out.println(keys);
+    		}
+    	});
+    	table.getColumns().add(nameCol);
     }
     
     class FileDetails {
     	private File file;
     	private BasicFileAttributes attributes;
+    	private Metadata metadata;
+    	private String typeName;
+    	
 		public FileDetails(File file) throws IOException, SAXException, TikaException {
 			super();
-			this.file = file;
-			this.attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
-			//file.last
-			//Metadata metadata = FileSystemMetadataReader.readMetadata(file);
-			
-			BodyContentHandler handler = new BodyContentHandler();
-			Metadata metadata = new Metadata();
-			FileInputStream inputstream = new FileInputStream(file);
-			ParseContext pcontext = new ParseContext();
-
-			// Specific parser
-			OOXMLParser msOfficeParser = new OOXMLParser();
-			ParseContext context = new ParseContext();
-			Parser parser = new AutoDetectParser();
-			parser.parse(inputstream, handler, metadata, context);
-
-			System.out.println("Contents of the document:" + handler.toString());
-			System.out.println("Metadata of the document:");
-
-			/*Properties p = new Properties();
-			p.load(new FileInputStream(file));
-			System.out.println(p.toString());*/
+			setFile(file);
+			//this.file = file;
+			//this.attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
 			
 			
-			//MP4Parser
+	        /*Tika tika = new Tika();
+	        Metadata metadata = new Metadata();
+	        tika.parse(file, metadata);
+	        System.out.println("creation date from metadata "+metadata.get("dcterms:created"));  //created date time
+	        System.out.println("modified date from metadata "+metadata.get("dcterms:modified")); //last modified date time
+	        
+	        for(String key : metadata.names())
+	            System.out.println(key+" = "+metadata.get(key));
+			
+	        System.out.println();
+	        
+	        */
 			
 			
-			//metadata.len
-			//FlacFile flac = FlacFile.open(input);
+			//this.metadata = loadMetadata(file);
 			
-			
-			
-			
-			//Media
-			
-			String[] metadataNames = metadata.names();
-
-			for (String name : metadataNames) {
-			  System.out.println(name + "-: " + metadata.get(name));
-			}
-			
-			
-	        UserDefinedFileAttributeView fileAttributeView = Files.getFileAttributeView(file.toPath(), UserDefinedFileAttributeView.class);
-	        List<String> allAttrs = fileAttributeView.list();
+	        //UserDefinedFileAttributeView fileAttributeView = Files.getFileAttributeView(file.toPath(), UserDefinedFileAttributeView.class);
+	        /*List<String> allAttrs = attributes.
 	        System.out.println(allAttrs);
 	        for (String att : allAttrs) {
 	            System.out.println("att = " + att);
-	        }
+	        }*/
 		}
+		
+		private Metadata loadMetadata(File file) throws FileNotFoundException {
+			if(file == null || file.isDirectory() || !file.canRead())
+				return null;
+			BodyContentHandler handler = new BodyContentHandler();
+			Metadata metadata = new Metadata();
+			FileInputStream inputstream = new FileInputStream(file);
+			ParseContext context = new ParseContext();
+			Parser parser = new AutoDetectParser();
+			try {
+				parser.parse(inputstream, new ExpandedTitleContentHandler(handler), metadata, context);
+				return metadata;
+			} catch (IOException | SAXException | TikaException e) {
+			}
+			return null;
+		}
+		
 		public File getFile() {
 			return file;
 		}
 		public BasicFileAttributes getAttributes() {
 			return attributes;
 		}
-		public void setFile(File file) {
+		public void setFile(File file) throws IOException {
 			this.file = file;
+			this.attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+			this.metadata = loadMetadata(file);
+			this.typeName = getExtensionName(file);
 		}
+		
+	    public String getValue(String name) {
+	    	Object value = null;
+	    	if(this.metadata != null) {
+	    		//String[] names = this.metadata.names();
+	    		value = this.metadata.get(name);
+	    	}
+	    	System.out.println(name+" " + value);
+	    	if(value == null) {
+	    		FileAttributesType type = FileAttributesType.getTypeByName(name);
+	    		switch(type) {
+				case CREATION_TIME:
+					value = attributes.creationTime();
+					break;
+				case LAST_ACCESS_TIME:
+					value = attributes.lastAccessTime();
+					break;
+				case LAST_MODIFIED_TIME:
+					value = attributes.lastModifiedTime();
+					break;
+				case SIZE:
+					value = attributes.size();
+					break;
+				case TYPE:
+					System.out.println("Bonny");
+					value = typeName;
+					break;
+				case NAME:
+					System.out.println("Clyde");
+					value = file.getName();
+					break;
+				default:
+					break;
+	    		}
+	    	}
+	    	System.out.println(name+" " + value + " " + typeName);
+	    	return value != null ? value.toString() : null;
+	    }
+	    
+	    public Set<String> getAllKeys() {
+	    	Set<String> set = new HashSet<>();
+	    	set.addAll(Arrays.asList(FileAttributesType.values()).stream().map(type -> type.getName()).collect(Collectors.toList()));
+	    	if(metadata != null) {
+	    		List<String> keys = Arrays.asList(metadata.names());
+	    		final String XMPDM = "xmpDM:";
+	    		keys = keys.stream().filter(key -> key.startsWith(XMPDM)).map(key -> key.substring(key.lastIndexOf(':')+1)).collect(Collectors.toList());
+	    		set.addAll(keys);
+	    	}
+	    	return set;
+	    }
+    }
+    
+    enum FileAttributesType {
+    	LAST_MODIFIED_TIME("Date last saved"),
+    	LAST_ACCESS_TIME("Date accessed"),
+    	CREATION_TIME("Date created"),
+    	TYPE("Type"),
+    	SIZE("Size"),
+    	NAME("Name");
+    	
+    	public static FileAttributesType getTypeByName(String name) {
+    		FileAttributesType[] arr = FileAttributesType.values();
+    		for(FileAttributesType type : arr) {
+    			if(type.getName().equals(name))
+    				return type;
+    		}
+    		return null;
+    	}
+    	
+    	private String name;
+
+		private FileAttributesType(String name) {
+			this.name = name;
+		}
+    	
+		public String getName() {
+			return name;
+		}
+    }
+    
+    public static String getFileExtension(File file) {
+    	try {
+	    	TikaConfig tika = new TikaConfig();
+	    	Metadata md = new Metadata();
+	    	//TikaInputStream sets the TikaCoreProperties.RESOURCE_NAME_KEY
+	    	//when initialized with a file or path
+	    	MediaType mediaType = tika.getDetector().detect(
+	    			TikaInputStream.get(file.toPath(), md), md);
+	    	//MimeTypes allTypes = MimeTypes.getDefaultMimeTypes();
+	    	MimeTypes allTypes = tika.getMimeRepository();
+	    	MimeType mimeType = allTypes.forName(mediaType.toString());
+	    	return mimeType.getExtension();
+    	}
+    	catch (Exception e) {
+			// TODO: handle exception
+		}
+    	return null;
+    }
+    
+    public static String getExtensionName(File file) {
+    	if(file.isHidden()) return null;
+    	if(file.isDirectory()) {
+    		return "File folder";
+    	}
+    	/* getFileExtension(file) */
+    	return getExtensionName(MimeUtils.getMimeTypeAsExtension(file));
+    }
+    
+    public static String getExtensionName(String extension) {
+    	if(!MimeUtils.hasMimeType(extension))
+    		throw new RuntimeException("Not leggal");
+    	String extensionSoftware = getDefaultAppToActivateExtension(extension);
+    	if(extensionSoftware == null)
+    		extensionSoftware = extension;
+    	System.out.println(extensionSoftware);
+    	if(Advapi32Util.registryValueExists(WinReg.HKEY_CLASSES_ROOT, extensionSoftware, "")) {
+    		return Advapi32Util.registryGetStringValue(WinReg.HKEY_CLASSES_ROOT, extensionSoftware, "");
+    	}
+    	String format = extension.replace(".", "");
+    	return format.toUpperCase() + " File";
+    	/*Preferences p = Preferences.userRoot();
+    	System.out.println(p);
+    	String userPreference = String.format("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\%s",extension);
+    	if(p.nodeExists(userPreference)) {
+    		p = p.node(userPreference);
+    		System.out.println("shook");
+    		System.out.println(p);
+    	}*/
+    }
+    
+    public static String getDefaultAppToActivateExtension(String extension) {
+    	String fileExtPath = String.format("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\%s",extension);
+    	if(Advapi32Util.registryKeyExists(WinReg.HKEY_CURRENT_USER, fileExtPath)) {
+    		String userChoice = Paths.get(fileExtPath, "UserChoice").toString();
+    		if(Advapi32Util.registryValueExists(WinReg.HKEY_CURRENT_USER, userChoice, "ProgId")) {
+    			return Advapi32Util.registryGetStringValue(WinReg.HKEY_CURRENT_USER, userChoice, "ProgId");
+    		}
+    	}
+    	return null;
     }
 }
 /*
