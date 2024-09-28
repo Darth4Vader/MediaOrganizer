@@ -10,6 +10,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileStoreAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -50,27 +51,37 @@ import com.sun.jna.platform.win32.WinReg;
 
 import DataStructures.ManageFolder;
 import FileUtilities.MimeUtils;
+import JavaFXInterface.AppUtils;
 import JavaFXInterface.FileExplorer;
+import JavaFXInterface.FilePanel;
 import JavaFXInterface.SideFilesList;
+import JavaFXInterface.controlsfx.GridCellSelected;
 import impl.org.controlsfx.spreadsheet.TableViewSpanSelectionModel;
 import javafx.application.Application;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.stage.FileChooser;
@@ -100,7 +111,7 @@ public class TestDetailsFileTable extends Application {
     	
     	//FileExplorer list = new FileExplorer(new ManageFolder(file.getAbsolutePath()));
     	
-    	TableView<FileDetails> list = createTable(file);
+    	TableView<FileDetails> list = new FileTableView(file);
     	
     	//FileDialog
     	//list.setPrefWidth(400);
@@ -132,106 +143,131 @@ public class TestDetailsFileTable extends Application {
         //stage.minHeightProperty().bind(list.heightProperty());
     }
     
-    private TableView<FileDetails> createTable(File file) throws IOException {
-    	ObservableList<FileDetails> list = FXCollections.observableList(
-    			Arrays.asList(file.listFiles()).stream()
-    			.filter((f) -> !f.isHidden())
-    			.map(f -> {
-					try {
-						return new FileDetails(f);
-					} catch (IOException | SAXException | TikaException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						return null;
-					}
-				}).filter(p -> p != null).collect(Collectors.toList()));
-    	TableView<FileDetails> table = new TableView<>();
-    	table.setItems(list);
-    	Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().forEach((s) -> addRow(table, s.getName()));
+    private class FileTableView extends TableView<FileDetails> {
     	
-    	//TableColumn<FileDetails, String> nameCol = new TableColumn<>();
-    	//TableColumn<FileDetails, String> dateCol = new TableColumn<>();
-    	//File file2 = null;//new File();
-    	//BasicFileAttributes attr = Files.readAttributes(file2.toPath(), BasicFileAttributes.class);
-    	//nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-    	//nameCol.setCellValueFactory((file) -> file.getValue().getFile().getName());
-    	//table.fact
-    	//table.getColumns().add(nameCol);
-    	/*nameCol.setCellValueFactory(new Callback<CellDataFeatures<File, String>, ObservableValue<String>>() {
-		     public ObservableValue<String> call(CellDataFeatures<File, String> p) {
-		         return null;//p.getValue().getPhoneProperty();
-		     }
-		});*/
-    	//TableColumn<File, Contact> removeCol;
-    	table.setEditable(false);
+    	private final ObservableList<String> fixedColumns;
     	
-    	/*
-    	table.setOnMouseClicked((e) -> {
-    		if(e.getButton() == MouseButton.SECONDARY) {
-    			System.out.println("Vanila");
-    			
-    			//DialogPane dialogPane = new DialogPane();
-    			Set<String> keys = list.stream().map(f -> f.getAllKeys()).flatMap(Set::stream).collect(Collectors.toSet());
-    			CheckListView<String> keysView = new CheckListView<>();
-    			keysView.setItems(FXCollections.observableArrayList(keys));
-    			//dialogPane.getChildren().add(keysView);
-    			
-    			Popup pop = new Popup();
-    			pop.getContent().add(keysView);
-    			
-    			pop.show(table.getScene().getWindow());
-    			pop.setAutoHide(true);
-    			
-    			//PopupBuilder.create().content(keysView).width(50).height(100).autoFix(true).build();
-    			//pop.show(stage);
-    			
-    			//Alert a;
-    			//dialogPane.
-    			System.out.println(keys);
-    		}
-    	});
-    	
-    	*/
-    	
-    	return table;
-    }
-    
-    private void addRow(TableView<FileDetails> table, String name) {
-    	if(table.getColumns().stream().anyMatch((c) -> c.getId().equals(name)))
-    		return;
-    	TableColumn<FileDetails, String> nameCol = new TableColumn<>();
-        VBox colName = new VBox(new Label(name));
-        colName.setAlignment(Pos.CENTER);
-    	nameCol.setGraphic(colName);
-    	nameCol.setId(name);
-    	nameCol.setCellValueFactory((file) -> new SimpleStringProperty(file.getValue().getValue(name)));
-    	
-    	colName.setOnMouseClicked((e) -> {
-    	//nameCol.getGraphic().addEventFilter(MouseEvent.MOUSE_CLICKED, (e) -> {
-    		if(e.getButton() == MouseButton.SECONDARY) {
-    			System.out.println("Vanila");
-    			
-    			//DialogPane dialogPane = new DialogPane();
-    			Set<String> keys = nameCol.getTableView().getItems().stream().map(f -> f.getAllKeys()).flatMap(Set::stream).collect(Collectors.toSet());
-    			CheckListView<String> keysView = new CheckListView<>();
-    			keysView.setItems(FXCollections.observableArrayList(keys));
-    			//dialogPane.getChildren().add(keysView);
-    			
-    			Popup pop = new Popup();
-    			pop.getContent().add(keysView);
-    			
-    			pop.show(table.getScene().getWindow());
-    			pop.setAutoHide(true);
-    			
-    			//PopupBuilder.create().content(keysView).width(50).height(100).autoFix(true).build();
-    			//pop.show(stage);
-    			
-    			//Alert a;
-    			//dialogPane.
-    			System.out.println(keys);
-    		}
-    	});
-    	table.getColumns().add(nameCol);
+        public FileTableView() throws IOException {
+        	this.fixedColumns = FXCollections.observableArrayList(
+        			Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().map((s) -> s.getName()).collect(Collectors.toList()));
+        	this.fixedColumns.stream().forEach((s) -> addColumn(s));
+        	//Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().forEach((s) -> addColumn(s.getName()));
+        	this.setEditable(false);
+        }
+        
+        public FileTableView(File file) throws IOException {
+        	this();
+        	setFile(file);
+        }
+        
+        public void setFile(File file) {
+        	ObservableList<FileDetails> list = FXCollections.observableList(
+        			Arrays.asList(file.listFiles()).stream()
+        			.filter((f) -> !f.isHidden())
+        			.map(f -> {
+    					try {
+    						return new FileDetails(f);
+    					} catch (IOException | SAXException | TikaException e) {
+    						// TODO Auto-generated catch block
+    						e.printStackTrace();
+    						return null;
+    					}
+    				}).filter(p -> p != null).collect(Collectors.toList()));
+        	this.setItems(list);
+        }
+        
+        private boolean doesColumnExists(String name) {
+        	return this.getColumns().stream().anyMatch((c) -> c.getUserData().equals(name));
+        }
+        
+        private boolean canRemoveColumn(TableColumn<FileDetails, ?> column, Collection<String> nameList) {
+        	Object name = column.getUserData();
+        	return !fixedColumns.contains(name) && !nameList.contains(name);
+        }
+        
+        public void addColumn(String name) {
+        	if(doesColumnExists(name) || name == null)
+        		return;
+        	TableColumn<FileDetails, ?> column;
+        	if(name.equals(FileAttributesType.NAME.getName())) {
+        		TableColumn<FileDetails, FileDetails> nameCol = new TableColumn<>();
+        		nameCol.setCellValueFactory((file) ->  new SimpleObjectProperty<FileDetails>(file.getValue()));
+        		nameCol.setCellFactory((f) -> new TableCell<>() {
+        			
+        	    	private final ImageView imageView = new ImageView();
+        	    	
+        		    @Override
+        		    public void updateItem(FileDetails item, boolean empty) {
+        		        super.updateItem(item, empty);
+        	            if (item == null || empty) {
+        		            setText(null);
+        		            setGraphic(null);
+        		            imageView.setImage(null);
+        		        } else {
+        		        	setText(item.getValue(name));
+        		            imageView.setImage(AppUtils.getImageOfFile(item.getFile()));
+        		            setGraphic(imageView);
+        		        }
+        		    }
+        		});
+        		column = nameCol;
+        	}
+        	else {
+        		TableColumn<FileDetails, String> otherCols = new TableColumn<>();
+        		otherCols = new TableColumn<FileDetails, String>();
+        		otherCols.setCellValueFactory((file) -> new SimpleStringProperty(file.getValue().getValue(name)));
+        		column = otherCols;
+        	}
+            VBox colName = new VBox(new Label(name));
+            colName.setAlignment(Pos.CENTER);
+        	column.setGraphic(colName);
+        	column.setUserData(name);
+        	
+        	colName.setOnMouseClicked((e) -> {
+        	//nameCol.getGraphic().addEventFilter(MouseEvent.MOUSE_CLICKED, (e) -> {
+        		if(e.getButton() == MouseButton.SECONDARY) {
+        			Set<String> keys = column.getTableView().getItems().stream().map(f -> f.getAllKeys()).flatMap(Set::stream).collect(Collectors.toSet());
+        			CheckListView<String> keysView = new CheckListView<>();
+        			keysView.setItems(FXCollections.observableArrayList(keys));
+        			
+        			//There is a bug when setting check to items that their indices are not sorted upward.
+        			keysView.getCheckModel().checkIndices(this.getColumns().stream().map((col) -> {
+        				String nam = col.getUserData().toString();
+        				return keysView.getCheckModel().getItemIndex(nam);
+        			})
+        			.mapToInt(i -> i)
+        			.sorted()
+        			.toArray());
+        			
+        			Popup pop = new Popup();
+        			Button btn = new Button();
+        			btn.setOnMouseClicked((evt) -> {
+        				ObservableList<String> checkedList = keysView.getCheckModel().getCheckedItems();
+        				System.out.println(checkedList);
+        				this.getColumns().removeIf((c) -> canRemoveColumn(c, checkedList));
+        				for(String checked : checkedList) {
+        					System.out.println("Checked: " + checked);
+        					addColumn(checked);
+        				}
+        				pop.hide();
+        			});
+        			btn.setMaxWidth(Double.MAX_VALUE);
+        			VBox view = new VBox();
+        			view.getChildren().add(keysView);
+        			view.getChildren().add(btn);
+        			pop.getContent().add(view);
+        			pop.show(this.getScene().getWindow());
+        			pop.setAutoHide(true);
+        			
+        			//PopupBuilder.create().content(keysView).width(50).height(100).autoFix(true).build();
+        			//pop.show(stage);
+        			
+        			//Alert a;
+        			//dialogPane.
+        		}
+        	});
+        	this.getColumns().add(column);
+        }
     }
     
     class FileDetails {
@@ -306,9 +342,20 @@ public class TestDetailsFileTable extends Application {
 	    		//String[] names = this.metadata.names();
 	    		value = this.metadata.get(name);
 	    	}
-	    	System.out.println(name+" " + value);
+	    	//System.out.println(name+" " + value);
 	    	if(value == null) {
 	    		FileAttributesType type = FileAttributesType.getTypeByName(name);
+	    		value = type != null ?
+	    	    		switch(type) {
+	    				case CREATION_TIME -> attributes.creationTime();
+	    				case LAST_ACCESS_TIME -> attributes.lastAccessTime();
+	    				case LAST_MODIFIED_TIME -> attributes.lastModifiedTime();
+	    				case SIZE -> attributes.size();
+	    				case TYPE -> typeName;
+	    				case NAME -> file.getName();
+	    				default -> null;
+	    	    		} : null;
+	    	    /*
 	    		switch(type) {
 				case CREATION_TIME:
 					value = attributes.creationTime();
@@ -330,11 +377,14 @@ public class TestDetailsFileTable extends Application {
 					System.out.println("Clyde");
 					value = file.getName();
 					break;
+				case null:
+					break;
 				default:
 					break;
 	    		}
+	    		*/
 	    	}
-	    	System.out.println(name+" " + value + " " + typeName);
+	    	//System.out.println(name+" " + value + " " + typeName);
 	    	return value != null ? value.toString() : null;
 	    }
 	    
@@ -358,6 +408,7 @@ public class TestDetailsFileTable extends Application {
     	TYPE("Type"),
     	SIZE("Size"),
     	NAME("Name");
+    	//ICON("Icon");
     	
     	public static FileAttributesType getTypeByName(String name) {
     		FileAttributesType[] arr = FileAttributesType.values();
