@@ -94,10 +94,6 @@ public class BetterFilteredTableView<S> extends FilteredTableView<S> {
 	@Override
     public final void setBackingList(ObservableList<S> backingList) {
         super.setBackingList(backingList);
-        //this.backingList.setAll(backingList);
-        //his.backingList.
-        //SimpleListProperty<E>t
-        
         backingListPropertyImpl().set(backingList);
 	}
     public final ReadOnlyListProperty<S> backingListProperty() {

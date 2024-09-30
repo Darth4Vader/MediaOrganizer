@@ -84,101 +84,6 @@ public class FilteredTableColumnCheckView<S, T> extends CheckListView<T> {
 		});
 	}
 	
-	private void init2() {
-		this.visibleProperty().addListener((observable) -> {
-			System.out.println("Nice: " + observable);
-		});
-		
-		this.visibleProperty().addListener((observable, oldValue, newValue) -> {
-			System.out.println("Not0: " + observable);
-		});
-		
-		this.needsLayoutProperty().addListener((observable, oldValue, newValue) -> {
-			System.out.println("Not1: " + observable);
-		});
-		
-		//this.sceneProperty().get().
-		
-		this.parentProperty().addListener((observable) -> {
-			System.out.println("Nice: " + observable);
-		});
-		
-		this.parentProperty().addListener((observable, oldValue, newValue) -> {
-			System.out.println("Not2: " + observable);
-		});
-		
-		System.out.println(this.isDisable() + " = " + this.isDisabled());
-		
-		BooleanProperty bool = new SimpleBooleanProperty();
-		
-		bool.addListener((observable, oldValue, newValue) -> {
-			System.out.println("Ganga");
-			if(newValue) {
-				doB();
-			}
-		});
-		
-		ChangeListener<? super EventHandler<WindowEvent>> chan22 = (observable, oldValue, newValue) -> {
-			System.out.println("Ganga");
-			/*if(newValue) {
-				doB();
-			}*/
-		};
-		
-		ChangeListener<? super Window> chan = (observable, oldValue, newValue) -> {
-			System.out.println("Model: " + observable);
-			if(newValue != null) {
-				newValue.onShowingProperty().addListener(chan22);//.addListener(bool);
-				//bool.bind(newValue.onShowingProperty());
-			}
-			else if(oldValue != null) {
-				oldValue.onShowingProperty().removeListener(chan22);
-			}
-		};
-		
-		this.sceneProperty().addListener((observable, oldValue, newValue) -> {
-			System.out.println("Nice45: " + observable);
-			if(newValue != null) {
-				if(newValue.getWindow() != null) {
-					System.out.println("Under");
-					System.out.println(newValue.getWindow().isShowing());
-					//newValue.getWindow().onShownProperty().addListener(chan22);
-					//newValue.getWindow().onShowingProperty().addListener(chan22);
-					newValue.getWindow().showingProperty().addListener((obs, oldV, newV) -> {
-						System.out.println("Blows");
-						//System.out.println(c);
-						if(newV == true) {
-							doB();
-						}
-					});
-				}
-				newValue.windowProperty().addListener(chan);
-				System.out.println(newValue.getWindow().showingProperty());
-			}
-			else if(oldValue != null) {
-				oldValue.windowProperty().removeListener(chan);
-			}
-		});
-		
-		this.disableProperty().addListener((observable, oldValue, newValue) -> {
-			System.out.println("Nice6: " + observable);
-		});
-		
-		this.disabledProperty().addListener((observable, oldValue, newValue) -> {
-			System.out.println("Nice7: " + observable);
-		});
-		//this.sceneProperty().get().windowProperty().get().
-		
-		Bindings.createBooleanBinding(() -> {
-			Parent parent = this.parentProperty().getValue();
-			return parent != null;
-		}, this.parentProperty()).addListener((observable, oldValue, newValue) -> {
-			System.out.println("Not3: " + observable);
-		});
-		
-		//this.itemsProperty().bind
-	}
-	
 	private boolean first = true;
 	
 	private void doB() {
@@ -204,35 +109,8 @@ public class FilteredTableColumnCheckView<S, T> extends CheckListView<T> {
         	    			.mapToInt(i -> i)
         	    			.sorted()
         	    			.toArray());
-        			
-					
-					//System.out.println();
-					
-					
-					
-					//FXCollections.observableArrayList()
-					
-					//this.getItems().stream().filter(null)
-					/*for(T item : list) {
-						if(!this.getItems().contains(item)) {
-							this.getItems().add(item);
-						}
-					}*/
-					
-					
-					/*if(change.wasAdded()) {
-						ObservableList<? extends S> list = (ObservableList<? extends S>) change.getAddedSubList();
-						for(S item : list) {
-							
-						}
-					}
-					
-					ObservableList<? extends S> list = (ObservableList<? extends S>) change.getList();
-					*/
 				}
 			});
-			
-			//sthis.getItems().addListener(new Listener(tableColumn.columnValueProperty));
 		}
 		first = false;
 	}

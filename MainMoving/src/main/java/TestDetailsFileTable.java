@@ -232,138 +232,6 @@ public class TestDetailsFileTable extends Application {
         //stage.minHeightProperty().bind(list.heightProperty());
     }
     
-    private class FileTableView2 extends TableView<FileDetails> {
-    	
-    	private final ObservableList<String> fixedColumns;
-    	
-        public FileTableView2() throws IOException {
-        	this.fixedColumns = FXCollections.observableArrayList(
-        			Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().map((s) -> s.getName()).collect(Collectors.toList()));
-        	this.fixedColumns.stream().forEach((s) -> addColumn(s));
-        	//Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().forEach((s) -> addColumn(s.getName()));
-        	this.setEditable(false);
-        	
-        	
-        	
-        }
-        
-        public FileTableView2(File file) throws IOException {
-        	this();
-        	setFile(file);
-        }
-        
-        public void setFile(File file) {
-        	ObservableList<FileDetails> list = FXCollections.observableList(
-        			Arrays.asList(file.listFiles()).stream()
-        			.filter((f) -> !f.isHidden())
-        			.map(f -> {
-    					try {
-    						return new FileDetails(f);
-    					} catch (IOException | SAXException | TikaException e) {
-    						// TODO Auto-generated catch block
-    						e.printStackTrace();
-    						return null;
-    					}
-    				}).filter(p -> p != null).collect(Collectors.toList()));
-        	this.setItems(list);
-        	TableFilter<FileDetails> t = TableFilter.forTableView(this).apply();
-        	//t.
-        }
-        
-        private boolean doesColumnExists(String name) {
-        	return this.getColumns().stream().anyMatch((c) -> c.getUserData().equals(name));
-        }
-        
-        private boolean canRemoveColumn(TableColumn<FileDetails, ?> column, Collection<String> nameList) {
-        	Object name = column.getUserData();
-        	return !fixedColumns.contains(name) && !nameList.contains(name);
-        }
-        
-        public void addColumn(String name) {
-        	if(doesColumnExists(name) || name == null)
-        		return;
-        	TableColumn<FileDetails, ?> column;
-        	if(name.equals(FileAttributesType.NAME.getName())) {
-        		TableColumn<FileDetails, FileDetails> nameCol = new TableColumn<>(name);
-        		nameCol.setCellValueFactory((file) ->  new SimpleObjectProperty<FileDetails>(file.getValue()));
-        		nameCol.setCellFactory((f) -> new TableCell<>() {
-        			
-        	    	private final ImageView imageView = new ImageView();
-        	    	
-        		    @Override
-        		    public void updateItem(FileDetails item, boolean empty) {
-        		        super.updateItem(item, empty);
-        	            if (item == null || empty) {
-        		            setText(null);
-        		            setGraphic(null);
-        		            imageView.setImage(null);
-        		        } else {
-        		        	setText(item.getValue(name));
-        		            imageView.setImage(AppUtils.getImageOfFile(item.getFile()));
-        		            setGraphic(imageView);
-        		        }
-        		    }
-        		});
-        		column = nameCol;
-        	}
-        	else {
-        		TableColumn<FileDetails, String> otherCols = new TableColumn<>(name);
-        		otherCols = new TableColumn<FileDetails, String>();
-        		otherCols.setCellValueFactory((file) -> new SimpleStringProperty(file.getValue().getValue(name)));
-        		column = otherCols;
-        	}
-            VBox colName = new VBox(new Label(name));
-            colName.setAlignment(Pos.CENTER);
-        	column.setGraphic(colName);
-        	column.setUserData(name);
-        	
-        	colName.setOnMouseClicked((e) -> {
-        	//nameCol.getGraphic().addEventFilter(MouseEvent.MOUSE_CLICKED, (e) -> {
-        		if(e.getButton() == MouseButton.SECONDARY) {
-        			Set<String> keys = column.getTableView().getItems().stream().map(f -> f.getAllKeys()).flatMap(Set::stream).collect(Collectors.toSet());
-        			CheckListView<String> keysView = new CheckListView<>();
-        			keysView.setItems(FXCollections.observableArrayList(keys));
-        			
-        			//There is a bug when setting check to items that their indices are not sorted upward.
-        			keysView.getCheckModel().checkIndices(this.getColumns().stream().map((col) -> {
-        				String nam = col.getUserData().toString();
-        				return keysView.getCheckModel().getItemIndex(nam);
-        			})
-        			.mapToInt(i -> i)
-        			.sorted()
-        			.toArray());
-        			
-        			Popup pop = new Popup();
-        			Button btn = new Button();
-        			btn.setOnMouseClicked((evt) -> {
-        				ObservableList<String> checkedList = keysView.getCheckModel().getCheckedItems();
-        				System.out.println(checkedList);
-        				this.getColumns().removeIf((c) -> canRemoveColumn(c, checkedList));
-        				for(String checked : checkedList) {
-        					System.out.println("Checked: " + checked);
-        					addColumn(checked);
-        				}
-        				pop.hide();
-        			});
-        			btn.setMaxWidth(Double.MAX_VALUE);
-        			VBox view = new VBox();
-        			view.getChildren().add(keysView);
-        			view.getChildren().add(btn);
-        			pop.getContent().add(view);
-        			pop.show(this.getScene().getWindow());
-        			pop.setAutoHide(true);
-        			
-        			//PopupBuilder.create().content(keysView).width(50).height(100).autoFix(true).build();
-        			//pop.show(stage);
-        			
-        			//Alert a;
-        			//dialogPane.
-        		}
-        	});
-        	this.getColumns().add(column);
-        }
-    }
-    
     private class FileTableView extends BetterFilteredTableView<FileDetails> {
     	
     	private final ObservableList<String> fixedColumns;
@@ -372,15 +240,7 @@ public class TestDetailsFileTable extends Application {
         	this.fixedColumns = FXCollections.observableArrayList(
         			Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().map((s) -> s.getName()).collect(Collectors.toList()));
         	this.fixedColumns.stream().forEach((s) -> addColumn(s));
-        	//Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().forEach((s) -> addColumn(s.getName()));
         	this.setEditable(false);
-        	
-        	//setColumn
-        	
-        	//this.setRowHeaderVisible(true);
-        	
-        	//TableFilter.forTableView(this).apply();
-        	//FilteredTableView.
         }
         
         public FileTableView(File file) throws IOException {
@@ -388,41 +248,20 @@ public class TestDetailsFileTable extends Application {
         	setFile(file);
         }
         
-        //private ObservableList<FileDetails> list;
-        
         public void setFile(File file) {
         	fileList.clear();
-        	
-        	//FXCollections.observableList(
-        			Arrays.asList(file.listFiles()).stream()
-        			.filter((f) -> !f.isHidden())
-        			.map(f -> {
-    					try {
-    						return new FileDetails(f);
-    					} catch (IOException | SAXException | TikaException e) {
-    						// TODO Auto-generated catch block
-    						e.printStackTrace();
-    						return null;
-    					}
-    				}).filter(p -> p != null).forEach(fileList::add);
-        			
-        			//.collect(Collectors.toList()));
-        	
-        	 /*FilteredList<FileDetails> filteredPeople = new FilteredList<>(list);
-        	 filteredPeople.predicateProperty().bind(this.predicateProperty());
-        	 SortedList<FileDetails> sortedPeople = new SortedList<>(filteredPeople);
-        	 sortedPeople.comparatorProperty().bind(this.comparatorProperty());
-        	 this.setItems(sortedPeople);*/
-        	
-        	
-        	//this.setItems(list);
-        	//TableFilter.forTableView(this).apply();
-        	//this.
-        	
+			Arrays.asList(file.listFiles()).stream()
+			.filter((f) -> !f.isHidden())
+			.map(f -> {
+				try {
+					return new FileDetails(f);
+				} catch (IOException | SAXException | TikaException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return null;
+				}
+			}).filter(p -> p != null).forEach(fileList::add);
         	FilteredTableView.configureForFiltering(this, fileList);
-        	
-        	
-        	//this.setItems(list);
         }
         
         private boolean doesColumnExists(String name) {
@@ -466,89 +305,17 @@ public class TestDetailsFileTable extends Application {
         		BetterFilteredTableColumn<FileDetails, String> otherCols = new BetterFilteredTableColumn<>();
         		otherCols.setCellValueFactory((file) -> new SimpleStringProperty(file.getValue().getValue(name)));
         		column = otherCols;
-        		
-        		
         		otherCols.setFilterable(true);
-        		
-        		SouthFilter<FileDetails, String> editorFirstNameFilter = new SouthFilter<>(otherCols, String.class);
-        		
-        		
-        		
-        		
-           	 	//PopupFilter<FileDetails, String> popupFirstNameFilter = new PopupStringFilter<>(otherCols);
-        		
-        		ObjectProperty<Predicate<String>> nameFilter = new SimpleObjectProperty<>();
         		FilteredTableColumnCheckView<FileDetails, String> otherColCheck = new FilteredTableColumnCheckView<>(otherCols);
-        		
         		otherCols.setOnFilterAction(e -> {
-        			//otherColCheck.getItems().clear();
-        			
-        			//otherColCheck.getItems().setAll(otherCols.getAllDistinctValues());
-        			//((FilteredList<String>) getItems()).
-        			
-        			
-        			/*
-        			if(!getItems().equals(getBackingList()))
-        			otherColCheck.getCheckModel().checkIndices(otherCols.getAllDistinctFilteredValues()
-        					.stream()
-        					.map((str) -> {
-                				return otherColCheck.getCheckModel().getItemIndex(str);
-        	    			})
-        					.filter(i -> i >= 0)
-        	    			.mapToInt(i -> i)
-        	    			.sorted()
-        	    			.toArray());
-        			*/
-        			
-        			
-        			//otherColCheck.
-        			
-        			/*otherColCheck.getCheckModel().checkIndices(this.getColumns().stream().map((col) -> {
-        				String nam = col.getUserData().toString();
-        				return keysView.getCheckModel().getItemIndex(nam);
-        			})
-        			.mapToInt(i -> i)
-        			.sorted()
-        			.toArray());*/
-        			//otherColCheck.getItems().addAll(otherCols.);
-        			System.out.println(this.getItems());
         			Popup pop = new Popup();
         			pop.getContent().add(new VBox(otherColCheck));
         			pop.show(this.getScene().getWindow());
         			pop.setAutoHide(true);
-        			//popupFirstNameFilter.showPopup();
         		});
-        		
-        		//otherCols.setOnFilterAction(e -> popupFirstNameFilter.showPopup());
-        		
-        		
-        		//otherCols.pr
-        		
-        		//otherCols.setSouthNode(otherColCheck);
-        		
-        		//otherCols.setOnFilterAction(e -> otherColCheck.showPopup());
-        		
-        		/*CheckComboBox<Person.Gender> genderFilterCheckCombo= new CheckComboBox<>();
-        		ObjectProperty<Predicate<Person>> gender2Filter = new SimpleObjectProperty<>();
-        		
-        		gender2Filter.bind(Bindings.createObjectBinding(() -> genderFilterCheckCombo.getCheckModel().getCheckedItems().isEmpty()
-                        ? person -> true
-                        : person -> genderFilterCheckCombo.getCheckModel().getCheckedItems().contains(person.getGender()),
-                        genderFilterCheckCombo.getCheckModel().getCheckedItems()));
-        		
-        		Callable<Object> c = () -> otherColCheck.getCheckModel().getCheckedItems().isEmpty()
-        				? (Callable<Object>) str -> true
-        				: (Callable<Object>) str -> false;
-        		*/
-        		/*
-                        ? str -> true
-                        : str -> otherColCheck.getCheckModel().getCheckedItems().contains(str);
-        		*/
-        		
-        		Predicate<String> predicate = (str) -> otherColCheck.getCheckModel().getCheckedItems().isEmpty() 
+        		otherCols.setPredicate((str) -> otherColCheck.getCheckModel().getCheckedItems().isEmpty() 
         				? true
-        				: otherColCheck.getCheckModel().getCheckedItems().contains(str);
-        		otherCols.setPredicate(predicate);
+        				: otherColCheck.getCheckModel().getCheckedItems().contains(str));
                         
         	}
         	
@@ -561,7 +328,6 @@ public class TestDetailsFileTable extends Application {
         	column.setUserData(name);
         	
         	colName.setOnMouseClicked((e) -> {
-        	//nameCol.getGraphic().addEventFilter(MouseEvent.MOUSE_CLICKED, (e) -> {
         		if(e.getButton() == MouseButton.SECONDARY) {
         			Set<String> keys = column.getTableView().getItems().stream().map(f -> f.getAllKeys()).flatMap(Set::stream).collect(Collectors.toSet());
         			CheckListView<String> keysView = new CheckListView<>();
@@ -595,305 +361,11 @@ public class TestDetailsFileTable extends Application {
         			pop.getContent().add(view);
         			pop.show(this.getScene().getWindow());
         			pop.setAutoHide(true);
-        			
-        			//PopupBuilder.create().content(keysView).width(50).height(100).autoFix(true).build();
-        			//pop.show(stage);
-        			
-        			//Alert a;
-        			//dialogPane.
         		}
         	});
         	this.getColumns().add(column);
         }
     }
-    
-    private class FileTableView3 extends FilteredTableView<FileDetails> {
-    	
-    	private final ObservableList<String> fixedColumns;
-    	
-        public FileTableView3() throws IOException {
-        	this.fixedColumns = FXCollections.observableArrayList(
-        			Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().map((s) -> s.getName()).collect(Collectors.toList()));
-        	this.fixedColumns.stream().forEach((s) -> addColumn(s));
-        	//Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().forEach((s) -> addColumn(s.getName()));
-        	this.setEditable(false);
-        	
-        	//setColumn
-        	
-        	//this.setRowHeaderVisible(true);
-        	
-        	//TableFilter.forTableView(this).apply();
-        	//FilteredTableView.
-        }
-        
-        public FileTableView3(File file) throws IOException {
-        	this();
-        	setFile(file);
-        }
-        
-        private ObservableList<FileDetails> list;
-        
-        public void setFile(File file) {
-        	list = FXCollections.observableList(
-        			Arrays.asList(file.listFiles()).stream()
-        			.filter((f) -> !f.isHidden())
-        			.map(f -> {
-    					try {
-    						return new FileDetails(f);
-    					} catch (IOException | SAXException | TikaException e) {
-    						// TODO Auto-generated catch block
-    						e.printStackTrace();
-    						return null;
-    					}
-    				}).filter(p -> p != null).collect(Collectors.toList()));
-        	
-        	 /*FilteredList<FileDetails> filteredPeople = new FilteredList<>(list);
-        	 filteredPeople.predicateProperty().bind(this.predicateProperty());
-        	 SortedList<FileDetails> sortedPeople = new SortedList<>(filteredPeople);
-        	 sortedPeople.comparatorProperty().bind(this.comparatorProperty());
-        	 this.setItems(sortedPeople);*/
-        	
-        	
-        	//this.setItems(list);
-        	//TableFilter.forTableView(this).apply();
-        	//this.
-        	
-        	FilteredTableView.configureForFiltering(this, list);
-        	
-        	
-        	//this.setItems(list);
-        }
-        
-        private boolean doesColumnExists(String name) {
-        	return this.getColumns().stream().anyMatch((c) -> c.getUserData().equals(name));
-        }
-        
-        private boolean canRemoveColumn(TableColumn<FileDetails, ?> column, Collection<String> nameList) {
-        	Object name = column.getUserData();
-        	return !fixedColumns.contains(name) && !nameList.contains(name);
-        }
-        
-        public void addColumn(String name) {
-        	if(doesColumnExists(name) || name == null)
-        		return;
-        	FilteredTableColumn<FileDetails, ?> column;
-        	Button bton = new Button("|");
-        	if(name.equals(FileAttributesType.NAME.getName())) {
-        		FilteredTableColumn<FileDetails, FileDetails> nameCol = new FilteredTableColumn<>();
-        		nameCol.setCellValueFactory((file) ->  new SimpleObjectProperty<FileDetails>(file.getValue()));
-        		nameCol.setCellFactory((f) -> new TableCell<>() {
-        			
-        	    	private final ImageView imageView = new ImageView();
-        	    	
-        		    @Override
-        		    public void updateItem(FileDetails item, boolean empty) {
-        		        super.updateItem(item, empty);
-        	            if (item == null || empty) {
-        		            setText(null);
-        		            setGraphic(null);
-        		            imageView.setImage(null);
-        		        } else {
-        		        	setText(item.getValue(name));
-        		            imageView.setImage(AppUtils.getImageOfFile(item.getFile()));
-        		            setGraphic(imageView);
-        		        }
-        		    }
-        		});
-        		column = nameCol;
-        	}
-        	else {
-        		FilteredTableColumn<FileDetails, String> otherCols = new FilteredTableColumn<>();
-        		otherCols.setCellValueFactory((file) -> new SimpleStringProperty(file.getValue().getValue(name)));
-        		column = otherCols;
-        		
-        		
-        		otherCols.setFilterable(true);
-        		
-        		SouthFilter<FileDetails, String> editorFirstNameFilter = new SouthFilter<>(otherCols, String.class);
-        		
-        		
-        		
-        		
-           	 	//PopupFilter<FileDetails, String> popupFirstNameFilter = new PopupStringFilter<>(otherCols);
-        		
-        		ObjectProperty<Predicate<String>> nameFilter = new SimpleObjectProperty<>();
-        		CheckListView<String> otherColCheck = new CheckListView<>();
-    			otherColCheck.getCheckModel().getCheckedItems().addListener(new ListChangeListener<String>() {
-    	            @Override
-    	            public void onChanged(javafx.collections.ListChangeListener.Change<? extends String> c) {
-    	                //System.out.println("hello ");
-    	            	while (c.next()) {
-    	                    if (c.wasAdded()) {
-    	                    	System.out.println("Perr");
-    	                    	//filter();
-    	                        /*for (int i : c.getAddedSubList()) {
-    	                            System.out.println(checkListView.getItems().get(i).getName() + " selected");
-    	                        }*/
-    	                    }
-    	                    if (c.wasRemoved()) {
-    	                        /*for (int i : c.getRemoved()) {
-    	                            System.out.println(checkListView.getItems().get(i).getName() + " deselected");
-    	                        }*/
-    	                    }
-    	                    filter();
-    	                }
-    	            }
-    	        });
-        		
-        		otherCols.setOnFilterAction(e -> {
-        			//otherColCheck.getItems().clear();
-        			
-        			otherColCheck.getItems().setAll(list.stream().map(f -> otherCols.getCellData(f))
-			                     .distinct().toList());
-        			//((FilteredList<String>) getItems()).
-        			
-        			if(!getItems().equals(list))
-        			otherColCheck.getCheckModel().checkIndices(getItems().stream()
-        					.map(f -> otherCols.getCellData(f))
-        					.distinct()
-        					.map((str) -> {
-                				return otherColCheck.getCheckModel().getItemIndex(str);
-        	    			})
-        					.filter(i -> i >= 0)
-        	    			.mapToInt(i -> i)
-        	    			.sorted()
-        	    			.toArray());
-        			
-        			//otherColCheck.
-        			
-        			/*otherColCheck.getCheckModel().checkIndices(this.getColumns().stream().map((col) -> {
-        				String nam = col.getUserData().toString();
-        				return keysView.getCheckModel().getItemIndex(nam);
-        			})
-        			.mapToInt(i -> i)
-        			.sorted()
-        			.toArray());*/
-        			//otherColCheck.getItems().addAll(otherCols.);
-        			System.out.println(this.getItems());
-        			Popup pop = new Popup();
-        			pop.getContent().add(new VBox(otherColCheck));
-        			pop.show(this.getScene().getWindow());
-        			pop.setAutoHide(true);
-        			//popupFirstNameFilter.showPopup();
-        		});
-        		
-        		//otherCols.setOnFilterAction(e -> popupFirstNameFilter.showPopup());
-        		
-        		
-        		//otherCols.pr
-        		
-        		//otherCols.setSouthNode(otherColCheck);
-        		
-        		//otherCols.setOnFilterAction(e -> otherColCheck.showPopup());
-        		
-        		/*CheckComboBox<Person.Gender> genderFilterCheckCombo= new CheckComboBox<>();
-        		ObjectProperty<Predicate<Person>> gender2Filter = new SimpleObjectProperty<>();
-        		
-        		gender2Filter.bind(Bindings.createObjectBinding(() -> genderFilterCheckCombo.getCheckModel().getCheckedItems().isEmpty()
-                        ? person -> true
-                        : person -> genderFilterCheckCombo.getCheckModel().getCheckedItems().contains(person.getGender()),
-                        genderFilterCheckCombo.getCheckModel().getCheckedItems()));
-        		
-        		Callable<Object> c = () -> otherColCheck.getCheckModel().getCheckedItems().isEmpty()
-        				? (Callable<Object>) str -> true
-        				: (Callable<Object>) str -> false;
-        		*/
-        		/*
-                        ? str -> true
-                        : str -> otherColCheck.getCheckModel().getCheckedItems().contains(str);
-        		*/
-        		
-        		Predicate<String> predicate = (str) -> otherColCheck.getCheckModel().getCheckedItems().isEmpty() 
-        				? true
-        				: otherColCheck.getCheckModel().getCheckedItems().contains(str);
-        					
-        		
-        		/*
-        		otherColCheck.getCheckModel().getCheckedItems().isEmpty()
-                        ? (Predicate<String>) str -> {
-                        	System.out.println("After");
-                        	System.out.println(otherColCheck.getCheckModel().getCheckedItems());
-                        	return true;
-                        }
-                        : (Predicate<String>) str -> {
-                        	System.out.println("Before");
-                        	return otherColCheck.getCheckModel().getCheckedItems().contains(str);
-                        };
-        		
-        		nameFilter.bind(Bindings.createObjectBinding(() -> otherColCheck.getCheckModel().getCheckedItems().isEmpty()
-                        ? (Predicate<String>) str -> {
-                        	System.out.println("After");
-                        	System.out.println(otherColCheck.getCheckModel().getCheckedItems());
-                        	return true;
-                        }
-                        : (Predicate<String>) str -> {
-                        	System.out.println("Before");
-                        	return otherColCheck.getCheckModel().getCheckedItems().contains(str);
-                        },
-                        otherColCheck.getCheckModel().getCheckedItems()));
-        		*/
-        		otherCols.setPredicate(predicate);
-                        
-        	}
-        	
-        	
-            VBox colName = new VBox(new Label(name));
-            colName.getChildren().add(bton);
-            colName.setAlignment(Pos.CENTER);
-        	//column.setGraphic(colName);
-            column.setSouthNode(colName);
-        	column.setUserData(name);
-        	
-        	colName.setOnMouseClicked((e) -> {
-        	//nameCol.getGraphic().addEventFilter(MouseEvent.MOUSE_CLICKED, (e) -> {
-        		if(e.getButton() == MouseButton.SECONDARY) {
-        			Set<String> keys = column.getTableView().getItems().stream().map(f -> f.getAllKeys()).flatMap(Set::stream).collect(Collectors.toSet());
-        			CheckListView<String> keysView = new CheckListView<>();
-        			keysView.setItems(FXCollections.observableArrayList(keys));
-        			
-        			//There is a bug when setting check to items that their indices are not sorted upward.
-        			keysView.getCheckModel().checkIndices(this.getColumns().stream().map((col) -> {
-        				String nam = col.getUserData().toString();
-        				return keysView.getCheckModel().getItemIndex(nam);
-        			})
-        			.mapToInt(i -> i)
-        			.sorted()
-        			.toArray());
-        			
-        			Popup pop = new Popup();
-        			Button btn = new Button();
-        			btn.setOnMouseClicked((evt) -> {
-        				ObservableList<String> checkedList = keysView.getCheckModel().getCheckedItems();
-        				System.out.println(checkedList);
-        				this.getColumns().removeIf((c) -> canRemoveColumn(c, checkedList));
-        				for(String checked : checkedList) {
-        					System.out.println("Checked: " + checked);
-        					addColumn(checked);
-        				}
-        				pop.hide();
-        			});
-        			btn.setMaxWidth(Double.MAX_VALUE);
-        			VBox view = new VBox();
-        			view.getChildren().add(keysView);
-        			view.getChildren().add(btn);
-        			pop.getContent().add(view);
-        			pop.show(this.getScene().getWindow());
-        			pop.setAutoHide(true);
-        			
-        			//PopupBuilder.create().content(keysView).width(50).height(100).autoFix(true).build();
-        			//pop.show(stage);
-        			
-        			//Alert a;
-        			//dialogPane.
-        		}
-        	});
-        	this.getColumns().add(column);
-        }
-    }
-    
-	/*static class Person{
-		 public enum Gender {MALE, FEMALE }
-	}*/
     
     class FileDetails {
     	private File file;
