@@ -141,7 +141,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.skin.NestedTableColumnHeader;
 import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.control.skin.TableHeaderRow;
-import javafx.scene.control.skin.TableSkinUtils;
 import javafx.scene.control.skin.TableViewSkin;
 import javafx.scene.control.skin.TableViewSkinBase;
 import javafx.scene.image.ImageView;
@@ -160,8 +159,16 @@ import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
+import org.
+
 public class TestDetailsFileTable extends Application {
 	//--module-path "C:\JavaFX_22.02\lib" --add-modules javafx.controls,javafx.fxml
+	
+	
+	/*
+	 * --module-path "C:\JavaFX_22.02\lib" --add-modules javafx.controls,javafx.fxml
+	 * --add-opens=javafx.controls/javafx.scene.control.skin=ALL-UNNAMED
+	 */
 
 	public static void main(String[] args) {
 		//String[] args2 = Arrays.asList(args, "--module-path \"C:\\JavaFX_22.02\\lib\" --add-modules javafx.controls,javafx.fxml").toArray(new String[0]);
@@ -292,7 +299,17 @@ public class TestDetailsFileTable extends Application {
         	this.fixedColumns.stream().forEach((s) -> addColumn(s));
         	this.setEditable(false);
         	
-        	
+        	addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+                if (event.getTarget() instanceof TableColumnHeader) {
+                    event.consume();
+
+                    // Search for the clicked TableColumn:
+                    final TableColumnHeader columHead = (TableColumnHeader) event.getTarget();
+                    //columHead.setVisible(false);
+                    columHead.getTableColumn().setSortable(false);
+                }
+
+            });
         	//getStylesheets().add("tableNoSorting.css");
         }
         
@@ -410,13 +427,13 @@ public class TestDetailsFileTable extends Application {
             colName.setOnMouseClicked((e) -> {
             	System.out.println("Medd58885s");
             	if(e.getButton() == MouseButton.PRIMARY) {
-            		/*System.out.println("Medd");
+            		System.out.println("Medd");
             		column.setSortable(true);
-            		TableColumnSortTypeWrapper.setSortType(column, SortType.ASCENDING);
-            		column.setSortType(SortType.ASCENDING);
+            		helpSort(e.isShiftDown(), column);
+            		//column.setSortType(SortType.ASCENDING);
             		this.getSortOrder().add(column);
             		this.sort();
-            		column.setSortable(false);*/
+            		column.setSortable(false);
             	}
             });
             
@@ -487,6 +504,69 @@ public class TestDetailsFileTable extends Application {
         }
     }
     
+    private void helpSort(final boolean addColumn, TableColumnBase<?,?> tableColumnBase) {
+        // we only allow sorting on the leaf columns and columns
+        // that actually have comparators defined, and are sortable
+        if (tableColumnBase == null || tableColumnBase.getColumns().size() != 0 || tableColumnBase.getComparator() == null || !tableColumnBase.isSortable()) return;
+//        final int sortPos = getTable().getSortOrder().indexOf(column);
+//        final boolean isSortColumn = sortPos != -1;
+
+        final ObservableList<TableColumnBase<?,?>> sortOrder = getSortOrder(tableColumnBase);
+        boolean isSortColumn = sortOrder.contains(tableColumnBase);
+
+        // addColumn is true e.g. when the user is holding down Shift
+        if (addColumn) {
+            if (!isSortColumn) {
+                setSortType(tableColumnBase, TableColumn.SortType.ASCENDING);
+                sortOrder.add(tableColumnBase);
+            } else if (TableColumnSortTypeWrapper.isAscending(tableColumnBase)) {
+                setSortType(tableColumnBase, TableColumn.SortType.DESCENDING);
+            } else {
+                int i = sortOrder.indexOf(tableColumnBase);
+                if (i != -1) {
+                    sortOrder.remove(i);
+                }
+            }
+        } else {
+            // the user has clicked on a column header - we should add this to
+            // the TableView sortOrder list if it isn't already there.
+            if (isSortColumn && sortOrder.size() == 1) {
+                // the column is already being sorted, and it's the only column.
+                // We therefore move through the 2nd or 3rd states:
+                //   1st click: sort ascending
+                //   2nd click: sort descending
+                //   3rd click: natural sorting (sorting is switched off)
+                if (isAscending(tableColumnBase)) {
+                    setSortType(tableColumnBase, TableColumn.SortType.DESCENDING);
+                } else {
+                    // remove from sort
+                    sortOrder.remove(tableColumnBase);
+                }
+            } else if (isSortColumn) {
+                // the column is already being used to sort, so we toggle its
+                // sortAscending property, and also make the column become the
+                // primary sort column
+                if (isAscending(tableColumnBase)) {
+                    setSortType(tableColumnBase, TableColumn.SortType.DESCENDING);
+                } else if (isDescending(tableColumnBase)) {
+                    setSortType(tableColumnBase, TableColumn.SortType.ASCENDING);
+                }
+
+                // to prevent multiple sorts, we make a copy of the sort order
+                // list, moving the column value from the current position to
+                // its new position at the front of the list
+                List<TableColumnBase<?,?>> sortOrderCopy = new ArrayList<>(sortOrder);
+                sortOrderCopy.remove(tableColumnBase);
+                sortOrderCopy.add(0, tableColumnBase);
+                sortOrder.setAll(tableColumnBase);
+            } else {
+                // add to the sort order, in ascending form
+                setSortType(tableColumnBase, TableColumn.SortType.ASCENDING);
+                sortOrder.setAll(tableColumnBase);
+            }
+        }
+    }
+    
     private static final EventHandler<MouseEvent> mousePressedHandler = me -> {
     	TableColumnBase tableColumn = (TableColumnBase) me.getSource();
 
@@ -507,20 +587,22 @@ public class TestDetailsFileTable extends Application {
         }*/
     };
     
-    private static final EventHandler<MouseEvent> mouseReleasedHandler = me -> {
-        /*TableColumnHeader header = (TableColumnHeader) me.getSource();
-        header.getTableHeaderRow().columnDragLock = false;*/
-
-        if (me.isPopupTrigger()) return;
-        if (me.isConsumed()) return;
-        me.consume();
-
-        /*if (header.getTableHeaderRow().isReordering() && header.isColumnReorderingEnabled()) {
-            header.columnReorderingComplete();
-        } else*/ if (me.isStillSincePress()) {
-            header.sortColumn(me.isShiftDown());
-        }
-    };
+    private final EventHandler<MouseEvent> mouseReleasedHandler(TableColumnBase<?,?> tableColumnBase){
+    	return me -> {
+	        /*TableColumnHeader header = (TableColumnHeader) me.getSource();
+	        header.getTableHeaderRow().columnDragLock = false;*/
+	
+	        if (me.isPopupTrigger()) return;
+	        if (me.isConsumed()) return;
+	        me.consume();
+	
+	        /*if (header.getTableHeaderRow().isReordering() && header.isColumnReorderingEnabled()) {
+	            header.columnReorderingComplete();
+	        } else*/ if (me.isStillSincePress()) {
+	            sortColumn(me.isShiftDown(), tableColumnBase);
+	        }
+    	};
+    }
     
     public static ObservableList<TableColumnBase<?,?>> getSortOrder(Object control) {
         if (control instanceof TableView) {
@@ -538,7 +620,9 @@ public class TestDetailsFileTable extends Application {
 //        final int sortPos = getTable().getSortOrder().indexOf(column);
 //        final boolean isSortColumn = sortPos != -1;
 
-        final ObservableList<TableColumnBase<?,?>> sortOrder = getSortOrder();
+        final ObservableList<TableColumnBase<?,?>> sortOrder = null;// = tableColumnBase.getSortOrder();
+        
+        boolean isSortColumn = false;
 
         // addColumn is true e.g. when the user is holding down Shift
         if (addColumn) {
