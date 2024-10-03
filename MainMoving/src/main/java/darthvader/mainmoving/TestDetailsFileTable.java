@@ -4,6 +4,7 @@ import static com.sun.javafx.scene.control.TableColumnSortTypeWrapper.isDescendi
 import static com.sun.javafx.scene.control.TableColumnSortTypeWrapper.setSortType;
 
 import java.awt.FileDialog;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -83,10 +84,12 @@ import JavaFXInterface.AppUtils;
 import JavaFXInterface.FileExplorer;
 import JavaFXInterface.FilePanel;
 import JavaFXInterface.SideFilesList;
+import JavaFXInterface.SideFilesList.ExpandPanel;
 import JavaFXInterface.controlsfx.BetterFilteredTableColumn;
 import JavaFXInterface.controlsfx.BetterFilteredTableView;
 import JavaFXInterface.controlsfx.FilteredTableColumnCheckView;
 import JavaFXInterface.controlsfx.GridCellSelected;
+import OtherUtilities.ImageUtils;
 import impl.org.controlsfx.spreadsheet.TableViewSpanSelectionModel;
 import impl.org.controlsfx.tableview2.NestedTableColumnHeader2;
 import impl.org.controlsfx.tableview2.TableHeaderRow2;
@@ -112,10 +115,12 @@ import javafx.css.SimpleStyleableObjectProperty;
 import javafx.css.Styleable;
 import javafx.css.StyleableObjectProperty;
 import javafx.css.StyleablePropertyFactory;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -137,6 +142,7 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableColumn.SortType;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.skin.NestedTableColumnHeader;
@@ -148,19 +154,22 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.TriangleMesh;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-
-import org.
 
 public class TestDetailsFileTable extends Application {
 	//--module-path "C:\JavaFX_22.02\lib" --add-modules javafx.controls,javafx.fxml
@@ -304,10 +313,14 @@ public class TestDetailsFileTable extends Application {
                 if (event.getTarget() instanceof TableColumnHeader) {
                     event.consume();
 
+                    /*
+                    
                     // Search for the clicked TableColumn:
                     final TableColumnHeader columHead = (TableColumnHeader) event.getTarget();
                     //columHead.setVisible(false);
                     columHead.getTableColumn().setSortable(false);
+                    
+                    */
                 }
 
             });
@@ -403,7 +416,7 @@ public class TestDetailsFileTable extends Application {
                 filterButton.disableProperty().bind(otherCols.filterableProperty().not());    
         	}
         	
-        	//column.setSortable(false);      	
+        	column.setSortable(false);      	
         	
         	
         	//column.setSortNode(new Label("hghjfjhgfg"));
@@ -411,8 +424,16 @@ public class TestDetailsFileTable extends Application {
         	
         	
         	
+        	Label nameLbl = new Label(name);
         	
-            VBox colName = new VBox(new Label(name));
+        	VBox.setVgrow(nameLbl, Priority.ALWAYS);
+        	
+        	nameLbl.setBorder(Border.stroke(Color.GREEN));
+        	
+            VBox colName = new VBox();
+            colName.setSpacing(0);
+            colName.setPadding(Insets.EMPTY);
+            
             //colName.getChildren().add(filterButton);
             colName.setAlignment(Pos.CENTER);
             //colName.setMaxWidth(Double.MAX_VALUE);
@@ -425,16 +446,83 @@ public class TestDetailsFileTable extends Application {
             columnGraphics.setLeft(colName);            
             columnGraphics.setRight(filterButton);*/
             
+            
+        	final javafx.scene.image.Image SIDE_ARROW = SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png"), null);
+            
+            
+            
+            /*Label arrow = new Label("^");// ▲^ new Label("›");
+            
+            arrow.setBorder(Border.stroke(Color.BLUEVIOLET));*/
+        	
+        	ImageView arrow = new ImageView();
+        	
+        	arrow.setImage(SIDE_ARROW);
+        	
+        	arrow.setPreserveRatio(true);
+        	
+        	arrow.fitHeightProperty().bind(nameLbl.heightProperty());
+        	arrow.fitWidthProperty().bind(nameLbl.widthProperty());
+        	
+        	
+            /*arrow.setPrefHeight(10);
+            arrow.setMaxHeight(10);
+            arrow.setMinHeight(10);*/
+            
+            //arrow.setFont(arrow.getFont().font(5));
+            
+            colName.getChildren().addAll(arrow, nameLbl);
+            
+            arrow.setVisible(false);
+            
+            //column.sort
+            /*
+            column.sortTypeProperty().addListener((obs, oldVal, newVal) -> {
+                final ObservableList<TableColumnBase<?,?>> sortOrder = TestDetailsFileTable.getSortOrder(this);//getSortOrder(null);
+                boolean isSortColumn = sortOrder.contains(column);
+                if (! isSortColumn) {
+                	arrow.setVisible(false);
+                }
+                else {
+                	arrow.setVisible(true);
+                	arrow.setRotate(isAscending(column) ? 180.0F : 0.0F);
+                	System.out.println();
+                	System.out.println("RO "+arrow.getRotate());
+                }
+            });
+            */
             colName.setOnMouseClicked((e) -> {
             	System.out.println("Medd58885s");
             	if(e.getButton() == MouseButton.PRIMARY) {
             		System.out.println("Medd");
+            		System.out.println(column.getSortType());
             		column.setSortable(true);
-            		helpSort(e.isShiftDown(), column);
+            		
+            		System.out.println(column.getSortType());
+            		helpSort(e.isShiftDown(), column, this);
+            		System.out.println(column.getSortType());
             		//column.setSortType(SortType.ASCENDING);
-            		this.getSortOrder().add(column);
+            		
+            		//this.getSortOrder().add(column);
+            		
             		this.sort();
+            		System.out.println(column.getSortType());
+            		
+                    final ObservableList<TableColumnBase<?,?>> sortOrder = TestDetailsFileTable.getSortOrder(this);//getSortOrder(null);
+                    boolean isSortColumn = sortOrder.contains(column);
+                    if (! isSortColumn) {
+                    	arrow.setVisible(false);
+                    }
+                    else {
+                    	arrow.setVisible(true);
+                    	arrow.setRotate(isAscending(column) ? 270.0F : 90.0F);
+                    	System.out.println();
+                    	System.out.println("RO "+arrow.getRotate());
+                    }
+            		
+            		
             		column.setSortable(false);
+            		System.out.println(column.getSortType());
             	}
             });
             
@@ -505,16 +593,16 @@ public class TestDetailsFileTable extends Application {
         }
     }
     
-    private void helpSort(final boolean addColumn, TableColumnBase<?,?> tableColumnBase) {
+    private void helpSort(final boolean addColumn, TableColumnBase<?,?> tableColumnBase, Control tableControl) {
         // we only allow sorting on the leaf columns and columns
         // that actually have comparators defined, and are sortable
         if (tableColumnBase == null || tableColumnBase.getColumns().size() != 0 || tableColumnBase.getComparator() == null || !tableColumnBase.isSortable()) return;
 //        final int sortPos = getTable().getSortOrder().indexOf(column);
 //        final boolean isSortColumn = sortPos != -1;
 
-        final ObservableList<TableColumnBase<?,?>> sortOrder = getSortOrder(tableColumnBase);
+        final ObservableList<TableColumnBase<?,?>> sortOrder = getSortOrder(tableControl);
         boolean isSortColumn = sortOrder.contains(tableColumnBase);
-
+System.out.println(isSortColumn + " " + sortOrder);
         // addColumn is true e.g. when the user is holding down Shift
         if (addColumn) {
             if (!isSortColumn) {
@@ -611,7 +699,7 @@ public class TestDetailsFileTable extends Application {
         } else if (control instanceof TreeTableView) {
             return ((TreeTableView)control).getSortOrder();
         }
-        return FXCollections.emptyObservableList();
+        return FXCollections.observableArrayList();
     }
     
     private void sortColumn(final boolean addColumn, TableColumnBase<?,?> tableColumnBase) {
