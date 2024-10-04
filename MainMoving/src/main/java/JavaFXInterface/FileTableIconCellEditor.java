@@ -5,11 +5,11 @@ import java.io.File;
 import JavaFXInterface.controlsfx.GridCellSelected;
 import javafx.geometry.Pos;
 
-public class FileTableCellEditor extends GridCellSelected<File> {
+public class FileTableIconCellEditor extends GridCellSelected<File> {
 	
 	private final FilePanel cell;
 	
-	public FileTableCellEditor() {
+	public FileTableIconCellEditor() {
 		this.cell = new FilePanel();
 		this.cell.bindWidth(widthProperty());
 		this.cell.bindHeight(heightProperty());

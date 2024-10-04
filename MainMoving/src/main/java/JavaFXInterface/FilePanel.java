@@ -30,7 +30,9 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Cell;
+import javafx.scene.control.Control;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -52,6 +54,7 @@ import javafx.scene.paint.Color;
 public class FilePanel extends BorderPane /*VBox*/ implements NodeCellSetter<File> {
 	
 	private File file;
+	private Cell<File> currentCell;
 	private final FileName text;
 	public ImageView imageView;
 	private BooleanProperty isSelected;
@@ -120,9 +123,15 @@ public class FilePanel extends BorderPane /*VBox*/ implements NodeCellSetter<Fil
 		setOnMouseClicked(e -> {
 			requestFocus();
 			if(e.getClickCount() == 2 && e.getButton() == MouseButton.PRIMARY) {
-				FileExplorer.getFileExplorer().setMainPanel(file);
+				Control cellControlView = AppUtils.getCellOwner(currentCell);
+				if(cellControlView != null) {
+					Parent owner = cellControlView.getParent();
+					if(owner instanceof MainFileExplorerView)
+						((MainFileExplorerView) owner).setMainPanel(file);
+				}
 			}
 		});
+		currentCell = cell;
 		if(cell != null)
 			this.isSelected.bind(cell.selectedProperty());
 	}

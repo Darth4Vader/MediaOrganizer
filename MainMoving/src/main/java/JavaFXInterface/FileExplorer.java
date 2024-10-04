@@ -88,6 +88,7 @@ import DirectoryWatcher.HandleFileChanges;
 import DirectoryWatcher.WatchExample;
 import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
+import JavaFXInterface.MainFileExplorerView.FileExplorerView;
 import JavaFXInterface.controlsfx.GridViewSelection;
 import OtherUtilities.ImageUtils;
 import SwingUtilities.DocumantFilterList;
@@ -116,6 +117,7 @@ import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Cell;
+import javafx.scene.control.Control;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -145,95 +147,18 @@ import javafx.util.Callback;
 public class FileExplorer extends BorderPane {
 
 	private RenameFilePanel infoPanel;
-	private final BorderPane mainPanel;
 	private final ManageFolder move;
 	private File filePanel;
-	private SimpleObjectProperty<File> folder;
-	
-	private GridViewSelection<File> fileListView;
-	private ObservableList<File> fileList;
+	private MainFileExplorerView mainFileExplorerView;
 	
 	private static FileExplorer fileExpolrer;
 	
 	public static FileExplorer getFileExplorer() {
 		return fileExpolrer;
 	}
-	
-	public void UpdatelistViewAsGridPage(List<File> list) {
-		fileList.clear();
-		int i = 0;
-		//The maximum number of items in one row.
-		final int MAX = 5;
-		fileList.addAll(list);
-		/*FileRow fileRow = new FileRow();
-		for(File file : list) {
-			if(file != null) {
-				fileRow.add(file);
-				i++;
-				if(i == MAX) {
-					fileList.add(fileRow);
-					fileRow = new FileRow();
-					i = 0;
-				}
-			}
-		}
-		if(!fileRow.getFiles().isEmpty()) {
-			fileList.add(fileRow);
-		}*/
-	}
-	
-	enum FileExplorerView {
-		DETAILS,
-		ICONS
-	}
-	
-	public void setFileExplorerView(FileExplorerView view) {
-		switch(view) {
-		case DETAILS:
-			break;
-		case ICONS:
-			fileListView = new GridViewSelection<File>(fileList);
-			
-			fileListView.setCellFactory(x -> new FileTableCellEditor());
-			//fileListView.setSelectionModel(null);
-			fileListView.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
-			
-			
-			fileListView.setStyle("-fx-focus-color: -fx-control-inner-background ; -fx-faint-focus-color: -fx-control-inner-background ;");
-			fileListView.setFocusTraversable(false);
-			
-			fileListView.addSelectionListener(new ListChangeListener<File>() {
-
-				@Override
-				public void onChanged(Change<? extends File> c) {
-					if(c.next()) {
-						ObservableList<? extends File> list = c.getList();
-						if(c.wasRemoved()) {
-							System.out.println("alone " + list);
-							if(list.isEmpty())
-								FileExplorer.getFileExplorer().restartToolPanels();
-						}
-						if(c.wasAdded()) {
-							if(list.size() == 1)
-								FileExplorer.getFileExplorer().updateToolPanels(list.getFirst());
-							else if(list.size() > 1) {
-								
-							}
-						}
-					}
-				}
-				
-			});
-			break;
-		default:
-			break;
-		}
-	}
 
 	public FileExplorer(ManageFolder move) {
 		FileExplorer.fileExpolrer = this;
-		
-		fileList = FXCollections.observableArrayList();
 		
 		final int MAX = 5;
 		/*
@@ -270,46 +195,6 @@ public class FileExplorer extends BorderPane {
 			
 		});
 		*/
-		w = new WatchExample();
-	    w.setHandleFileChanges(new HandleFileChanges() {
-			
-			@Override
-			public void handleFileChanges(List<FileChange> fileChanges) {
-				for(FileChange fileChange : fileChanges) {
-					Platform.runLater(() -> {
-						System.out.println(fileChange.getFileChaneType() + " " + fileChange.getPath());
-						FileChaneType type = fileChange.getFileChaneType();
-						File file = fileChange.getPath().toFile();
-						switch(type) {
-						case CREATED:
-							fileList.add(file);
-							break;
-						case DELETED:
-							fileList.remove(0);
-							break;
-						case RENAMED:
-							if(fileChange instanceof FileRename) {
-							    int itemIndex = fileList.indexOf(file);
-							    if (itemIndex != -1) {
-							    	File newFile = ((FileRename) fileChange).getNewPath().toFile();
-							        fileList.set(itemIndex, newFile);
-							    }
-							}
-							break;
-						case UPDATED:
-							break;
-						default:
-							break;
-						}
-					});
-				}
-			}
-		});
-	    
-	    this.folder = new SimpleObjectProperty<>();
-		this.folder.addListener((obs, oldV, newV) -> {
-			w.shutdown();
-		});
 		
 		/*fileListView.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
 		});*/
@@ -337,8 +222,14 @@ public class FileExplorer extends BorderPane {
 		double height = screenSize.getHeight();
 		this.setPrefSize((int) (width * 0.445), (int) (height * 0.445));
 		
-		fileListView.setCellWidth(this.getPrefWidth()*0.4);
-		fileListView.setCellHeight(this.getPrefHeight()*0.4);
+		this.mainFileExplorerView = new MainFileExplorerView(FileExplorerView.DETAILS);
+		
+		Control fileView = this.mainFileExplorerView.getFileView();
+		if(fileView instanceof GridView) {
+			GridView<?> listView = (GridView<?>) fileView;
+			listView.setCellWidth(this.getPrefWidth()*0.4);
+			listView.setCellHeight(this.getPrefHeight()*0.4);
+		}
 		
 		
 		this.toolMap = new HashMap<>();
@@ -356,10 +247,9 @@ public class FileExplorer extends BorderPane {
 		
 		
 		
-		this.mainPanel = new BorderPane();
 		
-		this.setCenter(mainPanel);
-		BorderPane.setAlignment(mainPanel, Pos.TOP_CENTER);
+		this.setCenter(mainFileExplorerView);
+		BorderPane.setAlignment(mainFileExplorerView, Pos.TOP_CENTER);
 		
 		//this.add(mainPanel, BorderLayout.CENTER);
 		//JPanel toolPanel = createToolPanels();
@@ -374,20 +264,20 @@ public class FileExplorer extends BorderPane {
 		sidePnl.prefHeightProperty().bind(this.heightProperty());
 		this.setLeft(sidePnl);
 		
-		this.mainPanel.prefWidthProperty().bind(this.widthProperty().subtract(sidePnl.widthProperty()));
+		this.mainFileExplorerView.prefWidthProperty().bind(this.widthProperty().subtract(sidePnl.widthProperty()));
 		
 		
 		this.setVisible(true);
-		setMainPanel(move.getMainFolderPath());
+		
+		this.mainFileExplorerView.setMainPanel(move.getMainFolderPath());
 		
 		
-		this.mainPanel.setOnKeyPressed(e -> {
-		    if (e.getCode() == KeyCode.BACK_SPACE) {
-				goToParentFile(folder.get());
-				//setMainPanel(folder.getParent());
-		    }
-		});
 	}
+	
+	public MainFileExplorerView getMainFileExplorerView() {
+		return this.mainFileExplorerView;
+	}
+	
 	/*
     public static void setupWatcher() throws IOException, InterruptedException {
 
@@ -474,44 +364,6 @@ public class FileExplorer extends BorderPane {
 		default:
 			break;
 		}
-	}
-
-	private void setMainPanel(String path) {
-		setMainPanel(new File(path));
-	}
-
-	public void setMainPanel(File folder) {
-		setMainPanel(folder, null);
-	}
-	
-	private WatchExample w;
-	
-	private void setMainPanel(File folder, File toFocus) {
-		this.mainPanel.getChildren().clear();
-		this.folder.set(folder);
-		//this.folder = folder;
-		File[] files = folder.listFiles();
-		UpdatelistViewAsGridPage(Arrays.asList(files));
-		this.mainPanel.setCenter(fileListView);
-		fileListView.requestFocus();
-		Task<Void> task = new Task<Void>() {
-			
-			
-			@Override
-			protected Void call() throws Exception {
-			    // Should launch WatchExample PER Filesystem:
-			    w.setToRun();
-				w.register(folder.toPath());
-			    // For 2 or more WatchExample use: new Thread(w[n]::run).start();
-			    w.run();
-				return null;
-			}
-		};
-		new Thread(task).start();
-	}
-	
-	private void goToParentFile(File file) {
-		setMainPanel(file.getParentFile(), file);
 	}
 	
 	private final Map<ToolName, ToolPanel> toolMap;

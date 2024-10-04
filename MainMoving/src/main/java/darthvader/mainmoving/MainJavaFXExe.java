@@ -18,6 +18,14 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class MainJavaFXExe extends Application {
+	
+	
+	/*
+	 * --module-path "C:\JavaFX_22.02\lib" --add-modules javafx.controls,javafx.fxml
+--add-opens=javafx.controls/javafx.scene.control.skin=ALL-UNNAMED
+--add-opens=javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED
+	 */
+	
 	//--module-path "C:\JavaFX_22.02\lib" --add-modules javafx.controls,javafx.fxml
 
 	public static void main(String[] args) {

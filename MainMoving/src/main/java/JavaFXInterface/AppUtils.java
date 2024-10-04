@@ -13,6 +13,12 @@ import DataStructures.ManageFolder;
 import FileUtilities.FilesUtils;
 import OtherUtilities.ImageUtils;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.control.Cell;
+import javafx.scene.control.Control;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeTableCell;
 import javafx.scene.image.WritableImage;
 
 public class AppUtils {
@@ -38,6 +44,18 @@ public class AppUtils {
 		//System.out.println(image.getClass());
 		if(image instanceof BufferedImage)
 			return SwingFXUtils.toFXImage((BufferedImage) image, null);
+		return null;
+	}
+	
+	public static Control getCellOwner(Cell<?> cell) {
+		if(cell instanceof ListCell)
+			return ((ListCell<?>) cell).getListView();
+		if(cell instanceof TableCell)
+			return ((TableCell<?,?>) cell).getTableView();
+		if(cell instanceof TreeTableCell)
+			return ((TreeTableCell<?,?>) cell).getTreeTableView();
+		if(cell instanceof TreeCell)
+			return ((TreeCell<?>) cell).getTreeView();
 		return null;
 	}
 

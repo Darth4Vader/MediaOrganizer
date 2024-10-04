@@ -362,7 +362,30 @@ public class TestDetailsFileTable extends Application {
         		return;
         	FilteredTableColumn<FileDetails, ?> column;
         	
-        	Label filterButton = new Label("|");
+        	//Label filterButton = new Label("|");
+        	
+        	final javafx.scene.image.Image SIDE_ARROW = SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png"), null);
+            /*Label arrow = new Label("^");// ▲^ new Label("›");
+            arrow.setBorder(Border.stroke(Color.BLUEVIOLET));*/
+        	ImageView filterImage = new ImageView();
+        	filterImage.setImage(SIDE_ARROW);
+        	filterImage.setPreserveRatio(true);
+        	filterImage.setRotate(90.0F);
+        	
+        	
+        	BorderPane filterButton = new BorderPane();
+        	
+        	filterImage.fitHeightProperty().bind(filterButton.heightProperty().multiply(0.5));
+        	filterImage.fitWidthProperty().bind(filterButton.widthProperty().multiply(0.8));
+        	
+        	filterButton.setCenter(filterImage);
+        	//filterButton.setGraphic(filterImage);
+        	
+        	//arrow.fitHeightProperty().bind(namePane.heightProperty().multiply(0.4));
+        	//arrow.fitWidthProperty().bind(namePane.widthProperty());
+            //arrow.setVisible(false);
+            
+            
         	//Button bton = new Button("|");
         	if(name.equals(FileAttributesType.NAME.getName())) {
         		FilteredTableColumn<FileDetails, FileDetails> nameCol = new FilteredTableColumn<>();
@@ -402,112 +425,56 @@ public class TestDetailsFileTable extends Application {
         		otherCols.setPredicate((str) -> otherColCheck.getCheckModel().getCheckedItems().isEmpty() 
         				? true
         				: otherColCheck.getCheckModel().getCheckedItems().contains(str));
-        		
-                //otherCols.setOpenFilter(bton);
                 
         		
         		filterButton.setOnMouseClicked((e) -> {
 	        		if(e.getButton() == MouseButton.PRIMARY) {
-	        			System.out.println("nn");
 	        			otherCols.getOnFilterAction().handle(new ActionEvent(e.getSource(), e.getTarget()));
 	        		}
         		});
-                //bton.onActionProperty().bind(otherCols.onFilterActionProperty());
                 filterButton.disableProperty().bind(otherCols.filterableProperty().not());    
         	}
-        	
-        	column.setSortable(false);      	
-        	
-        	
-        	//column.setSortNode(new Label("hghjfjhgfg"));
+        	column.setSortable(false);
+        	column.setUserData(name);
         	
         	
         	
         	
         	Label nameLbl = new Label(name);
-        	
-        	VBox.setVgrow(nameLbl, Priority.ALWAYS);
-        	
-        	nameLbl.setBorder(Border.stroke(Color.GREEN));
-        	
-            VBox colName = new VBox();
-            colName.setSpacing(0);
-            colName.setPadding(Insets.EMPTY);
-            
-            //colName.getChildren().add(filterButton);
-            colName.setAlignment(Pos.CENTER);
-            //colName.setMaxWidth(Double.MAX_VALUE);
-            
-            colName.setBackground(Background.fill(Color.GREY));
-            
-            //columnGraphics.getChildren().add(colName);
-            
-            /*BorderPane columnGraphics = new BorderPane();
-            columnGraphics.setLeft(colName);            
-            columnGraphics.setRight(filterButton);*/
+        	nameLbl.setBorder(Border.stroke(Color.DARKRED));
+        	nameLbl.setAlignment(Pos.TOP_LEFT);
+        	HBox.setHgrow(nameLbl, Priority.ALWAYS);
+        	nameLbl.setMaxWidth(Double.MAX_VALUE);
+        	HBox namePane = new HBox();
+        	namePane.getChildren().add(nameLbl);
+        	namePane.setBorder(Border.stroke(Color.GREEN));
+        	VBox.setVgrow(namePane, Priority.ALWAYS);
             
             
-        	final javafx.scene.image.Image SIDE_ARROW = SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png"), null);
-            
-            
-            
+        	//final javafx.scene.image.Image SIDE_ARROW = SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png"), null);
             /*Label arrow = new Label("^");// ▲^ new Label("›");
-            
             arrow.setBorder(Border.stroke(Color.BLUEVIOLET));*/
-        	
         	ImageView arrow = new ImageView();
-        	
         	arrow.setImage(SIDE_ARROW);
-        	
         	arrow.setPreserveRatio(true);
-        	
-        	arrow.fitHeightProperty().bind(nameLbl.heightProperty());
-        	arrow.fitWidthProperty().bind(nameLbl.widthProperty());
-        	
-        	
-            /*arrow.setPrefHeight(10);
-            arrow.setMaxHeight(10);
-            arrow.setMinHeight(10);*/
-            
-            //arrow.setFont(arrow.getFont().font(5));
-            
-            colName.getChildren().addAll(arrow, nameLbl);
-            
+        	arrow.fitHeightProperty().bind(namePane.heightProperty().multiply(0.4));
+        	arrow.fitWidthProperty().bind(namePane.widthProperty());
             arrow.setVisible(false);
             
-            //column.sort
-            /*
-            column.sortTypeProperty().addListener((obs, oldVal, newVal) -> {
-                final ObservableList<TableColumnBase<?,?>> sortOrder = TestDetailsFileTable.getSortOrder(this);//getSortOrder(null);
-                boolean isSortColumn = sortOrder.contains(column);
-                if (! isSortColumn) {
-                	arrow.setVisible(false);
-                }
-                else {
-                	arrow.setVisible(true);
-                	arrow.setRotate(isAscending(column) ? 180.0F : 0.0F);
-                	System.out.println();
-                	System.out.println("RO "+arrow.getRotate());
-                }
-            });
-            */
+            VBox colName = new VBox();
+            colName.setPadding(Insets.EMPTY);
+            colName.setAlignment(Pos.CENTER);
+            //colName.setBackground(Background.fill(Color.WHITE));
+            colName.getChildren().addAll(arrow, namePane);
             colName.setOnMouseClicked((e) -> {
-            	System.out.println("Medd58885s");
             	if(e.getButton() == MouseButton.PRIMARY) {
-            		System.out.println("Medd");
-            		System.out.println(column.getSortType());
+            		//Allow to Sort
             		column.setSortable(true);
-            		
-            		System.out.println(column.getSortType());
+            		//Find The next Sort type
             		helpSort(e.isShiftDown(), column, this);
-            		System.out.println(column.getSortType());
-            		//column.setSortType(SortType.ASCENDING);
-            		
-            		//this.getSortOrder().add(column);
-            		
+            		//Now Sort, if can.
             		this.sort();
-            		System.out.println(column.getSortType());
-            		
+            		//Show The arrow if the column is currently Sorting
                     final ObservableList<TableColumnBase<?,?>> sortOrder = TestDetailsFileTable.getSortOrder(this);//getSortOrder(null);
                     boolean isSortColumn = sortOrder.contains(column);
                     if (! isSortColumn) {
@@ -516,40 +483,58 @@ public class TestDetailsFileTable extends Application {
                     else {
                     	arrow.setVisible(true);
                     	arrow.setRotate(isAscending(column) ? 270.0F : 90.0F);
-                    	System.out.println();
-                    	System.out.println("RO "+arrow.getRotate());
                     }
-            		
-            		
+                    //Finally don't allow to sort, in order for the default column header mouser press sort not to work.
             		column.setSortable(false);
-            		System.out.println(column.getSortType());
             	}
             });
-            
+        	
+        	nameLbl.setTextFill(Color.rgb(91, 119, 168)); //0070CE
+        	
+        	filterButton.setBorder(Border.stroke(Color.rgb(91, 119, 168)));
+        	
             HBox columnGraphics = new HBox();
             columnGraphics.getChildren().add(colName);
             HBox.setHgrow(colName, Priority.ALWAYS);
-            columnGraphics.getChildren().add(filterButton);
             
+        	//filterButton.prefHeightProperty().bind(colName.heightProperty());
+        	filterButton.prefWidthProperty().bind(colName.widthProperty().multiply(0.1));
             
-            /*Label label = new Label(name);
-            label.setStyle("-fx-padding: 5px;");
-            HBox hBox = new HBox(new Button("X"), label, new Button("X"));
-            hBox.setMinWidth(Control.USE_PREF_SIZE);
-
-            Rectangle clip = new Rectangle(0,0, column.getWidth(), hBox.getHeight());
-            column.widthProperty().addListener(observable -> clip.setWidth(column.getWidth()));
-            hBox.heightProperty().addListener(observable -> clip.setHeight(hBox.getHeight()));
-            hBox.setClip(clip);
-
-            column.getStyleClass().add("buttontastic");
-            column.setText(null);
-            column.setGraphic(hBox);*/
+        	
+        	columnGraphics.getChildren().add(filterButton);
             
             column.setGraphic(columnGraphics);
             
-        	//column.setSouthNode(colName);
-        	column.setUserData(name);
+            
+            columnGraphics.focusWithinProperty().addListener((observable, oldVal, newVal) -> {
+            	if(newVal) {
+            		columnGraphics.setBackground(Background.fill(Color.rgb(185, 209, 234, 0.3)));
+            	}
+            	else {
+            		columnGraphics.setBackground(Background.EMPTY);
+            	}
+            });
+        	
+        	columnGraphics.setOnMouseEntered((e) -> {
+        		if(!columnGraphics.isFocused()) {
+	        		columnGraphics.setBackground(Background.fill(Color.rgb(185, 209, 234, 0.3)));
+	        		filterButton.setVisible(true);
+        		}
+        	});
+        	columnGraphics.setOnMouseExited((e) -> {
+        		if(!columnGraphics.isFocused()) {
+	        		columnGraphics.setBackground(Background.EMPTY);
+	        		filterButton.setVisible(false);
+        		}
+        	});
+        	
+        	/*columnGraphics.setOnMousePressed((e) -> {
+        		
+        	});*/
+        	
+        	filterButton.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
+        		columnGraphics.requestFocus();
+        	});
         	
         	columnGraphics.setOnMouseClicked((e) -> {
         		if(e.getButton() == MouseButton.SECONDARY) {
@@ -584,14 +569,12 @@ public class TestDetailsFileTable extends Application {
         			pop.setAutoHide(true);
         		}
         	});
+        	
         	this.getColumns().add(column);
-        	
-        	//column.getStyleableNode().onMouseClickedProperty().bind(new SimpleBooleanProperty(false));
-        	//column.getStyleableNode().setOnMouseClicked(null);
-        	
-        	//this.getStylesheets().add("tab.css");
         }
     }
+    
+    //private class FileTableColumn extends 
     
     private void helpSort(final boolean addColumn, TableColumnBase<?,?> tableColumnBase, Control tableControl) {
         // we only allow sorting on the leaf columns and columns
@@ -655,6 +638,8 @@ System.out.println(isSortColumn + " " + sortOrder);
             }
         }
     }
+    
+    
     
     private static final EventHandler<MouseEvent> mousePressedHandler = me -> {
     	TableColumnBase tableColumn = (TableColumnBase) me.getSource();

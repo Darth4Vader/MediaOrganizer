@@ -226,7 +226,7 @@ public class SideFilesList extends ScrollPane {
 				Label pop = new Label(text.getText());
 				pop.setOnMouseClicked(e -> {
 					System.out.println(file);
-					explorer.setMainPanel(file);
+					explorer.getMainFileExplorerView().setMainPanel(file);
 				});
 				pop.setCursor(Cursor.HAND);
 				MenuItem cut = new MenuItem();
@@ -255,7 +255,7 @@ public class SideFilesList extends ScrollPane {
 				BorderPane fileWithNamePnl = new BorderPane();
 				fileWithNamePnl.setOnMouseClicked(e -> {
 					System.out.println(file);
-					explorer.setMainPanel(file);
+					explorer.getMainFileExplorerView().setMainPanel(file);
 				});
 				fileWithNamePnl.setLeft(fileWithName);
 				

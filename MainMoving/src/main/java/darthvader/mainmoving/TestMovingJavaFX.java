@@ -9,7 +9,7 @@ import DataStructures.FolderInfo;
 import DataStructures.ManageFolder;
 import JavaFXInterface.FilePanel;
 import JavaFXInterface.FileRow;
-import JavaFXInterface.FileTableCellEditor;
+import JavaFXInterface.FileTableIconCellEditor;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -32,7 +32,7 @@ public class TestMovingJavaFX extends BorderPane {
 		
 		final int MAX = 5;
 		fileListView = new ListView<FileRow>(fileList);
-		fileListView.setCellFactory(x -> new FileTableCellEditor(fileListView, MAX));
+		fileListView.setCellFactory(x -> new FileTableIconCellEditor(fileListView, MAX));
 		fileListView.setSelectionModel(null);
 		fileListView.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
 		

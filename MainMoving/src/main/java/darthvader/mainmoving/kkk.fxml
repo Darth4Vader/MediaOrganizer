@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.shape.Polygon?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1">
-	<!-- TODO Add Nodes -->
+
+<AnchorPane prefHeight="198.0" prefWidth="297.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/20.0.1">
+   <children>
+      <Polygon fill="DODGERBLUE" layoutX="152.0" layoutY="100.0" points="-53.999977111816406, 40.0, 46.00001525878906, 40.0, -3.9999847412109375, -60.0" stroke="BLACK" strokeType="INSIDE" />
+      <Polygon fill="WHITE" layoutX="152.0" layoutY="100.0" points="-53.999977111816406, 40.0, 46.00001525878906, 40.0, -3.9999847412109375, -30.666656494140625" stroke="WHITE" strokeType="INSIDE" />
+   </children>
 </AnchorPane>
-
