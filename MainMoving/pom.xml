@@ -117,6 +117,13 @@
     <version>5.15.0</version>
 </dependency>
 
+<!--
+	<dependency>
+	    <groupId>com.github.MrMarnic</groupId>
+	    <artifactId>JIconExtractReloaded</artifactId>
+	    <version>v1.0</version>
+	</dependency>
+-->
 
 
 	    		
@@ -236,6 +243,20 @@
           <id>github</id>
           <name>GitHub OWNER Apache Maven Packages</name>
           <url>https://maven.pkg.github.com/Gagravarr/VorbisJava</url>
+
+          <!-- next elements are up to you -->
+          <releases>
+              <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <updatePolicy>always</updatePolicy>
+            <enabled>true</enabled>
+          </snapshots>
+     </pluginRepository>
+          <pluginRepository>
+          <id>github2</id>
+          <name>GitHub OWNER Apache Maven Packages</name>
+          <url>https://maven.pkg.github.com/MrMarnic/JIconExtractReloaded</url>
 
           <!-- next elements are up to you -->
           <releases>

@@ -10,7 +10,7 @@ public interface NodeCellSetter<T> {
 	
 	public void set(T item);
 	
-	public void set(File file, Cell<File> cell);
+	public void set(T file, Cell<T> cell);
 	
 	public void reset();
 	

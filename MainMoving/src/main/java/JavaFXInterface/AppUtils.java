@@ -28,10 +28,12 @@ public class AppUtils {
 		if(file.isDirectory())
 			imageFile = FilesUtils.getFileLogo(file);
 		java.awt.Image image = null;
-		if(imageFile != null)
+		System.out.println(file + " imageFile: " + imageFile);
+		/*if(imageFile != null)
 			image = ImageUtils.loadImage(imageFile.getPath());
-		else {
+		else {*/
 			Icon icon = FileSystemView.getFileSystemView().getSystemIcon(file);
+			System.out.println(file + " OIcon: " + icon);
 			if(icon instanceof ImageIcon) {
 				image = ImageUtils.toBufferedImage(((ImageIcon) icon).getImage());
 			}
@@ -40,7 +42,7 @@ public class AppUtils {
 				Graphics2D g = ((BufferedImage) image).createGraphics(); icon.paintIcon(null, g, 0, 0);
 				g.dispose();
 			}
-		}
+		//}
 		//System.out.println(image.getClass());
 		if(image instanceof BufferedImage)
 			return SwingFXUtils.toFXImage((BufferedImage) image, null);

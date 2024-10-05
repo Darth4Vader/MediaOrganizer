@@ -41,7 +41,7 @@ public class MainJavaFXExe extends Application {
     	
     	File file = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
     	
-    	file = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\New folder (2)");
+    	//file = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\New folder (2)");
     	
     	//SideFilesList list = new SideFilesList(file);
     	

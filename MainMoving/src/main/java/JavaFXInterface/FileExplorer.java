@@ -114,6 +114,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Cell;
@@ -258,7 +259,7 @@ public class FileExplorer extends BorderPane {
 		this.setTop(getSearchPnl());
 		
 		
-		ScrollPane sidePnl = new SideFilesList(this, new File(move.getMainFolderPath()));
+		SideFilesList sidePnl = new SideFilesList(this, new File(move.getMainFolderPath()));
 		
 		sidePnl.prefWidthProperty().bind(this.widthProperty().multiply(0.3));
 		sidePnl.prefHeightProperty().bind(this.heightProperty());
