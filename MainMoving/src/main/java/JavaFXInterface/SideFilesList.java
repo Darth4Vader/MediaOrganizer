@@ -167,6 +167,8 @@ public class SideFilesList extends TreeView<File> {
 		        	setDisclosureNode(null);
 		        setAlignment(Pos.CENTER_LEFT);
 		        
+		        setBorder(Border.stroke(Color.AQUA));
+		        
 		        //p.
 		        
 	            /*if (getTreeItem() != null) {
@@ -179,8 +181,9 @@ public class SideFilesList extends TreeView<File> {
 		        p.setWidth(10);
 		        p.setHeight(10);
 		        
-		        /*p.setFitWidth(10);
-		        p.setFitHeight(10);*/
+		        
+		        /*imageView.setFitWidth(10);
+		        imageView.setFitHeight(10);*/
 		        
 		        /*
 		        if (getTreeItem() != null) {
@@ -201,6 +204,9 @@ public class SideFilesList extends TreeView<File> {
 		    }
 		    
 		});
+		
+		
+		//private class TreeFilePanel extends 
 	}
 	
 	private List<TreeItem<File>> getTreeFileItems(File root) {

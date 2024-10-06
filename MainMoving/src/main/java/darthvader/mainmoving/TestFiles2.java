@@ -1,4 +1,5 @@
 package darthvader.mainmoving;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
@@ -19,13 +20,17 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import DirectoryWatcher.WatchExample;
-import backend.tmdb.CreateMovie;
+import JavaFXInterface.AppUtils;
 import javafx.application.Platform;
 
 public class TestFiles2 {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-
+		
+		String path = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024\\Star Wars").getAbsolutePath();
+		AppUtils.getIconForFile(10, 10, path);
+		
+		/*
 	    //final List<Path> dirs = Arrays.stream(args).map(Path::of).map(Path::toAbsolutePath).collect(Collectors.toList());
 		final List<Path> dirs = Arrays.stream(new String[]{"C:\\Users\\itay5\\OneDrive\\מסמכים\\New folder (2)"}).map(Path::of).map(Path::toAbsolutePath).collect(Collectors.toList());
 	    Kind<?> [] kinds = { StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE};
@@ -39,5 +44,7 @@ public class TestFiles2 {
 
 	    // For 2 or more WatchExample use: new Thread(w[n]::run).start();
 	    w.run();
+	    
+	    */
 	}
 }
