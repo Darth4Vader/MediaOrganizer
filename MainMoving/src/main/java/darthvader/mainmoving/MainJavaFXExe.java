@@ -13,6 +13,7 @@ import DataStructures.ManageFolder;
 import JavaFXInterface.FileExplorer;
 import JavaFXInterface.SideFilesList;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -32,6 +33,8 @@ public class MainJavaFXExe extends Application {
 		//String[] args2 = Arrays.asList(args, "--module-path \"C:\\JavaFX_22.02\\lib\" --add-modules javafx.controls,javafx.fxml").toArray(new String[0]);
 		Application.launch(args);
 	}
+	
+	private FileExplorer list;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -45,7 +48,7 @@ public class MainJavaFXExe extends Application {
     	
     	//SideFilesList list = new SideFilesList(file);
     	
-    	FileExplorer list = new FileExplorer(new ManageFolder(file.getAbsolutePath()));
+    	/*FileExplorer*/ list = new FileExplorer(new ManageFolder(file.getAbsolutePath()));
     	
     	//FileDialog
     	//list.setPrefWidth(400);
@@ -75,5 +78,17 @@ public class MainJavaFXExe extends Application {
     	
         //stage.minWidthProperty().bind(list.widthProperty());
         //stage.minHeightProperty().bind(list.heightProperty());
+    	
+    }
+    
+    @Override
+    public void stop() {
+        /*// When stopping the market app, close the rest application and the JavaFX application
+        if (appContext != null) {
+            appContext.close();
+        }
+        Platform.exit();*/
+    	this.list.closePanel();
+    	Platform.exit();
     }
 }

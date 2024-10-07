@@ -1,4 +1,4 @@
-package JavaFXInterface;
+package JavaFXInterface.FileExplorerView;
 
 import java.io.File;
 

@@ -7,9 +7,9 @@ import java.util.List;
 
 import DataStructures.FolderInfo;
 import DataStructures.ManageFolder;
-import JavaFXInterface.FilePanel;
 import JavaFXInterface.FileRow;
-import JavaFXInterface.FileTableIconCellEditor;
+import JavaFXInterface.FileExplorerView.FilePanel;
+import JavaFXInterface.FileExplorerView.FileTableIconCellEditor;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;

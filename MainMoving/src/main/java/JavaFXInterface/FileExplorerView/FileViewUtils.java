@@ -1,4 +1,4 @@
-package JavaFXInterface;
+package JavaFXInterface.FileExplorerView;
 
 import static com.sun.javafx.scene.control.TableColumnSortTypeWrapper.isAscending;
 import static com.sun.javafx.scene.control.TableColumnSortTypeWrapper.isDescending;

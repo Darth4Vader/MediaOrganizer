@@ -1,4 +1,4 @@
-package JavaFXInterface;
+package JavaFXInterface.FileExplorerView;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +50,10 @@ public class MainFileExplorerView extends BorderPane {
 		});
 	    this.folder = new SimpleObjectProperty<>();
 		this.folder.addListener((obs, oldV, newV) -> {
+			System.out.println("rreee");
 			w.shutdown();
+			System.out.println("relax");
+			//t.s
 		});
 		setFileExplorerView(fileExplorerView);
 	}
@@ -100,14 +103,25 @@ public class MainFileExplorerView extends BorderPane {
 			@Override
 			protected Void call() throws Exception {
 			    // Should launch WatchExample PER Filesystem:
-			    w.setToRun();
+				System.out.println("Let's Start");
+				w.setToRun();
+				System.out.println("Okkkkk");
 				w.register(folder.toPath());
 			    // For 2 or more WatchExample use: new Thread(w[n]::run).start();
-			    w.run();
+			    System.out.println("Partyyyy");
+				w.run();
+			    System.out.println("\nthtats it\n");
 				return null;
 			}
 		};
-		new Thread(task).start();
+		t = new Thread(task);
+		t.start();
+	}
+	
+	private Thread t;
+	
+	public void closePanel() {
+		w.shutdown();
 	}
 	
 	public void goToParentFile(File file) {

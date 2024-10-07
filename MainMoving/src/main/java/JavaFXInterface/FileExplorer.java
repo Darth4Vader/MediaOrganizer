@@ -88,7 +88,8 @@ import DirectoryWatcher.HandleFileChanges;
 import DirectoryWatcher.WatchExample;
 import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
-import JavaFXInterface.MainFileExplorerView.FileExplorerView;
+import JavaFXInterface.FileExplorerView.MainFileExplorerView;
+import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
 import JavaFXInterface.controlsfx.GridViewSelection;
 import OtherUtilities.ImageUtils;
 import SwingUtilities.DocumantFilterList;
@@ -507,6 +508,10 @@ public class FileExplorer extends BorderPane {
 			if(canUse)
 				addInfoPanel(tool);
 		}
+	}
+	
+	public void closePanel() {
+		this.mainFileExplorerView.closePanel();
 	}
 	
 	/*

@@ -39,6 +39,7 @@ public class WatchExample implements Runnable {
     }
 
     public WatchExample() {
+    	this.canActivate = true;
     	setToRun();
     }
     
@@ -46,17 +47,29 @@ public class WatchExample implements Runnable {
         this.listener = listener;
     }
     
+    private boolean canActivate;
+    
+    
     public void setToRun() {
-        System.out.println("shutdown()");
+        System.out.println("startup()");
+        while(!canActivate);
         created.clear();
         updated.clear();
         deleted.clear();
         this.appIsRunning = true;
+        this.ws = null;
     }
 
     public void shutdown() {
         System.out.println("shutdown()");
         this.appIsRunning = false;
+        if(ws != null) try {
+        	ws.close();
+        	System.out.println("CClosed");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     public void run() {
@@ -64,6 +77,7 @@ public class WatchExample implements Runnable {
         System.out.println("run() START watch");
         System.out.println();
 
+        canActivate = false;
         try(WatchService autoclose = ws) {
 
             while(appIsRunning) {
@@ -86,7 +100,7 @@ public class WatchExample implements Runnable {
                 }
 
                 System.out.println("PENDING: cre="+created.size()+" mod="+updated.size()+" del="+deleted.size());
-
+                
                 // This only sends new notifications when there was NO event this cycle:
                 if (wk == null && hasPending) {
                     listener.fileChange(deleted, created, updated);
@@ -103,8 +117,10 @@ public class WatchExample implements Runnable {
         catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-
-        System.out.println("run() END watch");
+        finally {
+            System.out.println("run() END watch");
+            canActivate = true;
+        }
     }
     
     public void register(Path dir) throws IOException {
@@ -119,7 +135,13 @@ public class WatchExample implements Runnable {
         if (this.ws == null) {
             ws = dir.getFileSystem().newWatchService();
         }
-        dir.register(ws, kinds);
+        //System.out.println(dir.register(ws, kinds));
+        try {
+        	dir.register(ws, kinds);
+        }
+        catch (Throwable e) {
+        	e.printStackTrace();
+		}
     }
 
     /**
@@ -189,6 +211,7 @@ public class WatchExample implements Runnable {
     public void fireEvents(Set<Path> deleted, Set<Path> created, Set<Path> modified) {
         System.out.println();
         System.out.println("fireEvents START");
+        System.out.println(deleted + "\n"+created+"\n"+modified);
         //LinkedBlockingQueue<FileChange> list = new LinkedBlockingQueue<>();
         //BlockingQ
         List<FileChange> list = new ArrayList<>();

@@ -1,4 +1,4 @@
-package JavaFXInterface;
+package JavaFXInterface.FileExplorerView;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
