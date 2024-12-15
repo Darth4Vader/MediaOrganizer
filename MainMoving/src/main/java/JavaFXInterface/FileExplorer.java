@@ -90,6 +90,7 @@ import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
+import JavaFXInterface.controlsfx.DragResizePane;
 import JavaFXInterface.controlsfx.GridViewSelection;
 import OtherUtilities.ImageUtils;
 import SwingUtilities.DocumantFilterList;
@@ -262,8 +263,11 @@ public class FileExplorer extends BorderPane {
 		
 		SideFilesList sidePnl = new SideFilesList(this, new File(move.getMainFolderPath()));
 		
+		DragResizePane.makeResizable(sidePnl);
+		
 		sidePnl.prefWidthProperty().bind(this.widthProperty().multiply(0.3));
 		sidePnl.prefHeightProperty().bind(this.heightProperty());
+		
 		this.setLeft(sidePnl);
 		
 		this.mainFileExplorerView.prefWidthProperty().bind(this.widthProperty().subtract(sidePnl.widthProperty()));

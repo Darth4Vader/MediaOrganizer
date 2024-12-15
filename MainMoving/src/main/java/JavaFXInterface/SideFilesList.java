@@ -143,7 +143,13 @@ public class SideFilesList extends TreeView<File> {
 					p.setImage(SIDE_ARROW);
 					p.set(this);
 		            imageView.setImage(AppUtils.getImageOfFile(item));
+		            imageView.setFitWidth(10);
+		            imageView.setFitHeight(10);
+		            
+		            setGraphicTextGap(5);
+		            
 		            setGraphic(imageView);
+		            
 					setOnMouseClicked(e -> {
 						requestFocus();
 						if(e.getClickCount() == 1 && e.getButton() == MouseButton.PRIMARY) {

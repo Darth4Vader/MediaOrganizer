@@ -21,6 +21,7 @@ import DirectoryWatcher.FileChange;
 import DirectoryWatcher.FileChange.FileChaneType;
 import FileUtils.FileAttributesType;
 import FileUtils.FileDetails;
+import JavaFXInterface.AppUtils;
 import JavaFXInterface.SideFilesList.ExpandPanel;
 import JavaFXInterface.controlsfx.BetterFilteredTableColumn;
 import JavaFXInterface.controlsfx.BetterFilteredTableView;
@@ -34,6 +35,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
@@ -51,6 +53,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Popup;
+import javafx.stage.Stage;
 
 public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> implements FileTableHandler {
 	
@@ -176,6 +179,9 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     			pop.getContent().add(new VBox(otherColCheck));
     			pop.show(this.getScene().getWindow());
     			pop.setAutoHide(true);
+    			pop.setOnHidden(evt -> {
+    				filterButton.setVisible(!otherColCheck.getCheckModel().isEmpty());
+    			});
     		});
     		otherCols.setPredicate((str) -> otherColCheck.getCheckModel().getCheckedItems().isEmpty() 
     				? true
@@ -187,10 +193,12 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
         			otherCols.getOnFilterAction().handle(new ActionEvent(e.getSource(), e.getTarget()));
         		}
     		});
-            filterButton.disableProperty().bind(otherCols.filterableProperty().not());    
+            filterButton.disableProperty().bind(otherCols.filterableProperty().not());
     	}
     	column.setSortable(false);
     	column.setUserData(name);
+    	
+    	column.setPrefWidth(50);
     	
     	
     	
@@ -291,13 +299,19 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     		columnGraphics.requestFocus();
     	});
     	
+    	filterButton.visibleProperty().addListener((observable, oldVal, newVal) -> {
+    		if(oldVal && !newVal) 
+    			column.getTableView().requestFocus();
+    	});
+    	
     	columnGraphics.setOnMouseClicked((e) -> {
     		if(e.getButton() == MouseButton.SECONDARY) {
     			Set<String> keys = column.getTableView().getItems().stream().map(f -> f.getAllKeys()).flatMap(Set::stream).collect(Collectors.toSet());
     			CheckListView<String> keysView = new CheckListView<>();
+    			//keysView.getStylesheets().add("disable-empty-rows.css");
+    			keysView.setStyle(".table-row-cell:empty { -fx-background-color: white; -fx-border-color: white;} ");
     			keysView.setItems(FXCollections.observableArrayList(keys));
-    			
-    			
+    			keysView.setMinHeight(USE_PREF_SIZE);
     			
     			//There is a bug when setting check to items that their indices are not sorted upward.
     			FileViewUtils.setCheckIndices(keysView, this.getColumns().stream()
@@ -320,6 +334,7 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     			view.getChildren().add(keysView);
     			view.getChildren().add(btn);
     			pop.getContent().add(view);
+    			
     			pop.show(this.getScene().getWindow());
     			pop.setAutoHide(true);
     		}
