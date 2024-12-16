@@ -10,8 +10,11 @@ import JavaFXInterface.controlsfx.GridViewSelection;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.input.ScrollEvent;
 
 public class FileTableIconView extends GridViewSelection<File> implements FileTableHandler {
+	
+	private static final double CELL_MIN_WIDTH = 100, CELL_MIN_HEIGHT = 100;
 
 	public FileTableIconView() {
 		super(FXCollections.observableArrayList());
@@ -40,6 +43,27 @@ public class FileTableIconView extends GridViewSelection<File> implements FileTa
 				}
 			}
 			
+		});
+		setCellWidth(CELL_MIN_WIDTH);
+		setCellHeight(CELL_MIN_HEIGHT);
+		
+		//add zoom for the cells size
+		this.addEventFilter(ScrollEvent.ANY, e -> {
+            //if resizing, then don't allow to scroll the list
+			if(e.isControlDown()) {
+				double zoomFactor = 1.05;
+	            double deltaY = e.getDeltaY();
+	
+	            if (deltaY < 0){
+	                zoomFactor = 0.95;
+	            }
+	            double cellWidth = getCellWidth() * zoomFactor;
+	            double cellHeight = getCellHeight() * zoomFactor;
+	            System.out.println(cellWidth + " " + cellHeight);
+	            setCellWidth(Math.max(CELL_MIN_WIDTH, cellWidth));
+	            setCellHeight(Math.max(CELL_MIN_HEIGHT, cellHeight));
+	            e.consume();
+            }
 		});
 	}
 

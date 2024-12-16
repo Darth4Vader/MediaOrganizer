@@ -19,7 +19,11 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ListChangeListener.Change;
 import javafx.concurrent.Task;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 
 public class MainFileExplorerView extends BorderPane {
@@ -32,6 +36,7 @@ public class MainFileExplorerView extends BorderPane {
 	private Control fileView;
 	private SimpleObjectProperty<File> folder;
 	private WatchExample w;
+	private ContextMenu switchMenu;
 
 	public MainFileExplorerView(FileExplorerView fileExplorerView) {
 		w = new WatchExample();
@@ -55,6 +60,7 @@ public class MainFileExplorerView extends BorderPane {
 			System.out.println("relax");
 			//t.s
 		});
+		this.switchMenu = getSwitchViewMenu();
 		setFileExplorerView(fileExplorerView);
 	}
 	
@@ -69,7 +75,29 @@ public class MainFileExplorerView extends BorderPane {
 		default:
 			break;
 		}
+		fileView.setOnMouseClicked(e -> {
+			System.out.println(e);
+			if (e.getButton() == MouseButton.SECONDARY) {
+				switchMenu.show(this, e.getScreenX(), e.getScreenY());
+			}
+		});
+		setMainPanel(folder.get());
 		this.setCenter(fileView);
+	}
+	
+	private ContextMenu getSwitchViewMenu() {
+		ContextMenu menu = new ContextMenu();
+		MenuItem imageView = new MenuItem("Icons View");
+		imageView.setOnAction(a -> {
+			setFileExplorerView(FileExplorerView.ICONS);
+		});
+		MenuItem detailsView = new MenuItem("Details View");
+		detailsView.setOnAction(a -> {
+			setFileExplorerView(FileExplorerView.DETAILS);
+		});
+		menu.getItems().addAll(imageView, detailsView);
+		menu.setAutoHide(true);
+		return menu;
 	}
 	
 	public Control getFileView() {
@@ -85,6 +113,9 @@ public class MainFileExplorerView extends BorderPane {
 	}
 	
 	private void setMainPanel(File folder, File toFocus) {
+		closePanel();
+		if(folder == null)
+			return;
 		this.folder.set(folder);
 		
 		List<File> files = Arrays.asList(folder.listFiles()).stream()

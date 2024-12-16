@@ -3,6 +3,7 @@ package JavaFXInterface.controlsfx;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 
 /**
@@ -113,6 +114,12 @@ public class DragResizePane {
 			double newHeight = region.getMinHeight() + (mousey - y);
 
 			region.setMinHeight(newHeight);
+			
+			//If a prefHeight/prefWidth are set on the region they will currently act as a minimum, at least on the BorderPane. 
+			//If you add region.setPrefHeight(newHeight) etc into the mouseDragged method it will overcome this limit.
+			if (region.getParent() instanceof BorderPane) {
+				region.setPrefHeight(newHeight);
+			}
 
 			y = mousey;
 		}
@@ -123,6 +130,12 @@ public class DragResizePane {
 			double newWidth = region.getMinWidth() + (mousex - x);
 
 			region.setMinWidth(newWidth);
+			
+			//If a prefHeight/prefWidth are set on the region they will currently act as a minimum, at least on the BorderPane. 
+			//If you add region.setPrefWidth(newWidth) etc into the mouseDragged method it will overcome this limit.
+			if (region.getParent() instanceof BorderPane) {
+				region.setPrefWidth(newWidth);
+			}
 
 			x = mousex;
 

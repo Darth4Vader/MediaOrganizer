@@ -162,6 +162,8 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     		        } else {
     		        	setText(item.getValue(name));
     		            imageView.setImage(AppUtils.getImageOfFile(item.getFile()));
+    		            imageView.setFitWidth(50);
+    		            imageView.setFitHeight(50);
     		            setGraphic(imageView);
     		        }
     		    }
@@ -198,7 +200,10 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     	column.setSortable(false);
     	column.setUserData(name);
     	
-    	column.setPrefWidth(50);
+		if (name.equals(FileAttributesType.NAME.getName()))
+			column.setPrefWidth(200);
+		else
+			column.setPrefWidth(100);
     	
     	
     	
@@ -337,6 +342,8 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     			
     			pop.show(this.getScene().getWindow());
     			pop.setAutoHide(true);
+    			// in order to prevent the tableView popup from showing
+    			e.consume();
     		}
     	});
     	

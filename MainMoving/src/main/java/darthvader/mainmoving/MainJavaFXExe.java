@@ -62,7 +62,7 @@ public class MainJavaFXExe extends Application {
     	/*stage.setWidth(list.getWidth());
     	stage.setHeight(list.getHeight());*/
     	
-    	stage.setWidth(400);
+    	stage.setWidth(800);
     	stage.setHeight(500);
     	System.out.println("hello");
     	stage.show();

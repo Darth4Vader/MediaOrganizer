@@ -223,7 +223,7 @@ public class FileExplorer extends BorderPane {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		double width = screenSize.getWidth();
 		double height = screenSize.getHeight();
-		this.setPrefSize((int) (width * 0.445), (int) (height * 0.445));
+		//this.setPrefSize((int) (width * 0.445), (int) (height * 0.445));
 		
 		this.mainFileExplorerView = new MainFileExplorerView(FileExplorerView.DETAILS);
 		
@@ -265,14 +265,9 @@ public class FileExplorer extends BorderPane {
 		
 		DragResizePane.makeResizable(sidePnl);
 		
-		sidePnl.prefWidthProperty().bind(this.widthProperty().multiply(0.3));
-		sidePnl.prefHeightProperty().bind(this.heightProperty());
+		sidePnl.setPrefWidth(150);
 		
 		this.setLeft(sidePnl);
-		
-		this.mainFileExplorerView.prefWidthProperty().bind(this.widthProperty().subtract(sidePnl.widthProperty()));
-		
-		
 		this.setVisible(true);
 		
 		this.mainFileExplorerView.setMainPanel(move.getMainFolderPath());
