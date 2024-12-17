@@ -23,6 +23,8 @@
 		    <artifactId>maven-dependency-plugin</artifactId>
 		    <version>3.8.0</version>
 		    <executions>
+		    
+	<!--
        <execution>
             <phase>prepare-package</phase>
             <goals>
@@ -32,6 +34,7 @@
                 <outputDirectory>${project.build.directory}/lib</outputDirectory>
             </configuration>
         </execution>
+        -->
 		    </executions>
 		</plugin>
 	</plugins>  
@@ -58,17 +61,17 @@
 	          <dependency>
             <groupId>net.sourceforge.tess4j</groupId>
             <artifactId>tess4j</artifactId>
-            <version>5.3.0</version>         
+            <version>LATEST</version>         
         </dependency>
 		<dependency>
 		    <groupId>org.apache.pdfbox</groupId>
 		    <artifactId>pdfbox</artifactId>
-		    <version>2.0.27</version>
+		    <version>LATEST</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.ini4j</groupId>
 		    <artifactId>ini4j</artifactId>
-		    <version>0.5.4</version>
+		    <version>LATEST</version>
 		</dependency>
 		<dependency>
 		   <groupId>org.apache.tika</groupId>
@@ -121,7 +124,7 @@
 <dependency>
     <groupId>net.java.dev.jna</groupId>
     <artifactId>jna-platform</artifactId>
-    <version>5.15.0</version>
+    <version>LATEST</version>
 </dependency>
 
 <!--
@@ -163,7 +166,7 @@
 			        <artifactId>xml-apis</artifactId>
 			    </exclusion>
 			</exclusions>
-		  <version>1.17</version>
+		  <version>LATEST</version>
 		</dependency>
 		
 		<dependency>
@@ -178,49 +181,77 @@
 		    <version>LATEST</version>
 		</dependency>
 		
+		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+<dependency>
+    <groupId>commons-io</groupId>
+    <artifactId>commons-io</artifactId>
+    <version>LATEST</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-lang3</artifactId>
+    <version>LATEST</version>
+</dependency>
+
+
+
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-to-slf4j</artifactId>
+    <version>LATEST</version>
+</dependency>
+
 		
-		  <dependency>
-    <groupId>org.openjfx</groupId>
-    <artifactId>javafx-controls</artifactId>
-    <version>23-ea+22</version>
-  </dependency>
+	<dependency>
+	    <groupId>org.openjfx</groupId>
+	    <artifactId>javafx-controls</artifactId>
+	    <version>LATEST</version>
+    </dependency>
   
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-fxml</artifactId>
-	    <version>24-ea+5</version>
-</dependency>
+	    <version>LATEST</version>
+	</dependency>
+	
 	<dependency>
-    <groupId>org.openjfx</groupId>
-    <artifactId>javafx-graphics</artifactId>
-    <version>24-ea+5</version>
-</dependency>
-<dependency>
-    <groupId>org.openjfx</groupId>
-    <artifactId>javafx-base</artifactId>
-    <version>24-ea+5</version>
-</dependency>
-<dependency>
-    <groupId>org.openjfx</groupId>
-    <artifactId>javafx-swing</artifactId>
-    <version>24-ea+5</version>
-</dependency>
-<dependency>
-    <groupId>org.openjfx</groupId>
-    <artifactId>javafx-web</artifactId>
-    <version>24-ea+5</version>
-</dependency>
-<dependency>
-    <groupId>org.openjfx</groupId>
-    <artifactId>javafx-media</artifactId>
-    <version>24-ea+5</version>
-</dependency>
-<dependency>
-    <groupId>org.openjfx</groupId>
-    <artifactId>javafx</artifactId>
-    <version>24-ea+5</version>
-    <type>pom</type>
-</dependency>
+	    <groupId>org.openjfx</groupId>
+	    <artifactId>javafx-graphics</artifactId>
+    	<version>LATEST</version>
+	</dependency>
+	
+	<dependency>
+	    <groupId>org.openjfx</groupId>
+	    <artifactId>javafx-base</artifactId>
+	    <version>LATEST</version>
+	</dependency>
+	
+	<dependency>
+	    <groupId>org.openjfx</groupId>
+	    <artifactId>javafx-swing</artifactId>
+	    <version>LATEST</version>
+	</dependency>
+	
+	<dependency>
+	    <groupId>org.openjfx</groupId>
+	    <artifactId>javafx-web</artifactId>
+	    <version>LATEST</version>
+	</dependency>
+	
+	<dependency>
+	    <groupId>org.openjfx</groupId>
+	    <artifactId>javafx-media</artifactId>
+	    <version>LATEST</version>
+	</dependency>
+	
+	<dependency>
+	    <groupId>org.openjfx</groupId>
+	    <artifactId>javafx</artifactId>
+	    <version>LATEST</version>
+	    <type>pom</type>
+	</dependency>
 		
 		<dependency>
     <groupId>org.controlsfx</groupId>

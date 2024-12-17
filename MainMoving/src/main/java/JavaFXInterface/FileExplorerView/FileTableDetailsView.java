@@ -27,6 +27,8 @@ import JavaFXInterface.controlsfx.BetterFilteredTableColumn;
 import JavaFXInterface.controlsfx.BetterFilteredTableView;
 import JavaFXInterface.controlsfx.FilteredTableColumnCheckView;
 import OtherUtilities.ImageUtils;
+import impl.org.controlsfx.tableview2.TableRow2;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -58,10 +60,24 @@ import javafx.stage.Stage;
 public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> implements FileTableHandler {
 	
 	private final ObservableList<String> fixedColumns;
+	private MainFileExplorerView mainFileExplorerView;
 	
-    public FileTableDetailsView() {
+    public FileTableDetailsView(MainFileExplorerView mainFileExplorerView) {
     	this.fixedColumns = FXCollections.observableArrayList(
     			Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().map((s) -> s.getName()).collect(Collectors.toList()));
+    	
+		this.setRealRowFactory((fileView) -> {
+			TableRow2<FileDetails> row = new TableRow2<>(this);
+			row.setOnMouseClicked((e) -> {
+				if (e.getClickCount() == 2 && !row.isEmpty()) {
+					FileDetails rowData = row.getItem();
+					File file = rowData.getFile();
+					mainFileExplorerView.setMainPanel(file);
+				}
+			});
+			return row;
+		});
+    	
     	this.fixedColumns.stream().forEach((s) -> addColumn(s));
     	this.setEditable(false);
     	
@@ -83,8 +99,8 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     	//getStylesheets().add("tableNoSorting.css");
     }
         
-    public FileTableDetailsView(File file) {
-    	this();
+    public FileTableDetailsView(MainFileExplorerView mainFileExplorerView, File file) {
+    	this(mainFileExplorerView);
     	setFile(Arrays.asList(file.listFiles()));
     }
     
@@ -151,6 +167,10 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     		nameCol.setCellFactory((f) -> new TableCell<>() {
     			
     	    	private final ImageView imageView = new ImageView();
+    	    	{
+		            imageView.setFitWidth(50);
+		            imageView.setFitHeight(50);
+    	    	}
     	    	
     		    @Override
     		    public void updateItem(FileDetails item, boolean empty) {
@@ -161,9 +181,11 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     		            imageView.setImage(null);
     		        } else {
     		        	setText(item.getValue(name));
-    		            imageView.setImage(AppUtils.getImageOfFile(item.getFile()));
-    		            imageView.setFitWidth(50);
-    		            imageView.setFitHeight(50);
+    		            //load image in another thread, in order to make the images load in the background
+    		        	Thread machineryThread = new Thread(() -> {
+    		                Platform.runLater(() -> imageView.setImage(AppUtils.getImageOfFile(item.getFile())));
+    		            });
+    		            machineryThread.start();
     		            setGraphic(imageView);
     		        }
     		    }

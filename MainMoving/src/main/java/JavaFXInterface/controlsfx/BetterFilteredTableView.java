@@ -9,6 +9,8 @@ import org.controlsfx.control.tableview2.FilteredTableView;
 import org.controlsfx.control.tableview2.event.FilterEvent;
 
 import impl.org.controlsfx.tableview2.FilteredColumnPredicate;
+import impl.org.controlsfx.tableview2.TableRow2;
+import impl.org.controlsfx.tableview2.TableView2Skin;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyListProperty;
@@ -17,6 +19,7 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -24,6 +27,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.util.Callback;
 
@@ -57,6 +61,36 @@ public class BetterFilteredTableView<S> extends FilteredTableView<S> {
 		super(items);
 		// TODO Auto-generated constructor stub
 	}
+	
+	private ChangeListener<Callback<TableView<S>, TableRow<S>>> rowFactoryListener;
+	
+	/**
+	 * There is a glitch with {@link TableView2Skin} that does not allow to set row factory.
+	 * <br>
+	 * This function allows to workaround the problem, use row factory that creates a {@link TableRow2} for better performance. 
+	 * <br>
+	 * A link to the workaround is attached.
+	 * @see <a href="https://groups.google.com/g/controlsfx-dev/c/-huuXC9Nflc/m/O-qCnGJoAQAJ">https://groups.google.com/g/controlsfx-dev/c/-huuXC9Nflc/m/O-qCnGJoAQAJ</a>
+	 * @param rowFactory the factory, preferred to return {@link TableRow2} 
+	 */
+	public void setRealRowFactory(Callback<TableView<S>, TableRow<S>> rowFactory) {
+		if(rowFactoryListener != null)
+			rowFactoryProperty().removeListener(rowFactoryListener);
+		rowFactoryListener = new ChangeListener<Callback<TableView<S>, TableRow<S>>>() {
+            @Override
+            public void changed(ObservableValue<? extends Callback<TableView<S>, TableRow<S>>> observable, Callback<TableView<S>, TableRow<S>> oldValue, Callback<TableView<S>, TableRow<S>> newValue) {
+                rowFactoryProperty().unbind();
+                if (rowFactoryProperty().get() != rowFactory) {
+                    setRowFactory(rowFactory);
+                }
+
+            }
+        };
+        rowFactoryProperty().addListener(rowFactoryListener);
+	}
+	
+	
+	
 	/*
     private ObjectProperty<ObservableList<S>> backingList =
             new SimpleObjectProperty<>(this, "backingList") {

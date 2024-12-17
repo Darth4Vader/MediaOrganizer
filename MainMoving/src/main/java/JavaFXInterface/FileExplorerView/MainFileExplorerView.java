@@ -67,7 +67,7 @@ public class MainFileExplorerView extends BorderPane {
 	public void setFileExplorerView(FileExplorerView view) {
 		switch(view) {
 		case DETAILS:
-			fileView = new FileTableDetailsView();
+			fileView = new FileTableDetailsView(this);
 			break;
 		case ICONS:
 			fileView = new FileTableIconView();
@@ -114,7 +114,7 @@ public class MainFileExplorerView extends BorderPane {
 	
 	private void setMainPanel(File folder, File toFocus) {
 		closePanel();
-		if(folder == null)
+		if(folder == null  || !folder.isDirectory())
 			return;
 		this.folder.set(folder);
 		

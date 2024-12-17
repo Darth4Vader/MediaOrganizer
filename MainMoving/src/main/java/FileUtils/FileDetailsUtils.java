@@ -38,7 +38,7 @@ public class FileDetailsUtils {
 		try {
 			parser.parse(inputstream, new ExpandedTitleContentHandler(handler), metadata, context);
 			return metadata;
-		} catch (IOException | SAXException | TikaException e) {
+		} catch (Exception e) {
 		}
 		return null;
 	}
