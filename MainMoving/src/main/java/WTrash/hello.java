@@ -30,8 +30,6 @@ import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import net.sourceforge.tess4j.*;
-
 public class hello {
 	
     public static void main(String[] args) {
@@ -63,6 +61,8 @@ public class hello {
     	//Loader.load(opencv_java.class);
     	//System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     	//String name = "C:\\Users\\itay5\\Downloads\\2022-01-27_11-25-14 unknown.png";
+    	
+    	/*
     	Tesseract tesseract = new Tesseract();
 		Mat image = null;
 		BufferedImage buff = null;
@@ -80,10 +80,8 @@ public class hello {
 			
 			Imgproc.GaussianBlur(thresh, mask, new Size(3, 3), 0);
 			Imgproc.Canny(mask, mask, 120, 255, 3);
-			/**/
 			Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(9,9));
 			Imgproc.dilate(mask, mask, kernel);
-			/**/
 		    Imgproc.findContours(mask, contours, new Mat(), Imgproc.RETR_EXTERNAL,
 				      Imgproc.CHAIN_APPROX_SIMPLE);
 		    for(int i = 0; i < contours.size(); i++) {
@@ -92,8 +90,8 @@ public class hello {
 		    	Rect rect = Imgproc.boundingRect(contours.get(i));
 		    	//Imgproc.rectangle(image, rect, new Scalar(36, 255, 12));
 		    	Mat crop = image.submat(rect);
-				/*HighGui.imshow("Image2", crop);
-				HighGui.waitKey();*/
+				//HighGui.imshow("Image2", crop);
+				//HighGui.waitKey();
 			    int type = BufferedImage.TYPE_BYTE_GRAY;
 			    if (crop.channels() > 1) {
 			        type = BufferedImage.TYPE_3BYTE_BGR;
@@ -104,24 +102,25 @@ public class hello {
 		    	System.out.println(ocr);
 			    //Imgproc.drawContours(mask, contours, 0, new Scalar(255,255,0));
 		    }
-			/*HighGui.imshow("Image2", thresh);
-			HighGui.waitKey();*/
+			//HighGui.imshow("Image2", thresh);
+			//HighGui.waitKey();
 		    
 			Imgproc.GaussianBlur(mask, mask, new Size(3, 3), 0);
 			//Imgproc.medianBlur(mask, mask, 3);
 			Imgproc.threshold(mask, mask, 0, 255, Imgproc.THRESH_OTSU);
 			Imgproc.adaptiveThreshold(mask, mask, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, 5, 4);
 			
-			/*HighGui.imshow("Image", mask);
-			HighGui.waitKey();*/
+			//HighGui.imshow("Image", mask);
+			//HighGui.waitKey();
 			
         	//tesseract.setDatapath("C:\\Java\\OCR\\tessdata");
-        	/*String ocr = tesseract.doOCR(mask.get);
-        	System.out.println(ocr);*/
+        	//String ocr = tesseract.doOCR(mask.get);
+        	//System.out.println(ocr);
         }
         catch(Exception exp) {
         	exp.printStackTrace();
         }
+        */
     }
     
 	public static Mat cropImageAndAddBorder(String path, Color color, int borderSize) {

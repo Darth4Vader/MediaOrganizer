@@ -24,7 +24,7 @@
 		    <version>3.8.0</version>
 		    <executions>
 		    
-	<!--
+	<!---->
        <execution>
             <phase>prepare-package</phase>
             <goals>
@@ -34,49 +34,164 @@
                 <outputDirectory>${project.build.directory}/lib</outputDirectory>
             </configuration>
         </execution>
-        -->
+        <!---->
 		    </executions>
 		</plugin>
+
+
+<!--
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-install-plugin</artifactId>
+    <version>3.1.3</version>
+    <executions>
+        <execution>
+        	<id>install1</id>
+            <phase>initialize</phase>
+            <goals>
+                <goal>install-file</goal>
+            </goals>
+            <configuration>
+            	<localRepositoryPath>libs</localRepositoryPath> 
+                <file>${pom.basedir}/Libaries/vorbis-java-tika-0.8.5.jar</file>
+                <groupId>org.gagravarr</groupId>
+				<artifactId>vorbis-java-tika</artifactId>
+    			<version>0.8.5</version>
+                <packaging>jar</packaging>
+            </configuration>
+        </execution>
+                <execution>
+                <id>install2</id>
+            <phase>initialize</phase>
+            <goals>
+                <goal>install-file</goal>
+            </goals>
+            <configuration>
+            	<localRepositoryPath>libs</localRepositoryPath> 
+                <file>${pom.basedir}/Libaries/vorbis-java-core-0.8.5.jar</file>
+                <groupId>org.gagravarr</groupId>
+				<artifactId>vorbis-java-core</artifactId>
+    			<version>0.8.5</version>
+                <packaging>jar</packaging>
+            </configuration>
+        </execution>
+                <execution>
+                <id>install3</id>
+            <phase>initialize</phase>
+            <goals>
+                <goal>install-file</goal>
+            </goals>
+            <configuration>
+            	<localRepositoryPath>libs</localRepositoryPath> 
+                <file>${pom.basedir}/Libaries/jiconextractreloaded-1.0.jar</file>
+                <groupId>JIconExtractReloaded</groupId>
+				<artifactId>JIconExtractReloaded</artifactId>
+    			<version>0.0.1-SNAPSHOT</version>
+                <packaging>jar</packaging>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+-->
+
+<!--		
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-jar-plugin</artifactId>
+    <version>3.0.2</version>
+</plugin>
+-->
+
+
+<!-- good for testing if there is multiple versions of the same dependacy -->
+<!--
+  <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-enforcer-plugin</artifactId>
+    <version>3.5.0</version>
+    <executions>
+      <execution>
+        <id>enforce</id>
+        <configuration>
+          <rules>
+            <DependencyConvergence />
+          </rules>
+        </configuration>
+        <goals>
+          <goal>enforce</goal>
+        </goals>
+      </execution>
+    </executions>
+  </plugin>
+-->
+		
 	</plugins>  
   </build>
   
    	<repositories>
-		<repository>
-		    <id>jitpack.io</id>
-		    <url>https://jitpack.io</url>
-		</repository>
+   	<!--
+	<repository>
+       <id>libs</id>
+       <name>libs</name>
+           <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>ignore</checksumPolicy>
+    </releases>
+       <url>file://${basedir}\\libs</url>
+	    </repository>
+	 
+	 -->
+		
+		
+		
 	</repositories>
 
   <dependencies>
 	         
 	         <!-- https://mvnrepository.com/artifact/org.apache.maven.shared/maven-filtering -->
+
+
 <dependency>
     <groupId>org.apache.maven.shared</groupId>
     <artifactId>maven-filtering</artifactId>
-    <version>3.4.0</version>
+    <version>4.0.0-beta-1</version>
 </dependency>
 
-	         
-	         
+
+
+		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+
+<!--
 	          <dependency>
             <groupId>net.sourceforge.tess4j</groupId>
             <artifactId>tess4j</artifactId>
             <version>LATEST</version>         
-        </dependency>
+        </dependency>	
+-->         
+	         
 		<dependency>
 		    <groupId>org.apache.pdfbox</groupId>
 		    <artifactId>pdfbox</artifactId>
-		    <version>LATEST</version>
+		    <version>3.0.3</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.ini4j</groupId>
 		    <artifactId>ini4j</artifactId>
-		    <version>LATEST</version>
+		    <version>0.5.4</version>
 		</dependency>
 		<dependency>
 		   <groupId>org.apache.tika</groupId>
 		   <artifactId>tika-core</artifactId>
-		   <version>LATEST</version>
+		   <version>3.0.0</version>
+		   
+		       		    <exclusions>
+			    <exclusion>
+			        <groupId>xml-apis</groupId>
+			        <artifactId>xml-apis</artifactId>
+			    </exclusion>
+			    
+			</exclusions>
+		   
 		</dependency>
 	    <dependency>
 	        <groupId>org.apache.tika</groupId>
@@ -91,14 +206,14 @@
 	    		<artifactId>vorbis-java-core</artifactId>
 	          </exclusion>
 	        </exclusions>
-	        <version>LATEST</version>
+	        <version>3.0.0</version>
 	    </dependency>
 	    
 	    <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
 <dependency>
     <groupId>org.apache.tika</groupId>
     <artifactId>tika-parsers</artifactId>
-    <version>LATEST</version>
+    <version>3.0.0</version>
     <type>pom</type>
 </dependency>
 
@@ -106,8 +221,34 @@
 	<groupId>org.gagravarr</groupId>
 	<artifactId>vorbis-java-tika</artifactId>
     <version>0.8.5</version>
+    
+    		    <exclusions>
+			    <exclusion>
+			        <groupId>xml-apis</groupId>
+			        <artifactId>xml-apis</artifactId>
+			    </exclusion>
+			    
+			</exclusions>
     <scope>system</scope>
     <systemPath>${pom.basedir}/Libaries/vorbis-java-tika-0.8.5.jar</systemPath>
+    <type>jar</type>
+</dependency>
+
+<dependency>
+  <groupId>JIconExtractReloaded</groupId>
+  <artifactId>JIconExtractReloaded</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  
+  		    <exclusions>
+			    <exclusion>
+			        <groupId>xml-apis</groupId>
+			        <artifactId>xml-apis</artifactId>
+			    </exclusion>
+			    
+			</exclusions>
+			
+    <scope>system</scope>
+    <systemPath>${pom.basedir}/Libaries/jiconextractreloaded-1.0.jar</systemPath>
     <type>jar</type>
 </dependency>
 
@@ -115,6 +256,15 @@
 	<groupId>org.gagravarr</groupId>
 	<artifactId>vorbis-java-core</artifactId>
     <version>0.8.5</version>
+    
+    		    <exclusions>
+			    <exclusion>
+			        <groupId>xml-apis</groupId>
+			        <artifactId>xml-apis</artifactId>
+			    </exclusion>
+			    
+			</exclusions>
+    
     <scope>system</scope>
     <systemPath>${pom.basedir}/Libaries/vorbis-java-core-0.8.5.jar</systemPath>
     <type>jar</type>
@@ -124,27 +274,19 @@
 <dependency>
     <groupId>net.java.dev.jna</groupId>
     <artifactId>jna-platform</artifactId>
-    <version>LATEST</version>
+    <version>5.15.0</version>
 </dependency>
-
-<!--
-	<dependency>
-	    <groupId>com.github.MrMarnic</groupId>
-	    <artifactId>JIconExtractReloaded</artifactId>
-	    <version>1.0</version>
-	</dependency>
--->
 
 	    		
 		<dependency>
 	       <groupId>org.slf4j</groupId>
 	       <artifactId>slf4j-api</artifactId>
-	       <version>LATEST</version>
+	       <version>2.1.0-alpha1</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-simple</artifactId>
-		    <version>2.0.7</version>
+		    <version>2.1.0-alpha1</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.googlecode.json-simple</groupId>
@@ -166,33 +308,26 @@
 			        <artifactId>xml-apis</artifactId>
 			    </exclusion>
 			</exclusions>
-		  <version>LATEST</version>
+		  <version>1.18</version>
 		</dependency>
 		
 		<dependency>
 		  <groupId>MyUtilities</groupId>
 		  <artifactId>MyUtilities</artifactId>
-		  <version>0.0.1-SNAPSHOT</version>
+		  <version>0.0.1-SNAPSHOT</version>		  
 		</dependency>
 		
 		<dependency>
 		    <groupId>org.jsoup</groupId>
 		    <artifactId>jsoup</artifactId>
-		    <version>LATEST</version>
+		    <version>1.18.3</version>
 		</dependency>
-		
-		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
-<dependency>
-    <groupId>commons-io</groupId>
-    <artifactId>commons-io</artifactId>
-    <version>LATEST</version>
-</dependency>
 
 <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
 <dependency>
     <groupId>org.apache.commons</groupId>
     <artifactId>commons-lang3</artifactId>
-    <version>LATEST</version>
+    <version>3.17.0</version>
 </dependency>
 
 
@@ -200,56 +335,56 @@
 <dependency>
     <groupId>org.apache.logging.log4j</groupId>
     <artifactId>log4j-to-slf4j</artifactId>
-    <version>LATEST</version>
+    <version>3.0.0-beta2</version>
 </dependency>
 
 		
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-controls</artifactId>
-	    <version>LATEST</version>
+	    <version>24-ea+19</version>
     </dependency>
   
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-fxml</artifactId>
-	    <version>LATEST</version>
+	    <version>24-ea+19</version>
 	</dependency>
 	
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-graphics</artifactId>
-    	<version>LATEST</version>
+    	<version>24-ea+19</version>
 	</dependency>
 	
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-base</artifactId>
-	    <version>LATEST</version>
+	    <version>24-ea+19</version>
 	</dependency>
 	
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-swing</artifactId>
-	    <version>LATEST</version>
+	    <version>24-ea+19</version>
 	</dependency>
 	
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-web</artifactId>
-	    <version>LATEST</version>
+	    <version>24-ea+19</version>
 	</dependency>
 	
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-media</artifactId>
-	    <version>LATEST</version>
+	    <version>24-ea+19</version>
 	</dependency>
 	
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx</artifactId>
-	    <version>LATEST</version>
+	    <version>24-ea+19</version>
 	    <type>pom</type>
 	</dependency>
 		
@@ -267,37 +402,5 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 -->
-
   </dependencies>
-  
-	<pluginRepositories>
-     <pluginRepository>
-          <id>github</id>
-          <name>GitHub OWNER Apache Maven Packages</name>
-          <url>https://maven.pkg.github.com/Gagravarr/VorbisJava</url>
-
-          <!-- next elements are up to you -->
-          <releases>
-              <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <updatePolicy>always</updatePolicy>
-            <enabled>true</enabled>
-          </snapshots>
-     </pluginRepository>
-          <pluginRepository>
-          <id>github2</id>
-          <name>GitHub OWNER Apache Maven Packages</name>
-          <url>https://maven.pkg.github.com/MrMarnic/JIconExtractReloaded</url>
-
-          <!-- next elements are up to you -->
-          <releases>
-              <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <updatePolicy>always</updatePolicy>
-            <enabled>true</enabled>
-          </snapshots>
-     </pluginRepository>
-</pluginRepositories>
 </project>

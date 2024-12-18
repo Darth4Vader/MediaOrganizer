@@ -54,7 +54,7 @@ public class FIleExplorerSetup extends JFrame implements WindowFocusListener {
                 		files.add(new File(path));
                 	ManageFolder move = new ManageFolder(selected.getAbsolutePath(), files);
                 	mainPanel = new FileExplorer(move);
-                	add(mainPanel, BorderLayout.CENTER);
+                	//add(mainPanel, BorderLayout.CENTER);
                 	refreshFrame();
                 }
                 //parent.dispose();
@@ -67,8 +67,8 @@ public class FIleExplorerSetup extends JFrame implements WindowFocusListener {
 	@Override
 	public void windowGainedFocus(WindowEvent e) {
 		setBackground(new Color(249,239,248));
-		if(mainPanel != null)
-			mainPanel.requestFocusInWindow();
+		/*if(mainPanel != null)
+			mainPanel.requestFocusInWindow();*/
 		refreshFrame();
 	}
 
