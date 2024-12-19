@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -1257,6 +1259,22 @@ public class ManageFolder {
 		REPLACE_ICON;
 	}
 	
+    private static final Logger LOGGER = Logger.getLogger(ManageFolder.class.getName());
+    
+    static {
+        LOGGER.setUseParentHandlers(false);
+        LOGGER.setLevel(Level.ALL);
+    }
+    
+    /**
+     * Gets the logger instance for this class.
+     *
+     * @return the logger instance
+     */
+    public Logger getLogger() {
+        return LOGGER;
+    }
+	
 	public class FileOperationHandler {
 		
 		private File sourceFile;
@@ -1312,6 +1330,10 @@ public class ManageFolder {
 				break;
 			}
 			this.isFinished = true;
+			
+			FileOperationDetails details = new FileOperationDetails(sourceFile, destPath, action);
+			ObjectMapper mapper = new ObjectMapper(); 
+			LOGGER.info(mapper.writeValueAsString(details));
 			System.out.println("Green");
 			System.out.print("\u001B[32m");
 			System.out.print(sourceFile + " (" + action + ") -> " + destPath);

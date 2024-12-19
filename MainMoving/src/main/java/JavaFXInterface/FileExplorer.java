@@ -90,6 +90,7 @@ import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
+import JavaFXInterface.Logger.CreateMovieLoggerControl;
 import JavaFXInterface.controlsfx.DragResizePane;
 import JavaFXInterface.controlsfx.GridViewSelection;
 import OtherUtilities.ImageUtils;
@@ -225,7 +226,7 @@ public class FileExplorer extends BorderPane {
 		double height = screenSize.getHeight();
 		//this.setPrefSize((int) (width * 0.445), (int) (height * 0.445));
 		
-		this.mainFileExplorerView = new MainFileExplorerView(FileExplorerView.DETAILS);
+		this.mainFileExplorerView = new MainFileExplorerView(this, FileExplorerView.DETAILS);
 		
 		Control fileView = this.mainFileExplorerView.getFileView();
 		if(fileView instanceof GridView) {
@@ -272,6 +273,7 @@ public class FileExplorer extends BorderPane {
 		
 		this.mainFileExplorerView.setMainPanel(move.getMainFolderPath());
 		
+		this.createMovieLoggerControl = new CreateMovieLoggerControl(move);
 		
 	}
 	
@@ -347,7 +349,7 @@ public class FileExplorer extends BorderPane {
 		Component component = null;
 		switch (tool) {
 		case ORGANIZE_FOLDER:
-			move.moveFilesFromInput();
+			startMoving();
 			break;
 		case REFRESH_LOGO:
 			break;
@@ -365,6 +367,49 @@ public class FileExplorer extends BorderPane {
 		default:
 			break;
 		}
+	}
+	
+	private CreateMovieLoggerControl createMovieLoggerControl;
+	
+	private void startMoving() {
+		// first we will create a task in order to push the custom logger message to ListView by updating JavaFX
+		Task<Void> task = new Task<Void>() {
+			
+			@Override
+			protected Void call() throws Exception {
+				move.moveFilesFromInput();
+				return null;
+			}
+		};
+		task.setOnFailed(v -> {
+			// we will handle every possible exception of the method that we call
+			createMovieLoggerControl.close();
+			Throwable exception = task.getException();
+			Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), exception);
+			/*if (exception instanceof NumberFormatException) {
+				AdminPagesUtils.parseNumberException(movie.getMediaID());
+			} else if (exception instanceof CreateMovieException) {
+				// when the movie creation fails, we will alert the user of the reasons
+				AdminPagesUtils.createMovieExceptionAlert((CreateMovieException) exception);
+			} else if (exception instanceof CanUpdateException) {
+				// if the movie already exists, then we will alert the user that he can update the movie if he wants
+				showAlertThatMovieCanUpdate((CanUpdateException) exception);
+			} else { // and if the exception is not specified in the method, like RuntimeException, then we will let the default handler to handle it
+				Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), exception);
+			}*/
+		});
+		// we will add a successful notify id the method finish
+		task.setOnSucceeded(v -> {
+			createMovieLoggerControl.finishedTask();
+		});
+		// if the task is cancelled, before the method finish, then we notify the user of the consequences
+		task.setOnCancelled(v -> {
+			//createMovieLoggerControl.close();
+		});
+		// we will open the custom view with the task
+		createMovieLoggerControl.start(task);
+		// and then start the task as a new thread, in order to synchronize with JavaFX
+		new Thread(task).start();
 	}
 	
 	private final Map<ToolName, ToolPanel> toolMap;

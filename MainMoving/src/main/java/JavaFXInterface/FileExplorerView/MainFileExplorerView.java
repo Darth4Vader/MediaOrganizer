@@ -12,6 +12,7 @@ import DirectoryWatcher.HandleFileChanges;
 import DirectoryWatcher.WatchExample;
 import DirectoryWatcher.FileChange.FileChaneType;
 import FileUtils.FileDetails;
+import JavaFXInterface.FileExplorer;
 import JavaFXInterface.controlsfx.GridViewSelection;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -37,8 +38,10 @@ public class MainFileExplorerView extends BorderPane {
 	private SimpleObjectProperty<File> folder;
 	private WatchExample w;
 	private ContextMenu switchMenu;
+	private FileExplorer fileExplorer;
 
-	public MainFileExplorerView(FileExplorerView fileExplorerView) {
+	public MainFileExplorerView(FileExplorer fileExplorer, FileExplorerView fileExplorerView) {
+		this.fileExplorer = fileExplorer;
 		w = new WatchExample();
 	    w.setHandleFileChanges(new HandleFileChanges() {
 			
@@ -102,6 +105,10 @@ public class MainFileExplorerView extends BorderPane {
 	
 	public Control getFileView() {
 		return this.fileView;
+	}
+	
+	public FileExplorer getFileExplorer() {
+		return this.fileExplorer;
 	}
 	
 	public void setMainPanel(String path) {

@@ -22,6 +22,7 @@ import DirectoryWatcher.FileChange.FileChaneType;
 import FileUtils.FileAttributesType;
 import FileUtils.FileDetails;
 import JavaFXInterface.AppUtils;
+import JavaFXInterface.FileExplorer;
 import JavaFXInterface.SideFilesList.ExpandPanel;
 import JavaFXInterface.controlsfx.BetterFilteredTableColumn;
 import JavaFXInterface.controlsfx.BetterFilteredTableView;
@@ -43,8 +44,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
+import javafx.scene.control.TableView;
 import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -66,6 +69,23 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     	this.fixedColumns = FXCollections.observableArrayList(
     			Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().map((s) -> s.getName()).collect(Collectors.toList()));
     	
+    	
+		this.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+			System.out.println("Hello: " + e);
+			processArrowKeys(e, this);});
+    	
+		this.focusedProperty().addListener((observable, oldValue, newValue) -> {
+			if (!newValue) {
+				mainFileExplorerView.getFileExplorer().restartToolPanels();
+			}
+			else if(!oldValue) {
+				FileExplorer fileExplorer = mainFileExplorerView.getFileExplorer();
+				FileDetails rowData = this.getFocusModel().getFocusedItem();
+				File file = rowData.getFile();
+				fileExplorer.updateToolPanels(file);
+			}
+		});
+    	
 		this.setRealRowFactory((fileView) -> {
 			TableRow2<FileDetails> row = new TableRow2<>(this);
 			row.setOnMouseClicked((e) -> {
@@ -73,6 +93,14 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
 					FileDetails rowData = row.getItem();
 					File file = rowData.getFile();
 					mainFileExplorerView.setMainPanel(file);
+				}
+			});
+			row.focusedProperty().addListener((observable, oldValue, newValue) -> {
+				FileExplorer fileExplorer = mainFileExplorerView.getFileExplorer();
+				if (newValue) {
+					FileDetails rowData = row.getItem();
+					File file = rowData.getFile();
+					fileExplorer.updateToolPanels(file);
 				}
 			});
 			return row;
@@ -96,7 +124,38 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
             }
 
         });
+    	
     	//getStylesheets().add("tableNoSorting.css");
+    }
+    
+    private <S> void processArrowKeys(KeyEvent event, TableView<S> tableView) {
+    	System.out.println("Key Pressed " + event);
+        if (event.getCode().isArrowKey()) {
+            event.consume();
+
+            TableViewFocusModel<S> model = tableView.getFocusModel();
+            TableViewSelectionModel<S> model2 = tableView.getSelectionModel();
+            switch (event.getCode()) {
+                case UP:
+                    model.focusAboveCell();
+                    //model2.selectAboveCell();
+                    break;
+                case RIGHT:
+                    model.focusRightCell();
+                    break;
+                case DOWN:
+                    //model.focusBelowCell();
+                    model2.selectBelowCell();
+                    break;
+                case LEFT:
+                    model.focusLeftCell();
+                    break;
+                default:
+                    throw new AssertionError(event.getCode().name());
+            }
+            tableView.scrollTo(model.getFocusedCell().getRow());
+            tableView.scrollToColumnIndex(model.getFocusedCell().getColumn());
+        }
     }
         
     public FileTableDetailsView(MainFileExplorerView mainFileExplorerView, File file) {
@@ -170,6 +229,26 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     	    	{
 		            imageView.setFitWidth(50);
 		            imageView.setFitHeight(50);
+		            
+		            
+		            
+		            
+		            /*
+		            imageView.addEventFilter(KeyEvent.KEY_PRESSED, this::processArrowKeys);
+		            this.focusedProperty().addListener((observable, wasFocused, isFocused) -> {
+		                if (isFocused) {
+		                    getTableView().getFocusModel().focus(getIndex(), getTableColumn());
+		                }
+		            });
+		            
+		            tableViewProperty().addListener((obs, oldTable, newTable) ->
+	                newTable.getFocusModel().focusedCellProperty().addListener((obs2, oldPos, newPos) -> {
+	                    if (getIndex() == newPos.getRow() && getTableColumn() == newPos.getTableColumn()) {
+	                        imageView.requestFocus();
+	                    }
+	                })
+	        );
+		            */
     	    	}
     	    	
     		    @Override
