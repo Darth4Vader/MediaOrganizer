@@ -1,4 +1,4 @@
-package JavaFXInterface;
+package JavaFXInterface.FileExplorer;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;

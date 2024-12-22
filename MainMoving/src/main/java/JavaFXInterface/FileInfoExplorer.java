@@ -8,6 +8,7 @@ import java.util.HashMap;
 import org.controlsfx.control.GridView;
 
 import DataStructures.ManageFolder;
+import JavaFXInterface.FileExplorer.FileExplorer;
 import JavaFXInterface.FileExplorerView.FileTableIconView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;

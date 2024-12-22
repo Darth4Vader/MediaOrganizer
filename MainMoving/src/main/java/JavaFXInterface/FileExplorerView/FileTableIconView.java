@@ -5,7 +5,7 @@ import java.io.File;
 import DirectoryWatcher.FileChange;
 import DirectoryWatcher.FileChange.FileChaneType;
 import DirectoryWatcher.FileRename;
-import JavaFXInterface.FileExplorer;
+import JavaFXInterface.FileExplorer.FileExplorer;
 import JavaFXInterface.controlsfx.GridViewSelection;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;

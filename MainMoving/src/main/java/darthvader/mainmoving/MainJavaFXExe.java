@@ -11,8 +11,8 @@ import org.controlsfx.control.cell.ColorGridCell;
 
 import DataStructures.ManageFolder;
 import JavaFXInterface.ActivateFileExplorer;
-import JavaFXInterface.FileExplorer;
-import JavaFXInterface.SideFilesList;
+import JavaFXInterface.FileExplorer.FileExplorer;
+import JavaFXInterface.FileExplorer.SideFilesList;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;

@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import DataStructures.ManageFolder;
+import JavaFXInterface.FileExplorer.FileExplorer;
 
 public class FIleExplorerSetup extends JFrame implements WindowFocusListener {
 	

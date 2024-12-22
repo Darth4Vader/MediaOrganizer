@@ -12,7 +12,7 @@ import DirectoryWatcher.HandleFileChanges;
 import DirectoryWatcher.WatchExample;
 import DirectoryWatcher.FileChange.FileChaneType;
 import FileUtils.FileDetails;
-import JavaFXInterface.FileExplorer;
+import JavaFXInterface.FileExplorer.FileExplorer;
 import JavaFXInterface.controlsfx.GridViewSelection;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;

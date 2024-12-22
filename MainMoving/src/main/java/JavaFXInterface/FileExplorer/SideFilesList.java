@@ -1,4 +1,4 @@
-package JavaFXInterface;
+package JavaFXInterface.FileExplorer;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import JavaFXInterface.AppUtils;
 import JavaFXUtilities.CanvasPane;
 import OtherUtilities.ImageUtils;
 import javafx.beans.property.BooleanProperty;

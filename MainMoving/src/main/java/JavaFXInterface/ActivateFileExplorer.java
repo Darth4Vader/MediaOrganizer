@@ -22,7 +22,7 @@ public class ActivateFileExplorer extends Application {
 		Application.launch(args);
 	}
 	
-	private FileExplorer explorer;
+	private FileInfoExplorer explorer;
 
     @Override
     public void start(Stage stage) throws Exception {
