@@ -26,6 +26,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.util.Callback;
 
 public class MainFileExplorerView extends BorderPane {
 	
@@ -42,6 +43,8 @@ public class MainFileExplorerView extends BorderPane {
 
 	public MainFileExplorerView(FileExplorer fileExplorer, FileExplorerView fileExplorerView) {
 		this.fileExplorer = fileExplorer;
+		this.fileTableDetailsView = (_) -> getDefualtFileDetailsView();
+		this.fileTableIconView = (_) -> getDefualtFileIconView();
 		w = new WatchExample();
 	    w.setHandleFileChanges(new HandleFileChanges() {
 			
@@ -70,10 +73,10 @@ public class MainFileExplorerView extends BorderPane {
 	public void setFileExplorerView(FileExplorerView view) {
 		switch(view) {
 		case DETAILS:
-			fileView = new FileTableDetailsView(this);
+			fileView = fileTableDetailsView.call(null);
 			break;
 		case ICONS:
-			fileView = new FileTableIconView();
+			fileView = fileTableIconView.call(null);
 			break;
 		default:
 			break;
@@ -164,6 +167,26 @@ public class MainFileExplorerView extends BorderPane {
 	
 	public void goToParentFile(File file) {
 		setMainPanel(file.getParentFile(), file);
+	}
+	
+	private Callback<Void, FileTableDetailsView> fileTableDetailsView;
+	
+	public void setFileDetailsView(Callback<Void, FileTableDetailsView> fileTableDetailsView) {
+		this.fileTableDetailsView = fileTableDetailsView;
+	}
+	
+	public FileTableDetailsView getDefualtFileDetailsView() {
+		return new FileTableDetailsView(this);
+	}
+	
+	private Callback<Void, FileTableIconView> fileTableIconView;
+	
+	public void setFileIconView(Callback<Void, FileTableIconView> fileTableIconView) {
+		this.fileTableIconView = fileTableIconView;
+	}
+	
+	public FileTableIconView getDefualtFileIconView() {
+		return new FileTableIconView(fileExplorer);
 	}
 
 }

@@ -10,6 +10,7 @@ import javax.swing.JFileChooser;
 import org.controlsfx.control.cell.ColorGridCell;
 
 import DataStructures.ManageFolder;
+import JavaFXInterface.ActivateFileExplorer;
 import JavaFXInterface.FileExplorer;
 import JavaFXInterface.SideFilesList;
 import javafx.application.Application;
@@ -31,7 +32,9 @@ public class MainJavaFXExe extends Application {
 
 	public static void main(String[] args) {
 		//String[] args2 = Arrays.asList(args, "--module-path \"C:\\JavaFX_22.02\\lib\" --add-modules javafx.controls,javafx.fxml").toArray(new String[0]);
-		Application.launch(args);
+		//Application.launch(args);
+		
+		ActivateFileExplorer.main(args);
 	}
 	
 	private FileExplorer list;

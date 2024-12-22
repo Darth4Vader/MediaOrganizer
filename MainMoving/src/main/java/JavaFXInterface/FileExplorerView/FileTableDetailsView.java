@@ -76,14 +76,14 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     	
 		this.focusedProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue) {
-				mainFileExplorerView.getFileExplorer().restartToolPanels();
+				mainFileExplorerView.getFileExplorer().resetCurrentFileFocused();
 			}
 			else if(!oldValue) {
 				FileExplorer fileExplorer = mainFileExplorerView.getFileExplorer();
 				FileDetails rowData = this.getFocusModel().getFocusedItem();
 				if (rowData != null) {
 					File file = rowData.getFile();
-					fileExplorer.updateToolPanels(file);
+					fileExplorer.setCurrentFileFocused(file);
 				}
 			}
 		});
@@ -101,8 +101,10 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
 				FileExplorer fileExplorer = mainFileExplorerView.getFileExplorer();
 				if (newValue) {
 					FileDetails rowData = row.getItem();
-					File file = rowData.getFile();
-					fileExplorer.updateToolPanels(file);
+					if(rowData != null) {
+						File file = rowData.getFile();
+						fileExplorer.setCurrentFileFocused(file);
+					}
 				}
 			});
 			return row;

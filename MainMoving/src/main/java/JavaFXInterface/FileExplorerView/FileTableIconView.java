@@ -16,7 +16,7 @@ public class FileTableIconView extends GridViewSelection<File> implements FileTa
 	
 	private static final double CELL_MIN_WIDTH = 100, CELL_MIN_HEIGHT = 100;
 
-	public FileTableIconView() {
+	public FileTableIconView(FileExplorer explorer) {
 		super(FXCollections.observableArrayList());
 		setCellFactory(x -> new FileTableIconCellEditor());
 		setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
@@ -31,11 +31,11 @@ public class FileTableIconView extends GridViewSelection<File> implements FileTa
 					if(c.wasRemoved()) {
 						System.out.println("alone " + list);
 						if(list.isEmpty())
-							FileExplorer.getFileExplorer().restartToolPanels();
+							explorer.resetCurrentFileFocused();
 					}
 					if(c.wasAdded()) {
 						if(list.size() == 1)
-							FileExplorer.getFileExplorer().updateToolPanels(list.getFirst());
+							explorer.setCurrentFileFocused(list.getFirst());
 						else if(list.size() > 1) {
 							
 						}

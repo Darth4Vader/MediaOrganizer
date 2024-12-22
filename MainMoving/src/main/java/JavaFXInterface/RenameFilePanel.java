@@ -8,9 +8,9 @@ import javafx.scene.control.Button;
 
 public class RenameFilePanel extends FileInfoPanel {
 	
-	private FileExplorer explorer;
+	private FileInfoExplorer explorer;
 	
-	public RenameFilePanel(FileExplorer explorer) {
+	public RenameFilePanel(FileInfoExplorer explorer) {
 		super();
 		this.explorer = explorer;
 		Button btn = new Button("Update");
