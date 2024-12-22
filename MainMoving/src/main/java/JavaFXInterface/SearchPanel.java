@@ -1,16 +1,5 @@
 package JavaFXInterface;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-import SwingUtilities.SwingUtils;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -23,8 +12,6 @@ public class SearchPanel extends BorderPane {
 	public SearchPanel(FileExplorer explorer) {
 		this.explorer = explorer;
 		TextField searchText = new TextField();
-		//JPanel advencedSearch = new JPanel();
-		//FileInfoPanel fileInfoPnl = new FileInfoPanel();
 		Button advencedSearch = new Button("AdvencedSearch");
 		advencedSearch.prefWidthProperty().bind(this.widthProperty().multiply(0.2));
 		advencedSearch.setOnAction(e -> {

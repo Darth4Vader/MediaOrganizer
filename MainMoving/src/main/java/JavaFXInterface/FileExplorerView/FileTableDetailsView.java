@@ -81,8 +81,10 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
 			else if(!oldValue) {
 				FileExplorer fileExplorer = mainFileExplorerView.getFileExplorer();
 				FileDetails rowData = this.getFocusModel().getFocusedItem();
-				File file = rowData.getFile();
-				fileExplorer.updateToolPanels(file);
+				if (rowData != null) {
+					File file = rowData.getFile();
+					fileExplorer.updateToolPanels(file);
+				}
 			}
 		});
     	
@@ -205,11 +207,15 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     	filterImage.setPreserveRatio(true);
     	filterImage.setRotate(90.0F);
     	
+    	filterImage.setFitWidth(10);
+    	filterImage.setFitHeight(10);
     	
     	BorderPane filterButton = new BorderPane();
     	
-    	filterImage.fitHeightProperty().bind(filterButton.heightProperty().multiply(0.5));
-    	filterImage.fitWidthProperty().bind(filterButton.widthProperty().multiply(0.8));
+    	/*filterImage.fitHeightProperty().bind(filterButton.heightProperty().multiply(0.5));
+    	filterImage.fitWidthProperty().bind(filterButton.widthProperty().multiply(0.8));*/
+    	
+    	BorderPane.setMargin(filterImage, new Insets(15, 5, 15, 5));
     	
     	filterButton.setCenter(filterImage);
     	//filterButton.setGraphic(filterImage);
@@ -367,7 +373,7 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
         HBox.setHgrow(colName, Priority.ALWAYS);
         
     	//filterButton.prefHeightProperty().bind(colName.heightProperty());
-    	filterButton.prefWidthProperty().bind(colName.widthProperty().multiply(0.1));
+        //filterButton.prefWidthProperty().bind(colName.widthProperty().multiply(0.1));
         
     	
     	columnGraphics.getChildren().add(filterButton);
