@@ -60,6 +60,13 @@ public class ManageFolder {
 	public ManageFolder(String mainFolderPath, List<File> readDirectory) {
 		this.urlParent = mainFolderPath;
 		this.sideMovesList = new ArrayList<>();
+		setManageFolderFiles(readDirectory);
+	}
+	
+	public void setManageFolderFiles(List<File> readDirectory) {
+		movieMap.clear();
+		TVMap.clear();
+		unkownMediaMap.clear();
 		List<File> read = new ArrayList<>();
 		for(File child : readDirectory) {
 			String childPath = child.getAbsolutePath();

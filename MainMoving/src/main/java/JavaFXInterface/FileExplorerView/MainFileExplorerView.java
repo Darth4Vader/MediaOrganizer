@@ -43,8 +43,8 @@ public class MainFileExplorerView extends BorderPane {
 
 	public MainFileExplorerView(FileExplorer fileExplorer, FileExplorerView fileExplorerView) {
 		this.fileExplorer = fileExplorer;
-		this.fileTableDetailsView = (_) -> getDefualtFileDetailsView();
-		this.fileTableIconView = (_) -> getDefualtFileIconView();
+		this.fileTableDetailsView = (detailsView) -> detailsView;
+		this.fileTableIconView = (iconsView) -> iconsView;
 		w = new WatchExample();
 	    w.setHandleFileChanges(new HandleFileChanges() {
 			
@@ -73,10 +73,10 @@ public class MainFileExplorerView extends BorderPane {
 	public void setFileExplorerView(FileExplorerView view) {
 		switch(view) {
 		case DETAILS:
-			fileView = fileTableDetailsView.call(null);
+			fileView = fileTableDetailsView.call(getDefualtFileDetailsView());
 			break;
 		case ICONS:
-			fileView = fileTableIconView.call(null);
+			fileView = fileTableIconView.call(getDefualtFileIconView());
 			break;
 		default:
 			break;
@@ -169,9 +169,9 @@ public class MainFileExplorerView extends BorderPane {
 		setMainPanel(file.getParentFile(), file);
 	}
 	
-	private Callback<Void, FileTableDetailsView> fileTableDetailsView;
+	private Callback<FileTableDetailsView, FileTableDetailsView> fileTableDetailsView;
 	
-	public void setFileDetailsView(Callback<Void, FileTableDetailsView> fileTableDetailsView) {
+	public void setFileDetailsView(Callback<FileTableDetailsView, FileTableDetailsView> fileTableDetailsView) {
 		this.fileTableDetailsView = fileTableDetailsView;
 	}
 	
@@ -179,9 +179,9 @@ public class MainFileExplorerView extends BorderPane {
 		return new FileTableDetailsView(this);
 	}
 	
-	private Callback<Void, FileTableIconView> fileTableIconView;
+	private Callback<FileTableIconView, FileTableIconView> fileTableIconView;
 	
-	public void setFileIconView(Callback<Void, FileTableIconView> fileTableIconView) {
+	public void setFileIconView(Callback<FileTableIconView, FileTableIconView> fileTableIconView) {
 		this.fileTableIconView = fileTableIconView;
 	}
 	

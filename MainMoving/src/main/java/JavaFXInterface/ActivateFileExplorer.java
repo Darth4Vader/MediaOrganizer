@@ -1,10 +1,14 @@
 package JavaFXInterface;
 
 import java.io.File;
+import java.io.IOException;
 
 import DataStructures.ManageFolder;
+import JavaFXInterface.FileExplorer.FileExplorer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -22,26 +26,47 @@ public class ActivateFileExplorer extends Application {
 		Application.launch(args);
 	}
 	
-	private FileInfoExplorer explorer;
+	private FileExplorer explorer;
 
     @Override
     public void start(Stage stage) throws Exception {
-    	DirectoryChooser chooser = new DirectoryChooser();
+    	/*DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Choose Folder");
         File file = chooser.showDialog(null);
         if(file == null) {
         	stop();
         	return;
-        }
-    	//file = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\New folder (2)");
+        }*/
     	
-    	this.explorer = new FileInfoExplorer(new ManageFolder(file.getAbsolutePath()));
     	
-    	Scene scene = new Scene(explorer);
+    	
+    	File file = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
+    	
+    	this.explorer = new ManageFolderSelectorPanel(new ManageFolder(file.getAbsolutePath()));
+    	//Scene scene = new Scene(explorer);
+    	
+    	Scene scene = new Scene(loadFXML(MainFileSelectorController.PATH));
     	stage.setScene(scene);
     	stage.setWidth(800);
     	stage.setHeight(500);
     	stage.show();
+    	
+    	/*this.explorer = new FileInfoExplorer(new ManageFolder(file.getAbsolutePath()));
+    	Scene scene = new Scene(explorer);
+    	stage.setScene(scene);
+    	stage.setWidth(800);
+    	stage.setHeight(500);
+    	stage.show();*/
+    }
+    
+    public FXMLLoader getFXMLLoader(String fxmlPath) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+        return loader;
+    }
+
+    public Parent loadFXML(String fxmlPath) throws IOException {
+        FXMLLoader loader = getFXMLLoader(fxmlPath);
+        return loader.load();
     }
     
     @Override
