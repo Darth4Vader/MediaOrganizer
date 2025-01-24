@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ddf.EscherColorRef.SysIndexProcedure;
 
 import DataStructures.FileInfoType.FolderType;
 
@@ -20,6 +21,7 @@ public class NameInfo {
 	private String year = "";
 	private String season = "";
 	private String episode = "";
+	private String toEpisode = "";
 	private String episodeName = "";
 	private String index = "";
 	private String lang = "";
@@ -30,6 +32,7 @@ public class NameInfo {
 		YEAR("Year", MAX_YEAR_LENGTH),
 		SEASON("Season", MAX_SEASON_LENGTH),
 		EPISODE("Episode", MAX_EPISODE_LENGTH),
+		TO_EPISODE("Episode", MAX_EPISODE_LENGTH),
 		DESCRIPTION("Episode Name");
 		
 		private final String name;
@@ -64,6 +67,7 @@ public class NameInfo {
 		map.put(NameInfoType.YEAR, year);
 		map.put(NameInfoType.SEASON, season);
 		map.put(NameInfoType.EPISODE, episode);
+		map.put(NameInfoType.TO_EPISODE, toEpisode);
 		map.put(NameInfoType.DESCRIPTION, episodeName);
 		return map;
 	}
@@ -79,6 +83,8 @@ public class NameInfo {
 			break;
 		case EPISODE: setEpisode(str);
 			break;
+		case TO_EPISODE: setToEpisode(str);
+		    break;
 		case DESCRIPTION: setEpisodeName(str);
 			break;
 		default:
@@ -132,6 +138,8 @@ public class NameInfo {
 			setSeason(info.season);
 		if(!hasEpisode())
 			setEpisode(info.episode);
+		if (!hasToEpisode())
+			setToEpisode(info.toEpisode);
 		if(!hasDescription())
 			setEpisodeName(info.episodeName);
 	}
@@ -169,6 +177,8 @@ public class NameInfo {
 			break;
 		case EPISODE: bol = hasEpisode() && nameInfo.hasEpisode() && this.episode.equals(nameInfo.episode);
 			break;
+		case TO_EPISODE: bol = hasToEpisode() && nameInfo.hasToEpisode() && this.toEpisode.equals(nameInfo.toEpisode);
+		    break;
 		case DESCRIPTION: bol = hasDescription() && nameInfo.hasDescription() && this.episodeName.equals(nameInfo.episodeName);
 			break;
 		default:
@@ -199,6 +209,8 @@ public class NameInfo {
 			break;
 		case EPISODE: bol = hasEpisode() ? nameInfo.hasEpisode() && this.episode.equals(nameInfo.episode) : !nameInfo.hasEpisode();
 			break;
+		case TO_EPISODE: bol = hasToEpisode() ? nameInfo.hasToEpisode() && this.toEpisode.equals(nameInfo.toEpisode) : !nameInfo.hasToEpisode();
+		    break;
 		case DESCRIPTION: bol = hasDescription() ? nameInfo.hasDescription() && this.episodeName.equals(nameInfo.episodeName) : !nameInfo.hasDescription();
 			break;
 		default:
@@ -234,6 +246,12 @@ public class NameInfo {
 	@SuppressWarnings("unchecked")
 	public  <T extends NameInfo> T setEpisode(String episode) {
 		this.episode = getNumberInFormat(episode);
+		return (T) this;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends NameInfo> T setToEpisode(String toEpisode) {
+		this.toEpisode = getNumberInFormat(toEpisode);
 		return (T) this;
 	}
 	
@@ -286,6 +304,10 @@ public class NameInfo {
 	
 	public String getEpisode() {
 		return this.episode;
+	}
+	
+	public String getToEpisode() {
+		return this.toEpisode;
 	}
 	
 	public String getDescription() {
@@ -341,7 +363,9 @@ public class NameInfo {
 		if(!str.isEmpty()) {
 			str += " - ";
 			str += info.hasSeason() ? "S" + info.getSeason() : "";
-			str += info.hasEpisode() ? "E" + info.getEpisode() : "";  
+			str += info.hasEpisode() ? "E" + info.getEpisode() : "";
+			if(info.hasToEpisode())
+				str += "-E" + info.getToEpisode();
 		}
 		return str;
 	}
@@ -380,6 +404,10 @@ public class NameInfo {
 	
 	public boolean hasEpisode() {
 		return this.episode != null && !this.episode.isBlank();
+	}
+	
+	public boolean hasToEpisode() {
+		return this.toEpisode != null && !this.toEpisode.isBlank();
 	}
 	
 	public boolean hasDescription() {
@@ -567,6 +595,10 @@ public class NameInfo {
 	private void createEpisode(String str) {
 		Word word = Word.getFirstNumber(str);
 		setEpisode(word.str);
+		if(isEpisodeFormat3(Word.getFirstWord(str))) {
+			word = Word.getFirstNumber(word.getNextString());
+			setToEpisode(word.str);
+		}
 		createEpisodeName(word.getNextString());
 	}
 	
@@ -618,7 +650,8 @@ public class NameInfo {
 		Word number = Word.getFirstNumber(firstWord.getFullStringFromCurrentStart());
 		String match = "s"+number.str;
 		return number.hasWord() && (str.equals(match) || 
-				(str.startsWith(match) && isEpisodeFormat1(number.getNextWord())));
+				(str.startsWith(match) && 
+						(isEpisodeFormat1(number.getNextWord()) || isEpisodeFormat3(number.getNextWord()))));
 	}
 	
 	/**
@@ -647,7 +680,7 @@ public class NameInfo {
 	}
 	
 	private boolean isEpisodeAnyFormat(Word word) {
-		return isEpisodeFormat1(word) || isEpisodeFormat2(word);
+		return isEpisodeFormat1(word) || isEpisodeFormat2(word) || isEpisodeFormat3(word);
 	}
 	
 	/**
@@ -674,12 +707,42 @@ public class NameInfo {
 				.anyMatch(p -> p.equals(str)) && word.isNextWordNumber();
 	}
 	
+	/**
+	 * Episode format of: (("ep")||("e"))[spacing](number)^+(("-"))[0,1](("ep"))[spacing](number)^+
+	 * @param word
+	 * @return
+	 */
+	private boolean isEpisodeFormat3(Word word) {
+		String str = word.str.toLowerCase();
+		Word number = Word.getFirstNumber(word.getFullStringFromCurrentStart());
+		if(number.hasWord() && 
+				Arrays.asList("e", "ep").stream()
+				.anyMatch(p -> str.startsWith(p + number.str))) {
+			word = number.getNextWord();
+			if (word.str.startsWith("-")) {
+				word = word.getSubWord(1);
+			}
+			return isEpisodeFormat1(word);
+		}
+		return false;
+	}
+	
 	public boolean isSeasonGood(String season) {
 		return hasSeason() ? this.season.equals(season) : season.isBlank();
 	}
 	
+	public boolean isEpisode(FileInfo episodeInfo) {
+		return isEpisode(episodeInfo.getSeason(), episodeInfo.getEpisode(), episodeInfo.getToEpisode());
+	}
+	
 	public boolean isEpisode(String season, String episode) {
+		System.out.println("Season: " + season + " Episode: " + episode);
 		return isSeasonGood(season) && (hasEpisode() ? this.episode.equals(episode) : episode.isBlank());
+	}
+	
+	public boolean isEpisode(String season, String episode, String toEpisode) {
+		return isSeasonGood(season) && (hasEpisode() ? this.episode.equals(episode) : episode.isBlank())
+				&& (hasToEpisode() ? this.toEpisode.equals(toEpisode) : toEpisode.isBlank());
 	}
 	
 	public boolean logical(boolean b1, boolean b2) {
@@ -741,6 +804,14 @@ public class NameInfo {
 		
 		public String getNextString() {
 			return fullStr.substring(end);
+		}
+		
+		public Word getSubWord(int from) {
+			Word word = new Word(str.substring(from));
+			word.str = word.fullStr;
+			word.start = 0;
+			word.end = word.fullStr.length();
+			return word;
 		}
 		
 		boolean hasWord() {

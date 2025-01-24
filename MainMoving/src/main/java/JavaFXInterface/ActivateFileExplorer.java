@@ -43,9 +43,9 @@ public class ActivateFileExplorer extends Application {
     	File file = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
     	
     	this.explorer = new ManageFolderSelectorPanel(new ManageFolder(file.getAbsolutePath()));
-    	//Scene scene = new Scene(explorer);
+    	Scene scene = new Scene(explorer);
     	
-    	Scene scene = new Scene(loadFXML(MainFileSelectorController.PATH));
+    	//Scene scene = new Scene(loadFXML(MainFileSelectorController.PATH));
     	stage.setScene(scene);
     	stage.setWidth(800);
     	stage.setHeight(500);

@@ -40,6 +40,7 @@ public class MainFileExplorerView extends BorderPane {
 	private WatchExample w;
 	private ContextMenu switchMenu;
 	private FileExplorer fileExplorer;
+	private FileExplorerView fileExplorerViewType;
 
 	public MainFileExplorerView(FileExplorer fileExplorer, FileExplorerView fileExplorerView) {
 		this.fileExplorer = fileExplorer;
@@ -71,6 +72,7 @@ public class MainFileExplorerView extends BorderPane {
 	}
 	
 	public void setFileExplorerView(FileExplorerView view) {
+		this.fileExplorerViewType = view;
 		switch(view) {
 		case DETAILS:
 			fileView = fileTableDetailsView.call(getDefualtFileDetailsView());
@@ -88,6 +90,27 @@ public class MainFileExplorerView extends BorderPane {
 			}
 		});
 		setMainPanel(folder.get());
+		this.setCenter(fileView);
+	}
+	
+	private void refreshFileExplorerView() {
+		switch(this.fileExplorerViewType) {
+		case DETAILS:
+			fileView = fileTableDetailsView.call(getDefualtFileDetailsView());
+			break;
+		case ICONS:
+			fileView = fileTableIconView.call(getDefualtFileIconView());
+			break;
+		default:
+			break;
+		}
+		setMainPanel(folder.get());
+		fileView.setOnMouseClicked(e -> {
+			System.out.println(e);
+			if (e.getButton() == MouseButton.SECONDARY) {
+				switchMenu.show(this, e.getScreenX(), e.getScreenY());
+			}
+		});
 		this.setCenter(fileView);
 	}
 	
@@ -173,6 +196,8 @@ public class MainFileExplorerView extends BorderPane {
 	
 	public void setFileDetailsView(Callback<FileTableDetailsView, FileTableDetailsView> fileTableDetailsView) {
 		this.fileTableDetailsView = fileTableDetailsView;
+		if(this.fileView instanceof FileTableDetailsView)
+            refreshFileExplorerView();
 	}
 	
 	public FileTableDetailsView getDefualtFileDetailsView() {
@@ -183,6 +208,8 @@ public class MainFileExplorerView extends BorderPane {
 	
 	public void setFileIconView(Callback<FileTableIconView, FileTableIconView> fileTableIconView) {
 		this.fileTableIconView = fileTableIconView;
+		if(this.fileView instanceof FileTableIconView)
+			refreshFileExplorerView();
 	}
 	
 	public FileTableIconView getDefualtFileIconView() {
