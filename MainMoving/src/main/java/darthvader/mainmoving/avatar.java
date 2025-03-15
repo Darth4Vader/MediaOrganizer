@@ -12,11 +12,12 @@ public class avatar {
 
 	public static void main(String[] args) {
 		
-		NameInfo info = new NameInfo("Avatar The Last Airbender (2005) - S02E19-E20 - The Guru & The Crossroads of Destiny  ");
+		NameInfo info = new NameInfo("Avatar The Last Airbender (2005) - S02E19-E21 - The Guru & The Crossroads of Destiny  ");
 		
-		System.out.println(info.getSeason() + "  " + info.getEpisode());
+		System.out.println(info.getSeason() + "  " + info.getEpisode() + "  " + info.getToEpisode());
 	
 	
+		/*
 		File folder = new File("F:\\Avatar The Last Airbender (2005) Season 1-3 S01-S03 (1080p AMZN WEB-DL x265 HEVC 10bit EAC3 2.0 RCVR) REPACK\\Season 2");
 		List<FileInfo> videos = new ArrayList<>();
 		List<FileInfo> subtitles = new ArrayList<>();
@@ -39,6 +40,7 @@ public class avatar {
 				subtitles.remove(matchingSubtitle);
 			}
 		}
+		*/
 	}
 
 }

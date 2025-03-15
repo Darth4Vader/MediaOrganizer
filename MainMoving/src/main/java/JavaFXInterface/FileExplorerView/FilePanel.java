@@ -3,6 +3,7 @@ package JavaFXInterface.FileExplorerView;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.file.Files;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -135,6 +136,16 @@ public class FilePanel extends BorderPane /*VBox*/ implements NodeCellSetter<Fil
 		currentCell = cell;
 		if(cell != null)
 			this.isSelected.bind(cell.selectedProperty());
+	}
+	
+	@Override
+	public boolean isSame(File item) {
+		try {
+			return this.file != null && item != null && Files.isSameFile(this.file.toPath(), item.toPath());
+		}
+		catch(Exception e) {
+			return false;
+		}
 	}
 	
 	private void setSelectedState(boolean selected) {

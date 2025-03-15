@@ -387,12 +387,15 @@
 	    <version>24-ea+19</version>
 	    <type>pom</type>
 	</dependency>
-		
+
+<!--
 		<dependency>
     <groupId>org.controlsfx</groupId>
     <artifactId>controlsfx</artifactId>
     <version>11.2.1</version>
 </dependency>
+
+-->
 
 
 <!--

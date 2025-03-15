@@ -12,6 +12,8 @@ public interface NodeCellSetter<T> {
 	
 	public void set(T file, Cell<T> cell);
 	
+	public boolean isSame(T item);
+	
 	public void reset();
 	
 	public Node getView();

@@ -22,10 +22,9 @@ public class FileTableIconCellEditor extends GridCellSelected<File> {
             setGraphic(null);
         	cell.reset();
         }
-        else {
+        else if(!cell.isSame(item)) {
         	cell.set(item, this);
-			System.out.println("Render " + item);
-            setGraphic(cell.getView());
+        	setGraphic(cell.getView());
         }
         setAlignment(Pos.CENTER_LEFT);
     }
