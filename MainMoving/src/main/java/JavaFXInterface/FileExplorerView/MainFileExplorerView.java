@@ -142,16 +142,16 @@ public class MainFileExplorerView extends BorderPane {
 	}
 
 	public void setMainPanel(File folder) {
-		setMainPanel(folder, null);
+		setMainPanelFocus(folder, null);
 	}
 	
-	private void setMainPanel(File folder, File toFocus) {
+	public void setMainPanel(File folder, List<File> subFiles) {
 		closePanel();
 		if(folder == null  || !folder.isDirectory())
 			return;
 		this.folder.set(folder);
 		
-		List<File> files = Arrays.asList(folder.listFiles()).stream()
+		List<File> files = subFiles.stream()
 		.filter((f) -> !f.isHidden()).collect(Collectors.toList());
 		
 		if(fileView instanceof FileTableDetailsView) {
@@ -182,6 +182,12 @@ public class MainFileExplorerView extends BorderPane {
 		t.start();
 	}
 	
+	private void setMainPanelFocus(File folder, File toFocus) {
+		if(folder == null  || !folder.isDirectory())
+			return;
+		setMainPanel(folder, Arrays.asList(folder.listFiles()));
+	}
+	
 	private Thread t;
 	
 	public void closePanel() {
@@ -189,7 +195,11 @@ public class MainFileExplorerView extends BorderPane {
 	}
 	
 	public void goToParentFile(File file) {
-		setMainPanel(file.getParentFile(), file);
+		setMainPanelFocus(file.getParentFile(), file);
+	}
+	
+	public File getFolder() {
+		return this.folder.get();
 	}
 	
 	private Callback<FileTableDetailsView, FileTableDetailsView> fileTableDetailsView;

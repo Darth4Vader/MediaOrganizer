@@ -6,11 +6,13 @@ import java.io.File;
 
 import org.controlsfx.control.GridView;
 
+import JavaFXInterface.FileExplorerSearch.FileSearchView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
 import JavaFXInterface.controlsfx.DragResizePane;
 import javafx.geometry.Pos;
 import javafx.scene.control.Control;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
@@ -45,6 +47,24 @@ public class FileExplorer extends BorderPane {
 		sidePnl.setPrefWidth(150);
 		
 		this.setLeft(sidePnl);
+		
+		
+		FileSearchView searchView = new FileSearchView(this, FileExplorerView.DETAILS);
+		TextField searchField = new TextField();
+		searchField.setPromptText("Search");
+		searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+			if(!newVal.equals(oldVal)) {
+				if(newVal.isBlank()) {
+					this.setCenter(this.mainFileExplorerView);
+				}
+				else {
+					System.out.println("New Value: " + newVal);
+					this.setCenter(searchView);
+					searchView.search(this.mainFileExplorerView.getFolder(), newVal);
+				}
+			}
+		});
+		this.setTop(searchField);
 		
 		this.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
 		this.setVisible(true);
