@@ -4,11 +4,14 @@ import static com.sun.javafx.scene.control.TableColumnSortTypeWrapper.isAscendin
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.apache.tika.exception.TikaException;
@@ -34,6 +37,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -183,6 +187,44 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
 			}
 		}).filter(p -> p != null).forEach(fileList::add);
     	FilteredTableView.configureForFiltering(this, fileList);
+    	
+    	ExecutorService executorService = Executors.newFixedThreadPool(10);
+		for (FileDetails file : fileList) {
+			/*CompletableFuture.supplyAsync(() -> {
+				try {
+					file.loadMetadata();
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			});*/
+			Task<Void> task = new Task<Void>() {
+				
+				
+				@Override
+				protected Void call() throws Exception {
+					try {
+						file.loadMetadata();
+					} catch (FileNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					return null;
+				}
+			};
+			executorService.execute(task);
+			
+			/*executorService.execute(() -> {
+				try {
+					file.loadMetadata();
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});*/
+		}
+		executorService.shutdown();
     }
     
     private boolean doesColumnExists(String name) {

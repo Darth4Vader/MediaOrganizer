@@ -42,8 +42,11 @@ public class FileDetails {
 	public void setFile(File file) throws IOException {
 		this.file = file;
 		this.attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
-		this.metadata = FileDetailsUtils.loadMetadata(file);
 		this.typeName = FileDetailsUtils.getExtensionName(file);
+	}
+	
+	public void loadMetadata() throws FileNotFoundException {
+		this.metadata = FileDetailsUtils.loadMetadata(file);
 	}
 	
     public String getValue(String name) {

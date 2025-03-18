@@ -67,6 +67,9 @@ public class MainFileExplorerView extends BorderPane {
 			System.out.println("relax");
 			//t.s
 		});
+		this.folder.addListener((obs, oldV, newV) -> {
+			fileExplorer.nextFileHistory(newV);
+		});
 		this.switchMenu = getSwitchViewMenu();
 		setFileExplorerView(fileExplorerView);
 	}
