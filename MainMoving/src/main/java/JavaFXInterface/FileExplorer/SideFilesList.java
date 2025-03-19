@@ -75,7 +75,7 @@ public class SideFilesList extends TreeView<File> {
 						requestFocus();
 						if(e.getClickCount() == 1 && e.getButton() == MouseButton.PRIMARY) {
 							if(explorer !=  null)
-								explorer.getMainFileExplorerView().setMainPanel(item);
+								explorer.enterFolder(item);
 						}
 					});
 		        }

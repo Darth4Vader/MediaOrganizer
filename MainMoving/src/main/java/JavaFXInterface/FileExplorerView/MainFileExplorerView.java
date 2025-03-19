@@ -13,6 +13,7 @@ import DirectoryWatcher.WatchExample;
 import DirectoryWatcher.FileChange.FileChaneType;
 import FileUtils.FileDetails;
 import JavaFXInterface.FileExplorer.FileExplorer;
+import JavaFXInterface.FileExplorer.HistoryView;
 import JavaFXInterface.controlsfx.GridViewSelection;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -67,15 +68,20 @@ public class MainFileExplorerView extends BorderPane {
 			System.out.println("relax");
 			//t.s
 		});
-		this.folder.addListener((obs, oldV, newV) -> {
-			fileExplorer.nextFileHistory(newV);
+		this.parentProperty().addListener((obs, oldV, newV) -> {
+			closePanel();
 		});
 		this.switchMenu = getSwitchViewMenu();
 		setFileExplorerView(fileExplorerView);
 	}
 	
 	public void setFileExplorerView(FileExplorerView view) {
+		if (this.fileExplorerViewType == view)
+			return;
 		this.fileExplorerViewType = view;
+		if (fileView instanceof FileTableView) {
+			((FileTableView<?>) fileView).closePanel();
+		}
 		switch(view) {
 		case DETAILS:
 			fileView = fileTableDetailsView.call(getDefualtFileDetailsView());
@@ -92,7 +98,7 @@ public class MainFileExplorerView extends BorderPane {
 				switchMenu.show(this, e.getScreenX(), e.getScreenY());
 			}
 		});
-		setMainPanel(folder.get());
+		enterFolder(getFolder());
 		this.setCenter(fileView);
 	}
 	
@@ -107,7 +113,7 @@ public class MainFileExplorerView extends BorderPane {
 		default:
 			break;
 		}
-		setMainPanel(folder.get());
+		enterFolder(getFolder());
 		fileView.setOnMouseClicked(e -> {
 			System.out.println(e);
 			if (e.getButton() == MouseButton.SECONDARY) {
@@ -140,28 +146,58 @@ public class MainFileExplorerView extends BorderPane {
 		return this.fileExplorer;
 	}
 	
-	public void setMainPanel(String path) {
-		setMainPanel(new File(path));
-	}
-
-	public void setMainPanel(File folder) {
-		setMainPanelFocus(folder, null);
+	public HistoryView enterFolder(File folder) {
+		if(folder == null  || !folder.isDirectory())
+			return null;
+		HistoryView historyView = createHistoryView(folder);
+		loadHistoryView(historyView);
+		setMainPanel(historyView);
+		return historyView;
 	}
 	
-	public void setMainPanel(File folder, List<File> subFiles) {
+	public void enterHistoryView(HistoryView historyView) {
+		if (historyView == null)
+			return;
+		setMainPanel(historyView);
+		if (fileView instanceof FileTableView) {
+			File focuedFile = historyView.getFocusedFile();
+			if (focuedFile != null) {
+				((FileTableView<?>) fileView).setFileToBeSelected(focuedFile);
+			}
+		}
+	}
+	
+	protected HistoryView createHistoryView(File folder) {
+		return new HistoryView(folder);
+	}
+	
+	protected final void loadHistoryView(HistoryView historyView) {
+		if(fileView instanceof FileTableView) {
+			ObservableList<File> selectedFiles = ((FileTableView<?>) fileView).getSelectedFiles();
+			if(selectedFiles.size() == 1) {
+				historyView.setFocusedFile(selectedFiles.get(0));
+			}
+		}
+	}
+	
+	private void setMainPanel(HistoryView historyView) {
+		if (historyView == null)
+			return;
+		File folder = historyView.getFolder();
 		closePanel();
 		if(folder == null  || !folder.isDirectory())
 			return;
 		this.folder.set(folder);
 		
+		List<File> subFiles = historyView.getFiles();
+		if(subFiles == null)
+			return;
+		
 		List<File> files = subFiles.stream()
 		.filter((f) -> !f.isHidden()).collect(Collectors.toList());
 		
-		if(fileView instanceof FileTableDetailsView) {
-			((FileTableDetailsView) fileView).setFile(files);
-		}
-		else if(fileView instanceof FileTableIconView) {
-			((FileTableIconView) fileView).getItems().setAll(files);
+		if(fileView instanceof FileTableView) {
+			((FileTableView<?>) fileView).setFiles(files);
 		}
 		fileView.requestFocus();
 		Task<Void> task = new Task<Void>() {
@@ -185,20 +221,13 @@ public class MainFileExplorerView extends BorderPane {
 		t.start();
 	}
 	
-	private void setMainPanelFocus(File folder, File toFocus) {
-		if(folder == null  || !folder.isDirectory())
-			return;
-		setMainPanel(folder, Arrays.asList(folder.listFiles()));
-	}
-	
 	private Thread t;
 	
 	public void closePanel() {
 		w.shutdown();
-	}
-	
-	public void goToParentFile(File file) {
-		setMainPanelFocus(file.getParentFile(), file);
+		if (fileView instanceof FileTableView) {
+			((FileTableView<?>) fileView).closePanel();
+		}
 	}
 	
 	public File getFolder() {

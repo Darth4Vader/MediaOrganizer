@@ -16,7 +16,9 @@ public class FileSearch {
 	
 	public static List<File> searchFiles(File searchFolder, String search) throws IOException {
 		try (Stream<Path> walkStream = Files.walk(searchFolder.toPath())) {
-		    return walkStream.filter(p -> p.toFile().isFile())/*.forEach(f -> {
+		    return walkStream
+		    		/*.filter(p -> p.toFile().isFile())*/
+		    		/*.forEach(f -> {
 		        if (f.toString().endsWith("file to be searched")) {
 		            System.out.println(f + " found!");
 		        }

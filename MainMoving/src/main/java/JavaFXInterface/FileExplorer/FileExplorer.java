@@ -10,6 +10,7 @@ import java.util.Objects;
 import org.controlsfx.control.GridView;
 
 import JavaFXInterface.FileExplorerSearch.FileSearchView;
+import JavaFXInterface.FileExplorerSearch.HistorySearchView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
 import JavaFXInterface.controlsfx.DragResizePane;
@@ -37,7 +38,13 @@ public class FileExplorer extends BorderPane {
 
 	private MainFileExplorerView mainFileExplorerView;
 	
+	private FileSearchView searchView;
+	
 	private HistoryList<HistoryView> history;
+	
+	private TextField searchField;
+	
+	private boolean canRegisterHistory;
 	
 	public FileExplorer(String filePath) {
 		this(new File(filePath));
@@ -66,10 +73,13 @@ public class FileExplorer extends BorderPane {
 		this.setLeft(sidePnl);
 		
 		
-		FileSearchView searchView = new FileSearchView(this, FileExplorerView.DETAILS);
-		TextField searchField = new TextField();
+		searchView = new FileSearchView(this, FileExplorerView.DETAILS);
+		searchField = new TextField();
 		searchField.setPromptText("Search");
+		this.canRegisterHistory = true;
 		searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+			if(!this.canRegisterHistory)
+				return;
 			if(!newVal.equals(oldVal)) {
 				if(newVal.isBlank()) {
 					this.setCenter(this.mainFileExplorerView);
@@ -77,7 +87,9 @@ public class FileExplorer extends BorderPane {
 				else {
 					System.out.println("New Value: " + newVal);
 					this.setCenter(searchView);
-					searchView.search(this.mainFileExplorerView.getFolder(), newVal);
+					HistoryView historyView = searchView.search(this.mainFileExplorerView.getFolder(), newVal);
+					if(historyView != null)
+			            this.history.add(historyView);
 				}
 			}
 		});
@@ -111,7 +123,7 @@ public class FileExplorer extends BorderPane {
 		this.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
 		this.setVisible(true);
 		
-		this.mainFileExplorerView.setMainPanel(file);
+		this.enterFolder(file);
 		
 	}
 	
@@ -121,6 +133,7 @@ public class FileExplorer extends BorderPane {
 	
 	public void closePanel() {
 		this.mainFileExplorerView.closePanel();
+		this.searchView.closePanel();
 	}
 	
 	public void setCurrentFileFocused(File file) {
@@ -134,12 +147,28 @@ public class FileExplorer extends BorderPane {
 	private void loadHistoryView(HistoryView historyView) {
 		if (historyView == null)
 			return;
-        this.mainFileExplorerView.setMainPanel(historyView.getFolder());
+		this.canRegisterHistory = false;
+		if(historyView instanceof HistorySearchView) {
+			this.searchField.setText(((HistorySearchView) historyView).getSearch());
+			this.setCenter(searchView);
+			this.searchView.enterHistoryView(historyView);
+		}
+		else {
+			this.searchField.clear();
+			this.setCenter(mainFileExplorerView);
+			this.mainFileExplorerView.enterHistoryView(historyView);
+		}
+		this.canRegisterHistory = true;
     }
 	
-	public void nextFileHistory(File file) {
-		if (file != null && !Objects.equals(file, this.history.getCurrentValue().getFolder()))
-			this.history.add(new HistoryView(file));
+	public void enterFolder(File folder) {
+		if(this.getChildren().contains(this.mainFileExplorerView)) {
+			this.setCenter(mainFileExplorerView);
+		}
+		this.searchField.clear();
+		HistoryView historyView = this.mainFileExplorerView.enterFolder(folder);
+		if(historyView != null)
+            this.history.add(historyView);
 	}
 	
 	public class ExpandPanel extends CanvasPane {

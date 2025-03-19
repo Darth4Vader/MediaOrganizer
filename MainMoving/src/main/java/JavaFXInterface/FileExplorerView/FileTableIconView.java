@@ -1,6 +1,7 @@
 package JavaFXInterface.FileExplorerView;
 
 import java.io.File;
+import java.util.Collection;
 
 import DirectoryWatcher.FileChange;
 import DirectoryWatcher.FileChange.FileChaneType;
@@ -12,7 +13,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.input.ScrollEvent;
 
-public class FileTableIconView extends GridViewSelection<File> implements FileTableHandler {
+public class FileTableIconView extends GridViewSelection<File> implements FileTableHandler, FileTableView<File> {
 	
 	private static final double CELL_MIN_WIDTH = 100, CELL_MIN_HEIGHT = 100;
 
@@ -95,6 +96,27 @@ public class FileTableIconView extends GridViewSelection<File> implements FileTa
 		default:
 			break;
 		}
+	}
+
+	@Override
+	public void setFiles(Collection<File> files) {
+		this.getItems().setAll(files);
+	}
+
+	@Override
+	public ObservableList<File> getSelectedFiles() {
+		return this.getSelectedItems();
+	}
+	
+	@Override
+	public void setFileToBeSelected(File file) {
+		this.addSelectedItem(file);
+	}
+
+	@Override
+	public void closePanel() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

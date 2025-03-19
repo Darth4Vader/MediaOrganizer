@@ -63,7 +63,16 @@ public class GridViewSelection<T> extends GridView<T> {
         boolean isSelected = selectionList.contains(cell.getItem());
         cell.updateSelected(isSelected);
     }
+    
+	public ObservableList<T> getSelectedItems() {
+		return selectionList;
+	}
 	
+	public void addSelectedItem(T item) {
+        if(item != null && !selectionList.contains(item)) {
+        	selectionList.add(item);
+        }
+	}
 	
 	@SuppressWarnings("unchecked")
 	private static <T> Cell<T> getNodeCellParentOfView(Node node, GridView<T> view){
