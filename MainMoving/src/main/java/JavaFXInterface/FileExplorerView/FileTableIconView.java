@@ -11,6 +11,7 @@ import JavaFXInterface.controlsfx.GridViewSelection;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 
 public class FileTableIconView extends GridViewSelection<File> implements FileTableHandler, FileTableView<File> {
@@ -66,7 +67,43 @@ public class FileTableIconView extends GridViewSelection<File> implements FileTa
 	            e.consume();
             }
 		});
+		
+		this.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+			System.out.println("Hello: " + e);
+			processArrowKeys(e, this);
+		});
 	}
+	
+    private <S> void processArrowKeys(KeyEvent event, FileTableIconView gridView) {
+    	System.out.println("Key Pressed " + event);
+        if (event.getCode().isArrowKey()) {
+            event.consume();
+
+            GridViewFocusModel<File> model = gridView.getFocusModel();
+            switch (event.getCode()) {
+                case UP:
+                    model.focusAboveCell();
+                    //model2.selectAboveCell();
+                    break;
+                case RIGHT:
+                    model.focusRightCell();
+                    break;
+                case DOWN:
+                    model.focusBelowCell();
+                    //model2.selectBelowCell();
+                    break;
+                case LEFT:
+                    model.focusLeftCell();
+                    break;
+                default:
+                    throw new AssertionError(event.getCode().name());
+            }
+            /*
+            gridView.scrollTo(model.getFocusedCell().getRow());
+            gridView.scrollToColumnIndex(model.getFocusedCell().getColumn());
+            */
+        }
+    }
 
 	@Override
 	public void handleFileChange(FileChange fileChange) {

@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
@@ -27,6 +28,7 @@ public class ActivateFileExplorer extends Application {
 	}
 	
 	private FileExplorer explorer;
+	private BorderPane mainPanel;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -42,8 +44,19 @@ public class ActivateFileExplorer extends Application {
     	
     	File file = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
     	
-    	this.explorer = new ManageFolderSelectorPanel(new ManageFolder(file.getAbsolutePath()));
-    	Scene scene = new Scene(explorer);
+    	this.mainPanel = new BorderPane();
+    	ManageFolder manage = new ManageFolder(file.getAbsolutePath());
+
+    	ManageFolderSelectorPanel selectorExplorer = new ManageFolderSelectorPanel(manage);
+    	selectorExplorer.finishSelectionProperty().addListener((obs, oldVal, newVal) -> {
+    		if(newVal) {
+    			this.explorer = new FileInfoExplorer(manage);
+    			this.mainPanel.setCenter(this.explorer);
+    		}
+    	});
+    	this.explorer = selectorExplorer;
+    	this.mainPanel.setCenter(selectorExplorer);
+    	Scene scene = new Scene(mainPanel);
     	
     	//Scene scene = new Scene(loadFXML(MainFileSelectorController.PATH));
     	stage.setScene(scene);

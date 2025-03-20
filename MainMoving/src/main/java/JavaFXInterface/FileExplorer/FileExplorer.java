@@ -105,13 +105,13 @@ public class FileExplorer extends BorderPane {
 		backwardHistory.setPrefWidth(50);
 		backwardHistory.visibleActiveProperty().bind(history.hasPrevious());
 		backwardHistory.setOnMouseClicked(e -> {
-			loadHistoryView(history.getPreviousValue());
+			loadPreviousHistoryView();
 		});
 		forwardHistory.setImage(SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/history_arrow.png"), null));
 		forwardHistory.setPrefWidth(50);
 		forwardHistory.visibleActiveProperty().bind(history.hasNext());
 		forwardHistory.setOnMouseClicked(e -> {
-			loadHistoryView(history.getNextValue());
+			loadNextHistoryView();
         });
 		functionBox.getChildren().addAll(backwardHistory, forwardHistory);
 		
@@ -119,6 +119,16 @@ public class FileExplorer extends BorderPane {
 		functionBox.getChildren().add(searchField);
 		
 		this.setTop(functionBox);
+		
+		this.setOnKeyPressed(e -> {
+			switch (e.getCode()) {
+			case BACK_SPACE:
+				loadPreviousHistoryView();
+				break;
+			default:
+				break;
+			}
+		});
 		
 		this.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
 		this.setVisible(true);
@@ -143,6 +153,14 @@ public class FileExplorer extends BorderPane {
 	public void resetCurrentFileFocused() {
         
     }
+	
+	private void loadPreviousHistoryView() {
+		loadHistoryView(this.history.getPreviousValue());
+	}
+	
+	private void loadNextHistoryView() {
+		loadHistoryView(this.history.getNextValue());
+	}
 	
 	private void loadHistoryView(HistoryView historyView) {
 		if (historyView == null)

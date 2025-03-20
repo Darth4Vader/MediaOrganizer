@@ -10,6 +10,7 @@ import DataStructures.ManageFolder;
 import FileUtils.FileDetails;
 import JavaFXInterface.FileExplorer.FileExplorer;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView;
+import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.Button;
@@ -22,7 +23,6 @@ public class ManageFolderSelectorPanel extends FileExplorer {
 
 	public ManageFolderSelectorPanel(ManageFolder manage) {
 		super(manage.getMainFolderPath());
-		MainFileExplorerView fileView = getMainFileExplorerView();
 		this.getMainFileExplorerView().setFileDetailsView(detailsView -> {
 			TableColumn<FileDetails, Boolean> checkColumn = new TableColumn<>();
 			checkColumn.setCellFactory(CheckBoxTableCell.forTableColumn(checkColumn));
@@ -46,6 +46,16 @@ public class ManageFolderSelectorPanel extends FileExplorer {
 		finish.setOnAction(e -> {
 			manage.setManageFolderFiles(selectedFiles);
 			closePanel();
+			finishSelectionProperty().set(true);
 		});
+		setBottom(finish);
+		
+		this.getMainFileExplorerView().setFileExplorerView(FileExplorerView.ICONS);
+	}
+	
+	private BooleanProperty finishSelection = new SimpleBooleanProperty(false);
+	
+	public BooleanProperty finishSelectionProperty() {
+		return finishSelection;
 	}
 }

@@ -19,6 +19,7 @@ import FileUtilities.MimeUtils;
 import JavaFXInterface.AppUtils;
 import JavaFXInterface.controlsfx.NodeCellSetter;
 import OtherUtilities.ImageUtils;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.NumberBinding;
 import javafx.beans.property.BooleanProperty;
@@ -119,7 +120,10 @@ public class FilePanel extends BorderPane /*VBox*/ implements NodeCellSetter<Fil
 	@Override
 	public void set(File file, Cell<File> cell) {
 		this.file = file;
-		imageView.setImage(AppUtils.getImageOfFile(file));
+		Platform.runLater(() -> {
+			if(this.file != null)
+				imageView.setImage(AppUtils.getImageOfFile(this.file));
+		});
 		text.updateText(file);
 		final SimpleObjectProperty<Background> defaultBackground = new SimpleObjectProperty<>(this.getBackground());
 		setOnMouseClicked(e -> {

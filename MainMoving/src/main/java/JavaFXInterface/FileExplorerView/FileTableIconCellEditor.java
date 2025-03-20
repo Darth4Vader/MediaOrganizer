@@ -4,6 +4,8 @@ import java.io.File;
 
 import JavaFXInterface.controlsfx.GridCellSelected;
 import javafx.geometry.Pos;
+import javafx.scene.layout.Background;
+import javafx.scene.paint.Color;
 
 public class FileTableIconCellEditor extends GridCellSelected<File> {
 	
@@ -13,6 +15,15 @@ public class FileTableIconCellEditor extends GridCellSelected<File> {
 		this.cell = new FilePanel();
 		this.cell.bindWidth(widthProperty());
 		this.cell.bindHeight(heightProperty());
+		this.focusedProperty().addListener((obs, oldVal, newVal) -> {
+			System.out.println("Focuss");
+			if (newVal) {
+				cell.setBackground(Background.fill(Color.RED));
+			}
+			else {
+				cell.setBackground(Background.EMPTY);
+			}
+		});
 	}
 	
     @Override

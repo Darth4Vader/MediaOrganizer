@@ -8,6 +8,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.filechooser.FileSystemView;
 
+import org.controlsfx.control.GridCell;
+
 import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 import com.sun.jna.WString;
@@ -83,6 +85,8 @@ public class AppUtils {
 			return ((TreeTableCell<?,?>) cell).getTreeTableView();
 		if(cell instanceof TreeCell)
 			return ((TreeCell<?>) cell).getTreeView();
+		if (cell instanceof GridCell)
+			return ((GridCell<?>) cell).getGridView();
 		return null;
 	}
 

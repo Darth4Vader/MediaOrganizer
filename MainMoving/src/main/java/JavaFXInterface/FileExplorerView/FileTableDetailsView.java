@@ -77,7 +77,8 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     	
 		this.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
 			System.out.println("Hello: " + e);
-			processArrowKeys(e, this);});
+			processArrowKeys(e, this);
+		});
     	
 		this.focusedProperty().addListener((observable, oldValue, newValue) -> {
 			if (!newValue) {
