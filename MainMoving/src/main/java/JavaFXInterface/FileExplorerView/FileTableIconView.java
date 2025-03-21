@@ -7,14 +7,14 @@ import DirectoryWatcher.FileChange;
 import DirectoryWatcher.FileChange.FileChaneType;
 import DirectoryWatcher.FileRename;
 import JavaFXInterface.FileExplorer.FileExplorer;
-import JavaFXInterface.controlsfx.GridViewSelection;
+import JavaFXInterface.controlsfx.BetterGridView;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.ScrollEvent;
 
-public class FileTableIconView extends GridViewSelection<File> implements FileTableHandler, FileTableView<File> {
+public class FileTableIconView extends BetterGridView<File> implements FileTableHandler, FileTableView<File> {
 	
 	private static final double CELL_MIN_WIDTH = 100, CELL_MIN_HEIGHT = 100;
 

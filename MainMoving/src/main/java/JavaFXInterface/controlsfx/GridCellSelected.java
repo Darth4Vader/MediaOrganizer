@@ -15,9 +15,9 @@ public class GridCellSelected<T> extends GridCell<T> {
         
         if(item != null && !empty) {
         	GridView<T> gridView = getGridView();
-        	if(gridView == null || !(gridView instanceof GridViewSelection))
+        	if(gridView == null || !(gridView instanceof BetterGridView))
         		return;
-        	GridViewSelection<T> gridViewSelection = (GridViewSelection<T>) gridView;
+        	BetterGridView<T> gridViewSelection = (BetterGridView<T>) gridView;
         	gridViewSelection.updateSelection(this);
         }
     }

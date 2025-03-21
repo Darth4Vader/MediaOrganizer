@@ -14,7 +14,6 @@ import DirectoryWatcher.FileChange.FileChaneType;
 import FileUtils.FileDetails;
 import JavaFXInterface.FileExplorer.FileExplorer;
 import JavaFXInterface.FileExplorer.HistoryView;
-import JavaFXInterface.controlsfx.GridViewSelection;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
