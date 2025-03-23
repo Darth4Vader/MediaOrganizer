@@ -11,7 +11,7 @@ import JavaFXInterface.controlsfx.BetterGridView;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.input.ScrollEvent;
 
 public class FileTableIconView extends BetterGridView<File> implements FileTableHandler, FileTableView<File> {
@@ -20,18 +20,18 @@ public class FileTableIconView extends BetterGridView<File> implements FileTable
 
 	public FileTableIconView(FileExplorer explorer) {
 		super(FXCollections.observableArrayList());
-		setCellFactory(x -> new FileTableIconCellEditor());
+		setCellFactory(_ -> new FileTableIconCellEditor());
 		setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
 		setStyle("-fx-focus-color: -fx-control-inner-background ; -fx-faint-focus-color: -fx-control-inner-background ;");
 		setFocusTraversable(false);
-		addSelectionListener(new ListChangeListener<File>() {
+		
+		getSelectionModel().getSelectedItems().addListener(new ListChangeListener<File>() {
 
 			@Override
 			public void onChanged(Change<? extends File> c) {
 				if(c.next()) {
 					ObservableList<? extends File> list = c.getList();
 					if(c.wasRemoved()) {
-						System.out.println("alone " + list);
 						if(list.isEmpty())
 							explorer.resetCurrentFileFocused();
 					}
@@ -67,44 +67,8 @@ public class FileTableIconView extends BetterGridView<File> implements FileTable
 	            e.consume();
             }
 		});
-		
-		this.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-			System.out.println("Hello: " + e);
-			processArrowKeys(e, this);
-		});
+		getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 	}
-	
-    private <S> void processArrowKeys(KeyEvent event, FileTableIconView gridView) {
-    	System.out.println("Key Pressed " + event);
-        if (event.getCode().isArrowKey()) {
-            event.consume();
-
-            GridViewFocusModel<File> model = gridView.getFocusModel();
-            switch (event.getCode()) {
-                case UP:
-                    model.focusAboveCell();
-                    //model2.selectAboveCell();
-                    break;
-                case RIGHT:
-                    model.focusRightCell();
-                    break;
-                case DOWN:
-                    model.focusBelowCell();
-                    //model2.selectBelowCell();
-                    break;
-                case LEFT:
-                    model.focusLeftCell();
-                    break;
-                default:
-                    throw new AssertionError(event.getCode().name());
-            }
-            gridView.scrollTo(model.getFocusedIndex());
-            /*
-            gridView.scrollTo(model.getFocusedCell().getRow());
-            gridView.scrollToColumnIndex(model.getFocusedCell().getColumn());
-            */
-        }
-    }
 
 	@Override
 	public void handleFileChange(FileChange fileChange) {
@@ -140,15 +104,23 @@ public class FileTableIconView extends BetterGridView<File> implements FileTable
 	public void setFiles(Collection<File> files) {
 		this.getItems().setAll(files);
 	}
+	
+	@Override
+	public ObservableList<File> getSelectedItems() {
+		return this.getSelectionModel().getSelectedItems();
+	}
 
 	@Override
 	public ObservableList<File> getSelectedFiles() {
-		return this.getSelectedItems();
+		return this.getSelectionModel().getSelectedItems();
 	}
 	
 	@Override
 	public void setFileToBeSelected(File file) {
-		this.addSelectedItem(file);
+		GridViewMultipleSelectionModel<File> selectionModel = this.getSelectionModel();
+		if(selectionModel != null) {
+			selectionModel.select(file);
+		}
 	}
 
 	@Override
