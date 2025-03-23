@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.controlsfx.control.GridView;
 
-import impl.org.controlsfx.skin.GridRow;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;

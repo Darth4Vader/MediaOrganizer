@@ -98,6 +98,7 @@ public class FileTableIconView extends BetterGridView<File> implements FileTable
                 default:
                     throw new AssertionError(event.getCode().name());
             }
+            gridView.scrollTo(model.getFocusedIndex());
             /*
             gridView.scrollTo(model.getFocusedCell().getRow());
             gridView.scrollToColumnIndex(model.getFocusedCell().getColumn());
