@@ -15,34 +15,47 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.InjectableValues;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.type.CollectionType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import DataStructures.FileInfoType.FolderType;
+import DataStructures.Json.DataInformation;
+import DataStructures.Json.FileInfoJson.FileInfoFromRelativePathDeserializer;
+import DataStructures.Json.FileInfoJson.FileInfoToRelativePathSerializer;
+import DataStructures.Json.FolderInformationJson;
 import FileUtilities.FileFormats;
 import FileUtilities.FileFormats.FileFormat;
 import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
 import FileUtilities.MimeUtils.MimeContent;
 import OtherUtilities.ImageUtils;
-import OtherUtilities.JSONUtils;
-import OtherUtilities.JSoupUtils;
 
+//JsonDeserialize(using = ManageFolderDeserializer.class)
 public class ManageFolder {
 	
+	@JsonProperty(DataInformation.MANAGE_FOLDER_MAIN_PATH)
 	private final String urlParent;
+	
+	@JsonProperty("Movies")
+	@JsonDeserialize(contentUsing = FileInfoFromRelativePathDeserializer.class)
+	@JsonSerialize(contentUsing = FileInfoToRelativePathSerializer.class)
 	public Map<String, FolderInfo> movieMap = new HashMap<>();
+	
+	@JsonProperty("TV")
+	@JsonDeserialize(contentUsing = FileInfoFromRelativePathDeserializer.class)
+	@JsonSerialize(contentUsing = FileInfoToRelativePathSerializer.class)
 	public Map<String, FolderInfo> TVMap = new HashMap<>();
+	
+	@JsonDeserialize(contentUsing = FileInfoFromRelativePathDeserializer.class)
+	@JsonSerialize(contentUsing = FileInfoToRelativePathSerializer.class)
 	public Map<String, FolderInfo> unkownMediaMap = new HashMap<>();
 	private List<ManageFile> sideMovesList;
 	private boolean flagSearchMainFolderExists = true;
@@ -50,6 +63,10 @@ public class ManageFolder {
 	public static final String DEFAULT_INPUT = "Input", DEFAULT_OUTPUT = "W-Output", ICONS = "Icons";
 	public static final String OUTPUT_TV = "TV", OUTPUT_MOVIE = "Movies", OUTPUT_UNKOWN = "Media";
 	
+	@JsonCreator
+	ManageFolder() {
+		this.urlParent = null;
+	}
 	
 	public ManageFolder(String mainFolderPath) {
 		this.urlParent = mainFolderPath;
@@ -335,82 +352,6 @@ public class ManageFolder {
 		return list;
 	}
 	
-	public static ObjectMapper getObjectMapperSerialization() {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper = JsonMapper.builder().build();
-		
-		
-		
-		mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
-                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withCreatorVisibility(JsonAutoDetect.Visibility.ANY));
-		//mapper.addMixIn(MediaSimple.class, MediaSimpleMixIn.class);
-		//MapType type = TypeFactory.defaultInstance().constructMapType(Map.class, String.class, MediaSimple.class);
-		
-		
-		mapper.setSerializationInclusion(Include.NON_EMPTY);
-		
-		mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
-		return mapper;
-	}
-	
-	public static ObjectMapper getObjectMapperDeserialization() {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper = JsonMapper.builder().build();
-		
-		
-		
-		mapper.setVisibility(mapper.getDeserializationConfig().getDefaultVisibilityChecker()
-                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withCreatorVisibility(JsonAutoDetect.Visibility.ANY));
-		//mapper.addMixIn(MediaSimple.class, MediaSimpleMixIn.class);
-		//MapType type = TypeFactory.defaultInstance().constructMapType(Map.class, String.class, MediaSimple.class);
-		
-		
-		mapper.setSerializationInclusion(Include.NON_EMPTY);
-		
-		mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
-		return mapper;
-	}
-	
-	private FolderInformation loadFolderInformation(FolderInfo folderInfo, FileInfo fileInfo) {
-		File informationFile = getFolderInformationFile(folderInfo, fileInfo);
-		try {
-			ObjectMapper mapper = getObjectMapperSerialization();
-			setFolderInformationInjection(mapper, folderInfo);
-			FolderInformation folderInformation = mapper.readValue(informationFile, FolderInformation.class);
-			return folderInformation;
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.err.println(informationFile);
-		}
-		return null;
-	}
-	
-	private void setFolderInformationInjection(ObjectMapper mapper, FolderInfo folderInfo) {
-		if(folderInfo != null) {
-			InjectableValues inj = new InjectableValues.Std().addValue(FolderInfo.class, folderInfo);
-			mapper.setInjectableValues(inj);
-		}
-	}
-	
-	private void createFolderInformation(FolderInfo folderInfo, FileInfo fileInfo, FolderInformation folderInformation) {
-		File informationFolder = folderInfo.createFolderByType(fileInfo, FolderType.INFORMATION);
-		File informationFile = new File(informationFolder, "information.json");
-		try {
-			ObjectMapper mapper = getObjectMapperDeserialization();
-			setFolderInformationInjection(mapper, folderInfo);
-			mapper.writeValue(informationFile, folderInformation);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
 	private File getFolderInformationFile(FolderInfo folderInfo, FileInfo fileInfo) {
 		File informationFolder = folderInfo.getFolderByType(fileInfo, FolderType.INFORMATION);
 		if(informationFolder == null)
@@ -419,15 +360,15 @@ public class ManageFolder {
 		return informationFile;
 	}
 	
-	private String getPathFromFolder(FolderInfo folderInfo, File file) {
-		File folder = folderInfo.getFile();
-		Path filePath = file.toPath();
-		Path folderPath = folder.toPath();
-		if(filePath.startsWith(folderPath)) {
-			System.out.println("Hello");
-			return filePath.subpath(folderPath.getNameCount(), filePath.getNameCount()).toString();
-		}
-		return null;
+	private FolderInformation loadFolderInformation(FolderInfo folderInfo, FileInfo fileInfo) {
+		File informationFile = getFolderInformationFile(folderInfo, fileInfo);
+		return FolderInformationJson.loadFolderInformation(informationFile, folderInfo);
+	}
+	
+	private void createFolderInformation(FolderInfo folderInfo, FileInfo fileInfo, FolderInformation folderInformation) {
+		File informationFolder = folderInfo.createFolderByType(fileInfo, FolderType.INFORMATION);
+		File informationFile = new File(informationFolder, "information.json");
+		FolderInformationJson.saveFolderInformation(informationFile, folderInformation);
 	}
 	
 	private FolderInformation getFolderInformation(FolderInfo folderInfo, FileInfo fileInfo) {
@@ -1019,6 +960,7 @@ public class ManageFolder {
 		return file.getAbsolutePath().contains(DEFAULT_OUTPUT);
 	}
 	
+	@JsonIgnoreType
 	public class FlagSearchMainFolderExeception extends Exception {
 		
 		/**
@@ -1636,12 +1578,12 @@ public class ManageFolder {
 		private void setIcon() {
 			setIconFolder();
 			if(canDoIconActions()) {
-				String relativeIconPath = FolderInformation.getPathFromFolder(folderInfo.getFile(), sorceFileInfo.getFile());
-				String relativeFolderPath = FolderInformation.getPathFromFolder(folderInfo.getFile(), iconFolder);
+				Path relativeIconPath = DataUtils.getRelativePathFromOfFile(folderInfo.getFile(), sorceFileInfo.getFile());
+				Path relativeFolderPath = DataUtils.getRelativePathFromOfFile(folderInfo.getFile(), iconFolder);
 				if(relativeIconPath != null && relativeFolderPath != null) {
-					Path relativePath = Paths.get(relativeFolderPath).relativize(Paths.get(relativeIconPath));
+					Path relativePath = relativeFolderPath.relativize(relativeIconPath);
 					System.out.println("Reli: " + relativeIconPath + " | " + relativeFolderPath + " | " + relativePath);
-					System.out.println(new File(relativeFolderPath).toPath().relativize(new File(relativeIconPath).toPath()));
+					System.out.println(relativeFolderPath.toFile().toPath().relativize(relativeIconPath.toFile().toPath()));
 					moveList.add(new FileOperationHandler(this, new File(relativePath.toString()), this.iconFolder.getAbsolutePath(), FileOperation.SET_ICON));
 				}
 				else

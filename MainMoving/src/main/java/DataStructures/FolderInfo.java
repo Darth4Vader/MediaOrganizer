@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import DataStructures.FileInfoType.FolderType;
 
 public class FolderInfo extends FileInfo {
@@ -14,6 +16,7 @@ public class FolderInfo extends FileInfo {
 	
 	private FolderType folderType = FolderType.NONE;
 	
+	@JsonCreator
 	public FolderInfo(File file) {
 		super(file);
 	}

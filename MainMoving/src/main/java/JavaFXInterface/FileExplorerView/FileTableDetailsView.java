@@ -52,6 +52,7 @@ import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
 import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -71,6 +72,7 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
 	private MainFileExplorerView mainFileExplorerView;
 	
     public FileTableDetailsView(MainFileExplorerView mainFileExplorerView) {
+    	this.mainFileExplorerView = mainFileExplorerView;
     	this.fixedColumns = FXCollections.observableArrayList(
     			Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().map((s) -> s.getName()).collect(Collectors.toList()));
     	
@@ -78,6 +80,17 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
 		this.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
 			System.out.println("Hello: " + e);
 			processArrowKeys(e, this);
+		});
+		
+		this.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+			System.out.println("Hello: " + e);
+			if(e.getCode() == KeyCode.ENTER) {
+				e.consume();
+				FileDetails rowData = this.getFocusModel().getFocusedItem();
+				if (rowData != null) {
+					enterFolder(rowData);
+				}
+			}
 		});
     	
 		this.focusedProperty().addListener((observable, oldValue, newValue) -> {
@@ -99,8 +112,7 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
 			row.setOnMouseClicked((e) -> {
 				if (e.getClickCount() == 2 && !row.isEmpty()) {
 					FileDetails rowData = row.getItem();
-					File file = rowData.getFile();
-					mainFileExplorerView.getFileExplorer().enterFolder(file);
+					enterFolder(rowData);
 				}
 			});
 			row.focusedProperty().addListener((observable, oldValue, newValue) -> {
@@ -138,6 +150,11 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     	//getStylesheets().add("tableNoSorting.css");
     }
     
+    private void enterFolder(FileDetails fileDetails) {
+		File file = fileDetails.getFile();
+		mainFileExplorerView.getFileExplorer().enterFolder(file);
+    }
+    
     private <S> void processArrowKeys(KeyEvent event, TableView<S> tableView) {
     	System.out.println("Key Pressed " + event);
         if (event.getCode().isArrowKey()) {
@@ -154,8 +171,8 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
                     model.focusRightCell();
                     break;
                 case DOWN:
-                    //model.focusBelowCell();
-                    model2.selectBelowCell();
+                    model.focusBelowCell();
+                    //model2.selectBelowCell();
                     break;
                 case LEFT:
                     model.focusLeftCell();

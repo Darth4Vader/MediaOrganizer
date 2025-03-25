@@ -387,6 +387,15 @@
 	    <version>24-ea+19</version>
 	    <type>pom</type>
 	</dependency>
+	
+	
+<!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
+<dependency>
+    <groupId>org.assertj</groupId>
+    <artifactId>assertj-core</artifactId>
+    <version>3.27.2</version>
+    <scope>test</scope>
+</dependency>
 
 <!--
 		<dependency>
