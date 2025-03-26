@@ -1,5 +1,6 @@
 package JavaFXInterface.controlsfx;
 
+import org.controlsfx.control.GridCell;
 import org.controlsfx.control.GridView;
 
 import javafx.collections.FXCollections;
@@ -39,7 +40,7 @@ public class BetterGridView<T> extends GridView<T> {
 	    	if(selectionModel == null) return;
 			Node node = event.getPickResult().getIntersectedNode();
 			node = getNodeCellParentOfView(node, this);
-			if(node instanceof IndexedCell) {
+			if(node instanceof GridCell) {
 				IndexedCell<?> cell = (IndexedCell<?>) node;
 		    	selectionModel.select(cell.getIndex());
 			}

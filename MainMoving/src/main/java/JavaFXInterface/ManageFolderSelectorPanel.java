@@ -46,7 +46,7 @@ public class ManageFolderSelectorPanel extends FileExplorer {
 		finish.setOnAction(e -> {
 			manage.setManageFolderFiles(selectedFiles);
 			closePanel();
-			finishSelectionProperty().set(true);
+			setFinishSelection(true);
 		});
 		setBottom(finish);
 		
@@ -57,5 +57,9 @@ public class ManageFolderSelectorPanel extends FileExplorer {
 	
 	public BooleanProperty finishSelectionProperty() {
 		return finishSelection;
+	}
+	
+	private void setFinishSelection(boolean value) {
+		finishSelection.set(value);
 	}
 }

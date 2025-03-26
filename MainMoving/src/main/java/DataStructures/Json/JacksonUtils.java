@@ -14,7 +14,9 @@ public class JacksonUtils {
 
 	public static ObjectMapper getObjectMapperSerialization() {
 		ObjectMapper mapper = new ObjectMapper();
-		mapper = JsonMapper.builder().build();
+		mapper = JsonMapper.builder()
+				.findAndAddModules()
+				.build();
 		
 		
 		
@@ -35,7 +37,9 @@ public class JacksonUtils {
 	
 	public static ObjectMapper getObjectMapperDeserialization() {
 		ObjectMapper mapper = new ObjectMapper();
-		mapper = JsonMapper.builder().build();
+		mapper = JsonMapper.builder()
+				.findAndAddModules()
+				.build();
 		
 		
 		
@@ -48,7 +52,9 @@ public class JacksonUtils {
 		//MapType type = TypeFactory.defaultInstance().constructMapType(Map.class, String.class, MediaSimple.class);
 		
 		
-		mapper.setSerializationInclusion(Include.NON_EMPTY);
+		//mapper.setSerializationInclusion(Include.NON_EMPTY);
+		
+		//mapper.registerModule(new JavaT());
 		
 		mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
 		return mapper;

@@ -54,10 +54,12 @@ public class ManageFolder {
 	@JsonSerialize(contentUsing = FileInfoToRelativePathSerializer.class)
 	public Map<String, FolderInfo> TVMap = new HashMap<>();
 	
+    @JsonProperty("Unkown_Media")
 	@JsonDeserialize(contentUsing = FileInfoFromRelativePathDeserializer.class)
 	@JsonSerialize(contentUsing = FileInfoToRelativePathSerializer.class)
 	public Map<String, FolderInfo> unkownMediaMap = new HashMap<>();
-	private List<ManageFile> sideMovesList;
+	
+    private List<ManageFile> sideMovesList;
 	private boolean flagSearchMainFolderExists = true;
 	
 	public static final String DEFAULT_INPUT = "Input", DEFAULT_OUTPUT = "W-Output", ICONS = "Icons";

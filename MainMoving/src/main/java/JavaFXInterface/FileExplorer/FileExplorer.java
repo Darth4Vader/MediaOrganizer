@@ -16,6 +16,7 @@ import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
 import JavaFXInterface.controlsfx.DragResizePane;
 import JavaFXUtilities.CanvasPane;
 import OtherUtilities.ImageUtils;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.embed.swing.SwingFXUtils;
@@ -134,7 +135,6 @@ public class FileExplorer extends BorderPane {
 		this.setVisible(true);
 		
 		this.enterFolder(file);
-		
 	}
 	
 	public MainFileExplorerView getMainFileExplorerView() {
@@ -180,13 +180,15 @@ public class FileExplorer extends BorderPane {
     }
 	
 	public void enterFolder(File folder) {
-		if(this.getChildren().contains(this.mainFileExplorerView)) {
-			this.setCenter(mainFileExplorerView);
-		}
-		this.searchField.clear();
-		HistoryView historyView = this.mainFileExplorerView.enterFolder(folder);
-		if(historyView != null)
-            this.history.add(historyView);
+		Platform.runLater(() -> {
+			if(this.getChildren().contains(this.mainFileExplorerView)) {
+				this.setCenter(mainFileExplorerView);
+			}
+			this.searchField.clear();
+			HistoryView historyView = this.mainFileExplorerView.enterFolder(folder);
+			if(historyView != null)
+	            this.history.add(historyView);
+		});
 	}
 	
 	public class ExpandPanel extends CanvasPane {

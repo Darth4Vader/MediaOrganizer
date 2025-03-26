@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import DataStructures.ManageFolder;
+import DataStructures.App.ManageFolderPojo;
 
 public class ManageFolderJson {
 	
@@ -36,5 +37,22 @@ public class ManageFolderJson {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public static ManageFolderPojo convertManageFolderToPojo(ManageFolder manageFolder) {
+		ObjectMapper mapper = manageFolderObjectMapperDeserialization(manageFolder.getMainFolderPath());
+		return mapper.convertValue(manageFolder, ManageFolderPojo.class);
+	}
+	
+	public static ManageFolder convertPojoToManageFolder(ManageFolderPojo manageFolder) {
+		ObjectMapper mapper = manageFolderObjectMapperDeserialization(manageFolder.getUrlParent());
+		return mapper.convertValue(manageFolder, ManageFolder.class);
+	}
+	
+	private static ObjectMapper manageFolderObjectMapperDeserialization(String mainPath) {
+		ObjectMapper mapper = JacksonUtils.getObjectMapperDeserialization();
+		File mainFolder = new File(mainPath);
+		FileJson.setRelativePathMainFolder(mapper, mainFolder);
+		return mapper;
 	}
 }
