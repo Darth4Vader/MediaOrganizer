@@ -2,6 +2,7 @@ package JavaFXInterface;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import DataStructures.ManageFolder;
@@ -12,16 +13,21 @@ import DataStructures.Json.ManageFolderJson;
 import JavaFXInterface.FileExplorer.FileExplorer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -52,26 +58,16 @@ public class ActivateFileExplorer extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+    	this.stage = stage;
     	this.mainPanel = new BorderPane();
     	
     	Pane mainPanel = getMainPanel();
     	this.mainPanel.setCenter(mainPanel);
     	Scene scene = new Scene(this.mainPanel);
-    	
-    	this.stage = stage;
-    	
-    	//Scene scene = new Scene(loadFXML(MainFileSelectorController.PATH));
     	stage.setScene(scene);
     	stage.setWidth(800);
     	stage.setHeight(500);
     	stage.show();
-    	
-    	/*this.explorer = new FileInfoExplorer(new ManageFolder(file.getAbsolutePath()));
-    	Scene scene = new Scene(explorer);
-    	stage.setScene(scene);
-    	stage.setWidth(800);
-    	stage.setHeight(500);
-    	stage.show();*/
     }
     
     private ManageFolderHistory managePojo;
@@ -80,15 +76,14 @@ public class ActivateFileExplorer extends Application {
 		VBox mainPane = new VBox();
 		
 		Button selectBtn = new Button("Select Folder");
-		selectBtn.setOnAction(e -> {
+		selectBtn.setOnAction(_ -> {
 			DirectoryChooser chooser = new DirectoryChooser();
 			chooser.setTitle("Choose Folder");
 			File file = chooser.showDialog(stage);
 			if(file == null) return;
 	    	ManageFolder manage = new ManageFolder(file.getAbsolutePath());
 	    	ManageFolderSelectorPanel selectorExplorer = new ManageFolderSelectorPanel(manage);
-	    	selectorExplorer.finishSelectionProperty().addListener((obs, oldVal, newVal) -> {
-	    		System.out.println("Done");
+	    	selectorExplorer.finishSelectionProperty().addListener((_, _, newVal) -> {
 	    		if(newVal) {
 	    			managePojo = MainAppDataJson.addManageFolderPojo(APP_DATA_FILE, manage);
 	    			setManageFolderExplorer(manage);
@@ -99,89 +94,109 @@ public class ActivateFileExplorer extends Application {
 		});
 		
 		Button existingBtn = new Button("Open Existing Folder");
-		existingBtn.setOnAction(e -> {
-			List<ManageFolderHistory> list = MainAppDataJson.loadManageFolderHistoryPojo(APP_DATA_FILE);
-			
-			ListView<String> folderList = new ListView<>();
-			
-			
-			ListView<ManageFolderHistory> listView = new ListView<>();
-			listView.setCellFactory(view -> new ListCell<>() {
-				@Override
-                protected void updateItem(ManageFolderHistory item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty || item == null) {
-                        //setText(null);
-                    	setGraphic(null);
-                    } else {
-                    	Label time = new Label("Last Access: " + item.getLastAccess());
-                    	Label path = new Label(item.getManage().getUrlParent());
-                    	VBox vbox = new VBox();
-                    	vbox.getChildren().addAll(time, path);
-                    	setGraphic(vbox);
-                    	vbox.setOnMouseClicked(e -> {
-                    		ManageFolderHistory selected = listView.getSelectionModel().getSelectedItem();
-                    		
-                    		VBox vbox2 = new VBox();
-                    		Button changedButton = new Button("Change Main Path");
-							changedButton.setOnAction(e2 -> {
-								DirectoryChooser chooser = new DirectoryChooser();
-								chooser.setTitle("Choose Folder");
-								File file = chooser.showDialog(stage);
-								if (file == null) return;
-								selected.getManage().setUrlParent(file.getAbsolutePath());
-								managePojo = MainAppDataJson.updateManageFolderHistory(APP_DATA_FILE, selected);
-								setItem(selected);
-							});
-                    		
-                    		Button enterButton = new Button("Enter");
-							enterButton.setOnAction(e2 -> {
-								poupStage.close();
-								ManageFolder manage = ManageFolderJson.convertPojoToManageFolder(selected.getManage());
-								managePojo = selected;
-								setManageFolderExplorer(manage);
-							});
-							
-							vbox2.getChildren().addAll(changedButton, enterButton);
-							
-							if (poupStage != null)
-								poupStage.close();
-							poupStage = new Stage();
-							poupStage.setScene(new Scene(vbox2));
-							poupStage.initOwner(stage);
-							poupStage.initModality(Modality.APPLICATION_MODAL);
-							poupStage.setAlwaysOnTop(true);
-							poupStage.show();
-                    	});
-                    }
-                }
-			});
-			listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-				if (newVal != null) {
-					ManageFolderPojo manage = newVal.getManage();
-					folderList.getItems().clear();
-					if (manage.movieMap != null)
-						folderList.getItems().addAll(manage.movieMap.values());
-					
-					if (manage.TVMap != null)
-						folderList.getItems().addAll(manage.TVMap.values());
-					
-					if (manage.unkownMediaMap != null)
-						folderList.getItems().addAll(manage.unkownMediaMap.values());
-				}
-			});
-			listView.getItems().addAll(list);
-			
-			HBox hbox = new HBox();
-			hbox.getChildren().addAll(listView, folderList);
-			
-			this.mainPanel.setCenter(hbox);
+		existingBtn.setOnAction(_ -> {
+			setMainPanelHistorySelector();
 		});
 		
 		mainPane.getChildren().addAll(selectBtn, existingBtn);
 		
 		
 		return mainPane;
+	}
+	
+	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm");
+	
+	private void setMainPanelHistorySelector() {
+		TableView<ManageFolderHistory> table = new TableView<>();
+		TableColumn<ManageFolderHistory, String> customNameColumn = new TableColumn<>("Custom Name");
+		customNameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCustomName()));
+		TableColumn<ManageFolderHistory, String> folderPathColumn = new TableColumn<>("Folder Path");
+		folderPathColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getManage().getUrlParent()));
+		TableColumn<ManageFolderHistory, String> lastAccessColumn = new TableColumn<>("Last Access");
+		lastAccessColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLastAccess().format(formatter)));
+		
+		table.getColumns().add(customNameColumn);
+		table.getColumns().add(folderPathColumn);
+		table.getColumns().add(lastAccessColumn);
+		
+		table.setRowFactory(_ -> {
+		    TableRow<ManageFolderHistory> row = new TableRow<>();
+		    row.setOnMouseClicked(event -> {
+		        if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
+		        	event.consume();
+		        	mangeFolderHistoryPopup(row);
+		        }
+		    });
+		    row.addEventFilter(KeyEvent.KEY_TYPED, event -> {
+                if (event.getCode() == KeyCode.ENTER) {
+                    event.consume();
+                    mangeFolderHistoryPopup(row);
+                }
+            });
+		    return row ;
+		});
+		
+		ListView<String> folderList = new ListView<>();
+		table.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
+			if (newVal != null) {
+				ManageFolderPojo manage = newVal.getManage();
+				folderList.getItems().clear();
+				if (manage.movieMap != null)
+					folderList.getItems().addAll(manage.movieMap.values());
+				
+				if (manage.TVMap != null)
+					folderList.getItems().addAll(manage.TVMap.values());
+				
+				if (manage.unkownMediaMap != null)
+					folderList.getItems().addAll(manage.unkownMediaMap.values());
+			}
+		});
+		
+		Platform.runLater(() -> {
+			List<ManageFolderHistory> list = MainAppDataJson.loadManageFolderHistoryPojo(APP_DATA_FILE);
+			table.getItems().addAll(list);
+		});
+		
+		HBox hbox = new HBox();
+		table.prefWidthProperty().bind(hbox.widthProperty().multiply(0.7));
+		HBox.setHgrow(folderList, javafx.scene.layout.Priority.ALWAYS);
+		hbox.getChildren().addAll(table, folderList);
+		
+		this.mainPanel.setCenter(hbox);
+	}
+	
+	private void mangeFolderHistoryPopup(TableRow<ManageFolderHistory> row) {
+    	ManageFolderHistory selected = row.getItem();
+		VBox popupPnae = new VBox();
+		Button changedButton = new Button("Change Main Path");
+		changedButton.setOnAction(_ -> {
+			DirectoryChooser chooser = new DirectoryChooser();
+			chooser.setTitle("Choose Folder");
+			File file = chooser.showDialog(stage);
+			if (file == null) return;
+			selected.getManage().setUrlParent(file.getAbsolutePath());
+			managePojo = MainAppDataJson.updateManageFolderHistory(APP_DATA_FILE, selected);
+			row.setItem(selected);
+		});
+		
+		Button enterButton = new Button("Enter");
+		enterButton.setOnAction(_ -> {
+			popupStage.close();
+			ManageFolder manage = ManageFolderJson.convertPojoToManageFolder(selected.getManage());
+			managePojo = selected;
+			setManageFolderExplorer(manage);
+		});
+		
+		popupPnae.getChildren().addAll(changedButton, enterButton);
+		
+		if (popupStage != null)
+			popupStage.close();
+		popupStage = new Stage();
+		popupStage.setScene(new Scene(popupPnae));
+		popupStage.initOwner(stage);
+		popupStage.initModality(Modality.APPLICATION_MODAL);
+		popupStage.setAlwaysOnTop(true);
+		popupStage.show();
 	}
 	
 	public void setManageFolderExplorer(ManageFolder manage) {
@@ -192,13 +207,13 @@ public class ActivateFileExplorer extends Application {
 		MenuBar menuBar = new MenuBar();
 		Menu fileExplorer = new Menu();
 		Label fileExplorerLabel = new Label("File Explorer");
-		fileExplorerLabel.setOnMouseClicked(e -> {
+		fileExplorerLabel.setOnMouseClicked(_ -> {
 			mainPane.setCenter(this.explorer);
 		});
 		fileExplorer.setGraphic(fileExplorerLabel);
 		Menu settings = new Menu();
 		Label settingsLabel = new Label("Settings");
-		settingsLabel.setOnMouseClicked(e -> {
+		settingsLabel.setOnMouseClicked(_ -> {
 			VBox settingsPane = new VBox();
 			HBox customNamePane = new HBox();
 			Label customNameLabel = new Label("Set Custom Name: ");
@@ -207,8 +222,7 @@ public class ActivateFileExplorer extends Application {
 			
 			Button updateButton = new Button("Update Settings");
 			
-			updateButton.setOnAction(e2 -> {
-				
+			updateButton.setOnAction(_ -> {
 				managePojo.setCustomName(customNameField.getText());
 				managePojo = MainAppDataJson.updateManageFolderHistory(APP_DATA_FILE, managePojo);
 			});
@@ -219,11 +233,10 @@ public class ActivateFileExplorer extends Application {
 		settings.setGraphic(settingsLabel);
 		menuBar.getMenus().addAll(fileExplorer, settings);
 		mainPane.setTop(menuBar);
-		//mainPane.getChildren().addAll(menuBar, this.explorer);
 		this.mainPanel.setCenter(mainPane);
 	}
 	
-	private Stage poupStage = null;
+	private Stage popupStage = null;
     
     public FXMLLoader getFXMLLoader(String fxmlPath) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));

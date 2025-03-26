@@ -1,34 +1,15 @@
 package JavaFXInterface;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.io.File;
-import java.util.HashMap;
-
-import org.controlsfx.control.GridView;
 
 import DataStructures.ManageFolder;
 import JavaFXInterface.FileExplorer.FileExplorer;
-import JavaFXInterface.FileExplorerView.FileTableIconView;
-import JavaFXInterface.FileExplorerView.MainFileExplorerView;
-import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
-import JavaFXInterface.Logger.CreateMovieLoggerControl;
-import JavaFXInterface.controlsfx.DragResizePane;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.ListChangeListener.Change;
-import javafx.geometry.Pos;
-import javafx.scene.control.Control;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
 
 public class FileInfoExplorer extends FileExplorer {
 	
 	private RenameFilePanel infoPanel;
 	private final ManageFolder move;
-	private File filePanel;
 
 	public FileInfoExplorer(ManageFolder move) {
 		super(move.getMainFolderPath());

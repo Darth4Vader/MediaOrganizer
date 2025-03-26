@@ -1,30 +1,10 @@
 package JavaFXInterface;
 
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.filechooser.FileSystemView;
-
 import org.controlsfx.control.GridCell;
 
-import com.sun.jna.Memory;
-import com.sun.jna.Pointer;
-import com.sun.jna.WString;
-import com.sun.jna.platform.win32.GDI32;
-import com.sun.jna.platform.win32.Guid;
-import com.sun.jna.platform.win32.Ole32;
-import com.sun.jna.platform.win32.User32;
-import com.sun.jna.platform.win32.WinDef;
-import com.sun.jna.platform.win32.WinGDI;
-import com.sun.jna.platform.win32.WinNT;
-import com.sun.jna.platform.win32.COM.COMUtils;
-import com.sun.jna.ptr.PointerByReference;
-
-import DataStructures.FolderInfo;
-import DataStructures.ManageFolder;
 import FileUtilities.FilesUtils;
 import OtherUtilities.ImageUtils;
 import javafx.embed.swing.SwingFXUtils;
@@ -35,12 +15,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.image.WritableImage;
-import me.marnic.jiconextract2.IShellItemImageFactory;
 import me.marnic.jiconextract2.JIconExtract;
-import me.marnic.jiconextract2.SIZEByValue;
-import me.marnic.jiconextract2.Shell32Extra;
-
-import com.sun.jna.platform.win32.COM.Unknown;
 
 public class AppUtils {
 
