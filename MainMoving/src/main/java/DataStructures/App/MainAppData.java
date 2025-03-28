@@ -81,6 +81,10 @@ public class MainAppData {
 			return this.customName;
 		}
 		
+		public void setManage(ManageFolderPojo manage) {
+			this.manage = manage;
+		}
+		
 		public void setCustomName(String customName) {
 			this.customName = customName;
 		}

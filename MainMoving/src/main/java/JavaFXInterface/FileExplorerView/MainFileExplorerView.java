@@ -235,7 +235,7 @@ public class MainFileExplorerView extends BorderPane {
 	
 	private Callback<FileTableDetailsView, FileTableDetailsView> fileTableDetailsView;
 	
-	public void setFileDetailsView(Callback<FileTableDetailsView, FileTableDetailsView> fileTableDetailsView) {
+	public final void setFileDetailsView(Callback<FileTableDetailsView, FileTableDetailsView> fileTableDetailsView) {
 		this.fileTableDetailsView = fileTableDetailsView;
 		if(this.fileView instanceof FileTableDetailsView)
             refreshFileExplorerView();
@@ -247,7 +247,7 @@ public class MainFileExplorerView extends BorderPane {
 	
 	private Callback<FileTableIconView, FileTableIconView> fileTableIconView;
 	
-	public void setFileIconView(Callback<FileTableIconView, FileTableIconView> fileTableIconView) {
+	public final void setFileIconView(Callback<FileTableIconView, FileTableIconView> fileTableIconView) {
 		this.fileTableIconView = fileTableIconView;
 		if(this.fileView instanceof FileTableIconView)
 			refreshFileExplorerView();

@@ -28,8 +28,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import DataStructures.FileInfoType.FolderType;
 import DataStructures.Json.DataInformation;
-import DataStructures.Json.FileInfoJson.FileInfoFromRelativePathDeserializer;
 import DataStructures.Json.FileInfoJson.FileInfoToRelativePathSerializer;
+import DataStructures.Json.FolderInfoJson.FolderInfoFromRelativePathDeserializer;
 import DataStructures.Json.FolderInformationJson;
 import FileUtilities.FileFormats;
 import FileUtilities.FileFormats.FileFormat;
@@ -45,17 +45,17 @@ public class ManageFolder {
 	private final String urlParent;
 	
 	@JsonProperty("Movies")
-	@JsonDeserialize(contentUsing = FileInfoFromRelativePathDeserializer.class)
+	@JsonDeserialize(contentUsing = FolderInfoFromRelativePathDeserializer.class)
 	@JsonSerialize(contentUsing = FileInfoToRelativePathSerializer.class)
 	public Map<String, FolderInfo> movieMap = new HashMap<>();
 	
 	@JsonProperty("TV")
-	@JsonDeserialize(contentUsing = FileInfoFromRelativePathDeserializer.class)
+	@JsonDeserialize(contentUsing = FolderInfoFromRelativePathDeserializer.class)
 	@JsonSerialize(contentUsing = FileInfoToRelativePathSerializer.class)
 	public Map<String, FolderInfo> TVMap = new HashMap<>();
 	
     @JsonProperty("Unkown_Media")
-	@JsonDeserialize(contentUsing = FileInfoFromRelativePathDeserializer.class)
+	@JsonDeserialize(contentUsing = FolderInfoFromRelativePathDeserializer.class)
 	@JsonSerialize(contentUsing = FileInfoToRelativePathSerializer.class)
 	public Map<String, FolderInfo> unkownMediaMap = new HashMap<>();
 	
@@ -82,10 +82,32 @@ public class ManageFolder {
 		setManageFolderFiles(readDirectory);
 	}
 	
+	public List<File> getManageFolderFiles() {
+		List<File> list = new ArrayList<>();
+		movieMap.values().stream().map(e -> e.getFile()).forEach(list::add);
+		TVMap.values().stream().map(e -> e.getFile()).forEach(list::add);
+		unkownMediaMap.values().stream().map(e -> e.getFile()).forEach(list::add);
+		return list;
+	}
+	
+	private void keepMapWithOnlyListValues(Map<String, FolderInfo> map, List<File> readDirectory) {
+		/*map.entrySet()
+		.stream()
+		.filter(e -> !readDirectory.contains(e.getValue().getFile()))
+		.forEach(e -> {
+			map.remove(e.getKey());
+			readDirectory.remove(e.getValue().getFile());
+			}
+		);*/
+		map.entrySet().removeIf(e -> !readDirectory.contains(e.getValue().getFile()));
+		map.values().forEach(e -> readDirectory.remove(e.getFile()));
+	}
+	
 	public void setManageFolderFiles(List<File> readDirectory) {
-		movieMap.clear();
-		TVMap.clear();
-		unkownMediaMap.clear();
+		// keep only entries that are in the readDirectory
+		keepMapWithOnlyListValues(movieMap, readDirectory);
+		keepMapWithOnlyListValues(TVMap, readDirectory);
+		keepMapWithOnlyListValues(unkownMediaMap, readDirectory);
 		List<File> read = new ArrayList<>();
 		for(File child : readDirectory) {
 			String childPath = child.getAbsolutePath();
@@ -103,8 +125,8 @@ public class ManageFolder {
 		
 		if(read.contains(checkStartingPath(DEFAULT_OUTPUT))) {
 			read.remove(checkStartingPath(DEFAULT_OUTPUT));
+			setMap(checkStartingPath(DEFAULT_OUTPUT));
 		}
-		setMap(checkStartingPath(DEFAULT_OUTPUT));
 		
 		for(File file : read) {
 			FolderType type = getMainFolderType(file);

@@ -69,4 +69,10 @@ public class MainAppDataJson {
 		}
 		return null;
 	}
+	
+	public static ManageFolderHistory updateManageFolderHistory(File dataFile, ManageFolderHistory manageFolderIndex, ManageFolder manageFolder) {
+		ManageFolderPojo pojo = ManageFolderJson.convertManageFolderToPojo(manageFolder);
+		manageFolderIndex.setManage(pojo);
+		return updateManageFolderHistory(dataFile, manageFolderIndex);
+	}
 }

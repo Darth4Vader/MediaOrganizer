@@ -135,6 +135,12 @@ public class FileExplorer extends BorderPane {
 		this.setVisible(true);
 		
 		this.enterFolder(file);
+		
+		this.parentProperty().addListener((obs, oldVal, newVal) -> {
+			if (newVal == null) {
+				closePanel();
+			}
+		});
 	}
 	
 	public MainFileExplorerView getMainFileExplorerView() {

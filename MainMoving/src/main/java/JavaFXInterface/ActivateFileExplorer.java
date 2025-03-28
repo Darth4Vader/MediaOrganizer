@@ -22,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -89,7 +90,7 @@ public class ActivateFileExplorer extends Application {
 	    			setManageFolderExplorer(manage);
 	    		}
 	    	});
-	    	this.explorer = selectorExplorer;
+	    	setMainFileExplorer(selectorExplorer);
 	    	this.mainPanel.setCenter(this.explorer);
 		});
 		
@@ -201,19 +202,22 @@ public class ActivateFileExplorer extends Application {
 	
 	public void setManageFolderExplorer(ManageFolder manage) {
 		BorderPane mainPane = new BorderPane();
-		this.explorer = new FileInfoExplorer(manage);
-		
+		setMainFileExplorer(new FileInfoExplorer(manage));
 		mainPane.setCenter(this.explorer);
+		
 		MenuBar menuBar = new MenuBar();
 		Menu fileExplorer = new Menu();
 		Label fileExplorerLabel = new Label("File Explorer");
 		fileExplorerLabel.setOnMouseClicked(_ -> {
+			if (!(this.explorer instanceof FileInfoExplorer))
+				setMainFileExplorer(new FileInfoExplorer(manage));
 			mainPane.setCenter(this.explorer);
 		});
 		fileExplorer.setGraphic(fileExplorerLabel);
-		Menu settings = new Menu();
-		Label settingsLabel = new Label("Settings");
-		settingsLabel.setOnMouseClicked(_ -> {
+		
+		Menu settings = new Menu("Settings");
+		MenuItem settingsAttributes = new MenuItem("Attributes");
+		settingsAttributes.setOnAction(_ -> {
 			VBox settingsPane = new VBox();
 			HBox customNamePane = new HBox();
 			Label customNameLabel = new Label("Set Custom Name: ");
@@ -230,10 +234,38 @@ public class ActivateFileExplorer extends Application {
 			
 			mainPane.setCenter(settingsPane);
 		});
-		settings.setGraphic(settingsLabel);
+		MenuItem settingsMainFiles = new MenuItem("Change Main Files");
+		settingsMainFiles.setOnAction(_ -> {
+			ManageFolderSelectorPanel manageSelector = new ManageFolderSelectorPanel(manage);
+			manageSelector.finishSelectionProperty().addListener((_, _, newVal) -> {
+				if (newVal) {
+					System.out.println("Update meeeeeeee");
+					managePojo = MainAppDataJson.updateManageFolderHistory(APP_DATA_FILE, managePojo, manage);
+				}
+			});
+			setMainFileExplorer(manageSelector);
+			mainPane.setCenter(this.explorer);
+		});
+		
+		settings.getItems().addAll(settingsAttributes, settingsMainFiles);
 		menuBar.getMenus().addAll(fileExplorer, settings);
 		mainPane.setTop(menuBar);
 		this.mainPanel.setCenter(mainPane);
+	}
+	
+	private void setMainFileExplorer(FileExplorer explorer) {
+		if (explorer == this.explorer) return;
+		if (this.explorer != null)
+			this.explorer.closePanel();
+		this.explorer = explorer;
+	}
+	
+	private void switchMainPane(Pane pane) {
+		if(pane instanceof FileExplorer)
+			setMainFileExplorer((FileExplorer) pane);
+		else
+			setMainFileExplorer(null);
+		this.mainPanel.setCenter(pane);
 	}
 	
 	private Stage popupStage = null;
