@@ -1,11 +1,7 @@
 package JavaFXInterface.FileExplorer;
 
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Objects;
 
 import org.controlsfx.control.GridView;
 
@@ -23,6 +19,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Control;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.Light;
@@ -33,7 +30,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
-import javafx.scene.transform.Affine;
 
 public class FileExplorer extends BorderPane {
 
@@ -46,6 +42,8 @@ public class FileExplorer extends BorderPane {
 	private TextField searchField;
 	
 	private boolean canRegisterHistory;
+	
+	private BorderPane viewPane;
 	
 	public FileExplorer(String filePath) {
 		this(new File(filePath));
@@ -61,41 +59,37 @@ public class FileExplorer extends BorderPane {
 			listView.setCellHeight(this.getPrefHeight()*0.4);
 		}
 		
-		this.setCenter(mainFileExplorerView);
+		this.viewPane = new BorderPane();
+		viewPane.setCenter(mainFileExplorerView);
 		BorderPane.setAlignment(mainFileExplorerView, Pos.TOP_CENTER);
-		
-		
 		SideFilesList sidePnl = new SideFilesList(this, file);
-		
 		DragResizePane.makeResizable(sidePnl);
-		
 		sidePnl.setPrefWidth(150);
+		viewPane.setLeft(sidePnl);
 		
-		this.setLeft(sidePnl);
+		this.setCenter(viewPane);
 		
 		
 		searchView = new FileSearchView(this, FileExplorerView.DETAILS);
+		this.canRegisterHistory = true;
+		this.history = new HistoryList<HistoryView>();
 		searchField = new TextField();
 		searchField.setPromptText("Search");
-		this.canRegisterHistory = true;
-		searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+		searchField.textProperty().addListener((_, oldVal, newVal) -> {
 			if(!this.canRegisterHistory)
 				return;
 			if(!newVal.equals(oldVal)) {
 				if(newVal.isBlank()) {
-					this.setCenter(this.mainFileExplorerView);
+					viewPane.setCenter(this.mainFileExplorerView);
 				}
 				else {
-					System.out.println("New Value: " + newVal);
-					this.setCenter(searchView);
+					viewPane.setCenter(searchView);
 					HistoryView historyView = searchView.search(this.mainFileExplorerView.getFolder(), newVal);
 					if(historyView != null)
 			            this.history.add(historyView);
 				}
 			}
 		});
-		
-		this.history = new HistoryList<HistoryView>();
 		
 	
 		HBox functionBox = new HBox();
@@ -105,20 +99,18 @@ public class FileExplorer extends BorderPane {
 		backwardHistory.setImage(SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/history_arrow.png"), null));
 		backwardHistory.setPrefWidth(50);
 		backwardHistory.visibleActiveProperty().bind(history.hasPrevious());
-		backwardHistory.setOnMouseClicked(e -> {
+		backwardHistory.setOnMouseClicked(_ -> {
 			loadPreviousHistoryView();
 		});
 		forwardHistory.setImage(SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/history_arrow.png"), null));
 		forwardHistory.setPrefWidth(50);
 		forwardHistory.visibleActiveProperty().bind(history.hasNext());
-		forwardHistory.setOnMouseClicked(e -> {
+		forwardHistory.setOnMouseClicked(_ -> {
 			loadNextHistoryView();
         });
+		
 		functionBox.getChildren().addAll(backwardHistory, forwardHistory);
-		
-		
 		functionBox.getChildren().add(searchField);
-		
 		this.setTop(functionBox);
 		
 		this.setOnKeyPressed(e -> {
@@ -133,14 +125,16 @@ public class FileExplorer extends BorderPane {
 		
 		this.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
 		this.setVisible(true);
-		
-		this.enterFolder(file);
-		
-		this.parentProperty().addListener((obs, oldVal, newVal) -> {
+		this.parentProperty().addListener((_, _, newVal) -> {
 			if (newVal == null) {
 				closePanel();
 			}
 		});
+		this.enterFolder(file);
+	}
+	
+	public void setMenuBar(MenuBar menuBar) {
+		this.viewPane.setTop(menuBar);
 	}
 	
 	public MainFileExplorerView getMainFileExplorerView() {
@@ -174,12 +168,12 @@ public class FileExplorer extends BorderPane {
 		this.canRegisterHistory = false;
 		if(historyView instanceof HistorySearchView) {
 			this.searchField.setText(((HistorySearchView) historyView).getSearch());
-			this.setCenter(searchView);
+			viewPane.setCenter(searchView);
 			this.searchView.enterHistoryView(historyView);
 		}
 		else {
 			this.searchField.clear();
-			this.setCenter(mainFileExplorerView);
+			viewPane.setCenter(mainFileExplorerView);
 			this.mainFileExplorerView.enterHistoryView(historyView);
 		}
 		this.canRegisterHistory = true;
@@ -188,7 +182,7 @@ public class FileExplorer extends BorderPane {
 	public void enterFolder(File folder) {
 		Platform.runLater(() -> {
 			if(this.getChildren().contains(this.mainFileExplorerView)) {
-				this.setCenter(mainFileExplorerView);
+				viewPane.setCenter(mainFileExplorerView);
 			}
 			this.searchField.clear();
 			HistoryView historyView = this.mainFileExplorerView.enterFolder(folder);
@@ -206,27 +200,17 @@ public class FileExplorer extends BorderPane {
 		
 		public ExpandPanel() {
             color = invisibleColor;
-            this.parentProperty().addListener((obs, oldVal, newVal) -> {
+            this.parentProperty().addListener((_, _, newVal) -> {
             	if(newVal != null)
             		paintComponent();
             });
-            visibleActiveProperty().addListener((obs, oldVal, newVal) -> {
+            visibleActiveProperty().addListener((_, _, newVal) -> {
             	if(newVal)
             		color = visibleColor;
             	else
             		color = invisibleColor;
             	paintComponent();
             });
-            /*
-			this.setOnMouseExited(e -> {
-				color = getExpended() ? Color.BLACK : Color.GRAY;
-				paintComponent();
-			});
-			this.setOnMouseEntered(e -> {
-				color = getExpended() ? Color.GRAY : Color.BLACK;
-				paintComponent();
-			});
-			*/
 			paintComponent();
 		}
 		
@@ -234,25 +218,14 @@ public class FileExplorer extends BorderPane {
 		protected void paintComponent() {
 			if(image == null)
 				return;
-            int x = (int) (getWidth() / 2);
-            int y = (int) (getHeight() / 2);
-			Point center = new Point(x, y);
 	        GraphicsContext gc = this.getCanvas().getGraphicsContext2D();
 	        gc.clearRect(0, 0, getWidth(), getHeight());
 	        gc.save();
-			Affine saveAT = gc.getTransform();
-			
-			/*if(visibleActive.get()) {
-		        Affine at = new Affine(saveAT);
-		        at.appendRotation(90, center.x, center.y);
-		        gc.setTransform(at);
-			}*/
 			
 			Lighting lighting = new Lighting(new Light.Distant(45, 90, color));
 			ColorAdjust bright = new ColorAdjust(0, 1, 1, 1);
 			lighting.setContentInput(bright);
 			lighting.setSurfaceScale(0.0);
-
 			gc.setEffect(lighting);
 			
 			gc.setFill(color);

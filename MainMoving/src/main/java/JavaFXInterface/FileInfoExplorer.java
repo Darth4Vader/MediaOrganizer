@@ -4,20 +4,26 @@ import java.io.File;
 
 import DataStructures.ManageFolder;
 import JavaFXInterface.FileExplorer.FileExplorer;
-import javafx.scene.layout.BorderPane;
 
 public class FileInfoExplorer extends FileExplorer {
 	
-	private RenameFilePanel infoPanel;
 	private final ManageFolder move;
+	private FileInfoMenuBar infoBar;
+	private RenameFilePanel infoPanel;
 
 	public FileInfoExplorer(ManageFolder move) {
 		super(move.getMainFolderPath());
 		this.move = move;
+		this.infoBar = new FileInfoMenuBar(this);
+		this.infoBar.prefHeightProperty().bind(this.heightProperty().multiply(0.15));
+		setMenuBar(infoBar);
+		
 		this.infoPanel = new RenameFilePanel(this);
 		infoPanel.prefWidthProperty().bind(this.widthProperty().multiply(0.3));
-		infoPanel.prefHeightProperty().bind(this.heightProperty());
-		this.setTop(getSearchPnl());
+		
+		
+		
+		//this.setTop(getSearchPnl());
 		
 		/*
 		MainFileExplorerView fileView = getMainFileExplorerView();
@@ -57,30 +63,17 @@ public class FileInfoExplorer extends FileExplorer {
 		return this.infoPanel;
 	}
 	
-	private FileInfoToolsPanel infoTools;
-	
-	private BorderPane getSearchPnl() {
-		BorderPane pnl = new BorderPane();
-		pnl.prefHeightProperty().bind(this.heightProperty().multiply(0.15));
-		this.infoTools = new FileInfoToolsPanel(this);
-		pnl.setCenter(this.infoTools);
-		SearchPanel searchPnl = new SearchPanel(this);
-		pnl.setRight(searchPnl);
-		searchPnl.prefWidthProperty().bind(pnl.widthProperty().multiply(0.2));
-		return pnl;
-	}
-	
 	@Override
 	public void setCurrentFileFocused(File file) {
-		if(infoTools != null) {
-			this.infoTools.updateToolPanels(file);
+		if(infoBar != null) {
+			this.infoBar.updateToolPanels(file);
 		}
 	}
 	
 	@Override
 	public void resetCurrentFileFocused() {
-		if(infoTools != null) {
-			this.infoTools.restartToolPanels();
+		if(infoBar != null) {
+			this.infoBar.restartToolPanels();
 		}
     }
 

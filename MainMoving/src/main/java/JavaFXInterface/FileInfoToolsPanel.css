@@ -1,0 +1,22 @@
+.menu:hover, 
+.menu:showing {
+  -fx-background-color: rgba(211, 211, 211, 0.6);
+}
+
+.menu:hover .label, 
+.menu:showing .label {
+  -fx-text-fill: black; 
+}
+
+.menu-item:disabled {
+	-fx-opacity: 0.1;
+}
+
+.menu-item:focused {
+	-fx-border-color: black;
+}
+
+.menu-item:hover > .label, 
+.menu-item:showing > .label {
+  -fx-text-fill: black; 
+}

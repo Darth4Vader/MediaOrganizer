@@ -172,7 +172,7 @@
 		<dependency>
 		    <groupId>org.apache.pdfbox</groupId>
 		    <artifactId>pdfbox</artifactId>
-		    <version>3.0.3</version>
+		    <version>3.0.4</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.ini4j</groupId>
@@ -182,7 +182,7 @@
 		<dependency>
 		   <groupId>org.apache.tika</groupId>
 		   <artifactId>tika-core</artifactId>
-		   <version>3.0.0</version>
+		   <version>3.1.0</version>
 		   
 		       		    <exclusions>
 			    <exclusion>
@@ -206,14 +206,14 @@
 	    		<artifactId>vorbis-java-core</artifactId>
 	          </exclusion>
 	        </exclusions>
-	        <version>3.0.0</version>
+	        <version>3.1.0</version>
 	    </dependency>
 	    
 	    <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-parsers -->
 <dependency>
     <groupId>org.apache.tika</groupId>
     <artifactId>tika-parsers</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <type>pom</type>
 </dependency>
 
@@ -274,7 +274,7 @@
 <dependency>
     <groupId>net.java.dev.jna</groupId>
     <artifactId>jna-platform</artifactId>
-    <version>5.15.0</version>
+    <version>5.17.0</version>
 </dependency>
 
 	    		
@@ -316,12 +316,14 @@
 		  <artifactId>MyUtilities</artifactId>
 		  <version>0.0.1-SNAPSHOT</version>		  
 		</dependency>
-		
+
+<!--
 		<dependency>
 		    <groupId>org.jsoup</groupId>
 		    <artifactId>jsoup</artifactId>
 		    <version>1.18.3</version>
 		</dependency>
+-->
 
 <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
 <dependency>
@@ -338,62 +340,54 @@
     <version>3.0.0-beta2</version>
 </dependency>
 
-		
+
+<!--
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-controls</artifactId>
-	    <version>24-ea+19</version>
+	    <version>25-ea+10</version>
     </dependency>
   
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-fxml</artifactId>
-	    <version>24-ea+19</version>
+	    <version>25-ea+10</version>
 	</dependency>
 	
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-graphics</artifactId>
-    	<version>24-ea+19</version>
+    	<version>25-ea+10</version>
 	</dependency>
 	
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-base</artifactId>
-	    <version>24-ea+19</version>
+	    <version>25-ea+10</version>
 	</dependency>
 	
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx-swing</artifactId>
-	    <version>24-ea+19</version>
-	</dependency>
-	
-	<dependency>
-	    <groupId>org.openjfx</groupId>
-	    <artifactId>javafx-web</artifactId>
-	    <version>24-ea+19</version>
-	</dependency>
-	
-	<dependency>
-	    <groupId>org.openjfx</groupId>
-	    <artifactId>javafx-media</artifactId>
-	    <version>24-ea+19</version>
+	    <version>25-ea+10</version>
 	</dependency>
 	
 	<dependency>
 	    <groupId>org.openjfx</groupId>
 	    <artifactId>javafx</artifactId>
-	    <version>24-ea+19</version>
+	    <version>25-ea+10</version>
 	    <type>pom</type>
 	</dependency>
-	
+
+-->
+
+
 	
 <!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
 <dependency>
     <groupId>org.assertj</groupId>
     <artifactId>assertj-core</artifactId>
-    <version>3.27.2</version>
+    <version>4.0.0-M1</version>
     <scope>test</scope>
 </dependency>
 
