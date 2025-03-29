@@ -17,7 +17,7 @@ import org.controlsfx.tools.Borders.LineBorders;
 import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
 import JavaFXInterface.AppUtils;
-import JavaFXInterface.controlsfx.NodeCellSetter;
+import JavaFXInterface.utils.controlsfx.NodeCellSetter;
 import OtherUtilities.ImageUtils;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;

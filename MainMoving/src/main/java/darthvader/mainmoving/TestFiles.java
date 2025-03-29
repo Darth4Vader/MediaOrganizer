@@ -49,11 +49,10 @@ import org.gagravarr.tika.FlacParser;
 import org.gagravarr.tika.TestFlacParser;
 
 import com.drew.metadata.wav.WavDescriptor;
-
-import DirectoryWatcher.DirectoryWatcher;
-
 import com.sun.jna.platform.win32.Advapi32Util;
 import com.sun.jna.platform.win32.WinReg;
+
+import Utils.DirectoryWatcher.DirectoryWatcher;
 
 public class TestFiles {
 

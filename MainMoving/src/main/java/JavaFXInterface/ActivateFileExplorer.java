@@ -11,6 +11,7 @@ import DataStructures.App.ManageFolderPojo;
 import DataStructures.Json.MainAppDataJson;
 import DataStructures.Json.ManageFolderJson;
 import JavaFXInterface.FileExplorer.FileExplorer;
+import JavaFXInterface.ManageFileExplorer.FileInfoExplorer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;

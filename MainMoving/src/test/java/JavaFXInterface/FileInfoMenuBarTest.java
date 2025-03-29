@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 
 import DataStructures.ManageFolder;
+import JavaFXInterface.ManageFileExplorer.FileInfoExplorer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;

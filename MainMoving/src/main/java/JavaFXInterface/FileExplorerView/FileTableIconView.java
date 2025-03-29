@@ -3,11 +3,11 @@ package JavaFXInterface.FileExplorerView;
 import java.io.File;
 import java.util.Collection;
 
-import DirectoryWatcher.FileChange;
-import DirectoryWatcher.FileChange.FileChaneType;
-import DirectoryWatcher.FileRename;
 import JavaFXInterface.FileExplorer.FileExplorer;
-import JavaFXInterface.controlsfx.BetterGridView;
+import JavaFXInterface.utils.controlsfx.BetterGridView;
+import Utils.DirectoryWatcher.FileChange;
+import Utils.DirectoryWatcher.FileRename;
+import Utils.DirectoryWatcher.FileChange.FileChaneType;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;

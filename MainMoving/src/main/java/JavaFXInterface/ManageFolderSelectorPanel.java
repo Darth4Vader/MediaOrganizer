@@ -4,9 +4,9 @@ import java.io.File;
 import java.util.ArrayList;
 
 import DataStructures.ManageFolder;
-import FileUtils.FileDetails;
 import JavaFXInterface.FileExplorer.FileExplorer;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
+import Utils.FileUtils.FileDetails;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;

@@ -15,7 +15,7 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.apache.tika.sax.ExpandedTitleContentHandler;
 import org.slf4j.simple.SimpleServiceProvider;
 
-import FileUtils.FileDetailsUtils;
+import Utils.FileUtils.FileDetailsUtils;
 
 public class TestFunction {
 

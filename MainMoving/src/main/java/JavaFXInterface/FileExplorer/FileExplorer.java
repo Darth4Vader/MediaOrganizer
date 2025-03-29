@@ -9,7 +9,7 @@ import JavaFXInterface.FileExplorerSearch.FileSearchView;
 import JavaFXInterface.FileExplorerSearch.HistorySearchView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
-import JavaFXInterface.controlsfx.DragResizePane;
+import JavaFXInterface.utils.controlsfx.DragResizePane;
 import JavaFXUtilities.CanvasPane;
 import OtherUtilities.ImageUtils;
 import javafx.application.Platform;
