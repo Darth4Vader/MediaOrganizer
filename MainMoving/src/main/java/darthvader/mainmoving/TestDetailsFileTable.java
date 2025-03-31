@@ -87,7 +87,7 @@ import OtherUtilities.ImageUtils;
 import Utils.DirectoryWatcher.FileChange;
 import Utils.DirectoryWatcher.FileRename;
 import Utils.DirectoryWatcher.HandleFileChanges;
-import Utils.DirectoryWatcher.WatchExample;
+import Utils.DirectoryWatcher.DirectoryWatcher;
 import Utils.DirectoryWatcher.FileChange.FileChaneType;
 import impl.org.controlsfx.spreadsheet.TableViewSpanSelectionModel;
 import impl.org.controlsfx.tableview2.NestedTableColumnHeader2;
@@ -186,7 +186,7 @@ public class TestDetailsFileTable extends Application {
 	
 	private ObservableList<FileDetails> fileList;
 	
-	private WatchExample w;
+	private DirectoryWatcher w;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -206,7 +206,7 @@ public class TestDetailsFileTable extends Application {
     	
     	TableView<FileDetails> list = new FileTableView(file);
     	
-		w = new WatchExample();
+		w = new DirectoryWatcher();
 	    w.setHandleFileChanges(new HandleFileChanges() {
 			
 			@Override

@@ -132,8 +132,8 @@ public class FilePanel extends BorderPane /*VBox*/ implements NodeCellSetter<Fil
 				Control cellControlView = AppUtils.getCellOwner(currentCell);
 				if(cellControlView != null) {
 					Parent owner = cellControlView.getParent();
-					if(owner instanceof MainFileExplorerView)
-						((MainFileExplorerView) owner).getFileExplorer().enterFolder(file);
+					if(owner instanceof MainFileExplorerView mainFileExplorerView)
+						mainFileExplorerView.getFileExplorer().enterFolder(file);
 				}
 			}
 		});

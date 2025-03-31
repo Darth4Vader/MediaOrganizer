@@ -1,194 +1,258 @@
 package Utils.DirectoryWatcher;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.nio.file.WatchEvent.Kind;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import Utils.DirectoryWatcher.FileChange.FileChaneType;
+import javafx.application.Platform;
 
-import static java.nio.file.StandardWatchEventKinds.*;
+public class DirectoryWatcher implements Runnable {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryWatcher.class);
 
-public class DirectoryWatcher implements Runnable, Service {
+    private final Set<Path> created = new LinkedHashSet<>();
+    private final Set<Path> updated = new LinkedHashSet<>();
+    private final Set<Path> deleted = new LinkedHashSet<>();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryWatcher.class);
+    private volatile boolean appIsRunning = true;
+    // Decide how sensitive the polling is:
+    private final int pollmillis = 100;
+    private WatchService ws;
+    private HandleFileChanges handleFileChanges;
 
-    public enum Event {
-        ENTRY_CREATE,
-        ENTRY_MODIFY,
-        ENTRY_DELETE
+    private Listener listener = this::fireEvents;//WatchExample::fireEvents;
+
+    @FunctionalInterface
+    interface Listener
+    {
+        public void fileChange(Set<Path> deleted, Set<Path> created, Set<Path> modified);
     }
 
-    private static final Map<WatchEvent.Kind<Path>, Event> EVENT_MAP =
-            new HashMap<WatchEvent.Kind<Path>, Event>() {{
-                put(ENTRY_CREATE, Event.ENTRY_CREATE);
-                put(ENTRY_MODIFY, Event.ENTRY_MODIFY);
-                put(ENTRY_DELETE, Event.ENTRY_DELETE);
-            }};
-
-    private ExecutorService mExecutor;
-    private Future<?> mWatcherTask;
-
-    private final Set<Path> mWatched;
-    private final boolean mPreExistingAsCreated;
-    private final Listener mListener;
-    private final Filter<Path> mFilter;
-
-    public DirectoryWatcher(Builder builder) {
-        mWatched = builder.mWatched;
-        mPreExistingAsCreated = builder.mPreExistingAsCreated;
-        mListener = builder.mListener;
-        mFilter = builder.mFilter;
+    public DirectoryWatcher() {
+    	this.canActivate = true;
+    	setToRun();
+    }
+    
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
+    
+    private boolean canActivate;
+    
+    
+    public void setToRun() {
+    	LOGGER.info("Starting ");
+        System.out.println("startup()");
+        while(!canActivate);
+        created.clear();
+        updated.clear();
+        deleted.clear();
+        this.appIsRunning = true;
+        this.ws = null;
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> WatchEvent<T> cast(WatchEvent<?> event) {
-        return (WatchEvent<T>) event;
+    public void shutdown() {
+        System.out.println("shutdown()");
+        this.appIsRunning = false;
+        if(ws != null) try {
+        	ws.close();
+        	System.out.println("CClosed");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
-    @Override
-    public void start() throws Exception {
-        mExecutor = Executors.newSingleThreadExecutor();
-        mWatcherTask = mExecutor.submit(this);
-    }
-
-    @Override
-    public void stop() {
-        mWatcherTask.cancel(true);
-        mWatcherTask = null;
-        mExecutor.shutdown();
-        mExecutor = null;
-    }
-
-    @Override
     public void run() {
-        WatchService watchService;
+        System.out.println();
+        System.out.println("run() START watch");
+        System.out.println();
+
+        canActivate = false;
+        try(WatchService autoclose = ws) {
+
+            while(appIsRunning) {
+
+                boolean hasPending = created.size() + updated.size() + deleted.size() > 0;
+                System.out.println((hasPending ? "ws.poll("+pollmillis+")" : "ws.take()")+" as hasPending="+hasPending);
+
+                // Use poll if last cycle has some events, as take() may block
+                WatchKey wk = hasPending ? ws.poll(pollmillis,TimeUnit.MILLISECONDS) : ws.take();
+                if (wk != null)  {
+                    for (WatchEvent<?> event : wk.pollEvents()) {
+                         Path parent = (Path) wk.watchable();
+                         Path eventPath = (Path) event.context();
+                         storeEvent(event.kind(), parent.resolve(eventPath));
+                     }
+                     boolean valid = wk.reset();
+                     if (!valid) {
+                         System.out.println("Check the path, dir may be deleted "+wk);
+                     }
+                }
+
+                System.out.println("PENDING: cre="+created.size()+" mod="+updated.size()+" del="+deleted.size());
+                
+                // This only sends new notifications when there was NO event this cycle:
+                if (wk == null && hasPending) {
+                    listener.fileChange(deleted, created, updated);
+                    deleted.clear();
+                    created.clear();
+                    updated.clear();
+                }
+            }
+        }
+        catch (InterruptedException e) {
+            System.out.println("Watch was interrupted, sending final updates");
+            fireEvents(deleted, created, updated);
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        finally {
+            System.out.println("run() END watch");
+            canActivate = true;
+        }
+    }
+    
+    public void register(Path dir) throws IOException {
+    	Kind<?> [] kinds = { StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE};
+    	register(kinds, dir);
+    }
+
+    public void register(Kind<?> [] kinds, Path dir) throws IOException {
+        System.out.println("register watch for "+dir);
+
+        // If dirs are from different filesystems WatchService will give errors later
+        if (this.ws == null) {
+            ws = dir.getFileSystem().newWatchService();
+        }
+        //System.out.println(dir.register(ws, kinds));
         try {
-            watchService = FileSystems.getDefault().newWatchService();
-        } catch (IOException ioe) {
-            throw new RuntimeException("Exception while creating watch service.", ioe);
+        	dir.register(ws, kinds);
         }
-        Map<WatchKey, Path> watchKeyToDirectory = new HashMap<>();
-
-        for (Path dir : mWatched) {
-            try {
-                if (mPreExistingAsCreated) {
-                    try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-                        for (Path path : stream) {
-                            if (mFilter.accept(path)) {
-                                mListener.onEvent(Event.ENTRY_CREATE, dir.resolve(path));
-                            }
-                        }
-                    }
-                }
-
-                WatchKey key = dir.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
-                watchKeyToDirectory.put(key, dir);
-            } catch (IOException ioe) {
-                LOGGER.error("Not watching '{}'.", dir, ioe);
-            }
-        }
-
-        while (true) {
-            if (Thread.interrupted()) {
-                LOGGER.info("Directory watcher thread interrupted.");
-                break;
-            }
-
-            WatchKey key;
-            try {
-                key = watchService.take();
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                continue;
-            }
-
-            Path dir = watchKeyToDirectory.get(key);
-            if (dir == null) {
-                LOGGER.warn("Watch key not recognized.");
-                continue;
-            }
-
-            for (WatchEvent<?> event : key.pollEvents()) {
-                if (event.kind().equals(OVERFLOW)) {
-                    break;
-                }
-
-                WatchEvent<Path> pathEvent = cast(event);
-                WatchEvent.Kind<Path> kind = pathEvent.kind();
-
-                Path path = dir.resolve(pathEvent.context());
-                if (mFilter.accept(path) && EVENT_MAP.containsKey(kind)) {
-                    mListener.onEvent(EVENT_MAP.get(kind), path);
-                }
-            }
-
-            boolean valid = key.reset();
-            if (!valid) {
-                watchKeyToDirectory.remove(key);
-                LOGGER.warn("'{}' is inaccessible. Stopping watch.", dir);
-                if (watchKeyToDirectory.isEmpty()) {
-                    break;
-                }
-            }
-        }
+        catch (Throwable e) {
+        	e.printStackTrace();
+		}
     }
 
-    public interface Listener {
-        void onEvent(Event event, Path path);
+    /**
+     * Save event for later processing by event kind EXCEPT for:
+     * <li>DELETE followed by CREATE           => store as MODIFY
+     * <li>CREATE followed by MODIFY           => store as CREATE
+     * <li>CREATE or MODIFY followed by DELETE => store as DELETE
+     */
+    private void
+    storeEvent(Kind<?> kind, Path path) {
+        System.out.println("STORE "+kind+" path:"+path);
+
+        boolean cre = false;
+        boolean mod = false;
+        boolean del = kind == StandardWatchEventKinds.ENTRY_DELETE;
+
+        if (kind == StandardWatchEventKinds.ENTRY_CREATE) {
+            mod = deleted.contains(path);
+            cre = !mod;
+        }
+        else if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
+            cre = created.contains(path);
+            mod = !cre;
+        }
+        addOrRemove(created, cre, path);
+        addOrRemove(updated, mod, path);
+        addOrRemove(deleted, del, path);
+    }
+    // Add or remove from the set:
+    private static void addOrRemove(Set<Path> set, boolean add, Path path) {
+        if (add) set.add(path);
+        else     set.remove(path);
     }
 
-    public static class Builder {
-
-        private static final Filter<Path> NO_FILTER = path -> true;
-
-        private Set<Path> mWatched = new HashSet<>();
-        private boolean mPreExistingAsCreated = false;
-        private Filter<Path> mFilter = NO_FILTER;
-        private Listener mListener;
-
-        public Builder addDirectories(String dirPath) {
-            return addDirectories(Paths.get(dirPath));
-        }
-
-        public Builder addDirectories(Path dirPath) {
-            mWatched.add(dirPath);
-            return this;
-        }
-
-        public Builder addDirectories(Path... dirPaths) {
-            for (Path dirPath : dirPaths) {
-                mWatched.add(dirPath);
-            }
-            return this;
-        }
-
-        public Builder addDirectories(Iterable<? extends Path> dirPaths) {
-            for (Path dirPath : dirPaths) {
-                mWatched.add(dirPath);
-            }
-            return this;
-        }
-
-        public Builder setPreExistingAsCreated(boolean value) {
-            mPreExistingAsCreated = value;
-            return this;
-        }
-
-        public Builder setFilter(Filter<Path> filter) {
-            mFilter = filter;
-            return this;
-        }
-
-        public DirectoryWatcher build(Listener listener) {
-            mListener = listener;
-            return new DirectoryWatcher(this);
-        }
+    /*
+    public static void fireEvents(Set<Path> deleted, Set<Path> created, Set<Path> modified) {
+        System.out.println();
+        System.out.println("fireEvents START");
+        for (Path path : deleted)
+            System.out.println("  DELETED: "+path);
+        for (Path path : created)
+            System.out.println("  CREATED: "+path);
+        for (Path path : modified)
+            System.out.println("  UPDATED: "+path);
+        System.out.println("fireEvents END");
+        System.out.println();
     }
+    */
+    
+    /*private static final Logger LOGGER = Logger.getLogger(WatchExample.class.getName());
+    
+    static {
+        LOGGER.setUseParentHandlers(false);
+        LOGGER.setLevel(Level.ALL);
+    }
+    
+    /**
+     * Gets the logger instance for this class.
+     *
+     * @return the logger instance
+     */
+    /*public Logger getLogger() {
+        return LOGGER;
+    }*/
+    
+    
+    public void fireEvents(Set<Path> deleted, Set<Path> created, Set<Path> modified) {
+        System.out.println();
+        System.out.println("fireEvents START");
+        System.out.println(deleted + "\n"+created+"\n"+modified);
+        //LinkedBlockingQueue<FileChange> list = new LinkedBlockingQueue<>();
+        //BlockingQ
+        List<FileChange> list = new ArrayList<>();
+        if(deleted.size() == 1 && created.size() == 1) {
+        	FileChange fileChange = new FileChange();
+        	list.add(new FileRename(deleted.iterator().next(), created.iterator().next()));
+        }
+        else {
+	        for (Path path : deleted) {
+	            //System.out.println("  DELETED: "+path);
+	        	list.add(new FileChange(FileChaneType.DELETED, path));
+	        }
+	        for (Path path : created) {
+	            //System.out.println("  CREATED: "+path);
+	        	list.add(new FileChange(FileChaneType.CREATED, path));
+	        }
+	        for (Path path : modified) {
+	            //System.out.println("  UPDATED: "+path);
+	        	list.add(new FileChange(FileChaneType.UPDATED, path));
+	        }
+        }
+        if(handleFileChanges != null)
+        	handleFileChanges.handleFileChanges(list);
+        /*Platform.runLater(() -> {
+        	System.out.println(list);
+        });*/
+        System.out.println("fireEvents END");
+        System.out.println();
+    }
+    
+    private void addToQueue() {
+    	
+    }
+
+	public void setHandleFileChanges(HandleFileChanges handleFileChanges) {
+		this.handleFileChanges = handleFileChanges;
+	}
 }

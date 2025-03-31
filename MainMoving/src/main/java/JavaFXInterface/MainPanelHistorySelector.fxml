@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+
+
+<BorderPane xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <center>
+      <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
+         <children>
+            <TableView prefHeight="400.0" prefWidth="406.0">
+              <columns>
+                <TableColumn editable="false" prefWidth="109.33334600925446" text="Custom Name" />
+                <TableColumn prefWidth="172.00000762939453" text="C2" />
+              </columns>
+            </TableView>
+            <ListView HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+   </center>
+   <top>
+      <BorderPane BorderPane.alignment="CENTER">
+         <top>
+            <Button mnemonicParsing="false" text="Button" BorderPane.alignment="CENTER" />
+         </top>
+      </BorderPane>
+   </top>
+</BorderPane>

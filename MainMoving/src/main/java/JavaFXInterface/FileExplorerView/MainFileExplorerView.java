@@ -11,7 +11,7 @@ import JavaFXInterface.FileExplorer.HistoryView;
 import Utils.DirectoryWatcher.FileChange;
 import Utils.DirectoryWatcher.FileRename;
 import Utils.DirectoryWatcher.HandleFileChanges;
-import Utils.DirectoryWatcher.WatchExample;
+import Utils.DirectoryWatcher.DirectoryWatcher;
 import Utils.DirectoryWatcher.FileChange.FileChaneType;
 import Utils.FileUtils.FileDetails;
 import javafx.application.Platform;
@@ -32,12 +32,13 @@ public class MainFileExplorerView extends BorderPane {
 	
 	public static enum FileExplorerView {
 		DETAILS,
-		ICONS
+		ICONS,
+		CONTENT
 	}
 	
-	private Control fileView;
+	private FileViewMode<?> fileView;
 	private SimpleObjectProperty<File> folder;
-	private WatchExample w;
+	private DirectoryWatcher w;
 	private ContextMenu switchMenu;
 	private FileExplorer fileExplorer;
 	private FileExplorerView fileExplorerViewType;
@@ -46,15 +47,15 @@ public class MainFileExplorerView extends BorderPane {
 		this.fileExplorer = fileExplorer;
 		this.fileTableDetailsView = (detailsView) -> detailsView;
 		this.fileTableIconView = (iconsView) -> iconsView;
-		w = new WatchExample();
+		w = new DirectoryWatcher();
 	    w.setHandleFileChanges(new HandleFileChanges() {
 			
 			@Override
 			public void handleFileChanges(List<FileChange> fileChanges) {
 				for(FileChange fileChange : fileChanges) {
 					Platform.runLater(() -> {
-						if(fileView instanceof FileTableHandler) {
-							((FileTableHandler) fileView).handleFileChange(fileChange);
+						if(getFileTableHandler() != null) {
+							getFileTableHandler().handleFileChange(fileChange);
 						}
 					});
 				}
@@ -78,27 +79,23 @@ public class MainFileExplorerView extends BorderPane {
 		if (this.fileExplorerViewType == view)
 			return;
 		this.fileExplorerViewType = view;
-		if (fileView instanceof FileTableView) {
-			((FileTableView<?>) fileView).closePanel();
+		if (getFileTableView() != null) {
+			getFileTableView().closePanel();
 		}
-		switch(view) {
-		case DETAILS:
-			fileView = fileTableDetailsView.call(getDefualtFileDetailsView());
-			break;
-		case ICONS:
-			fileView = fileTableIconView.call(getDefualtFileIconView());
-			break;
-		default:
-			break;
-		}
-		fileView.setOnMouseClicked(e -> {
+		fileView = switch(view) {
+			case DETAILS -> fileTableDetailsView.call(getDefualtFileDetailsView());
+			case ICONS -> fileTableIconView.call(getDefualtFileIconView());
+			default -> fileView;
+		};
+		Control fileViewPane = getFileView();
+		fileViewPane.setOnMouseClicked(e -> {
 			System.out.println(e);
 			if (e.getButton() == MouseButton.SECONDARY) {
 				switchMenu.show(this, e.getScreenX(), e.getScreenY());
 			}
 		});
 		enterFolder(getFolder());
-		this.setCenter(fileView);
+		this.setCenter(fileViewPane);
 	}
 	
 	private void refreshFileExplorerView() {
@@ -112,14 +109,15 @@ public class MainFileExplorerView extends BorderPane {
 		default:
 			break;
 		}
+		Control fileViewPane = getFileView();
 		enterFolder(getFolder());
-		fileView.setOnMouseClicked(e -> {
+		fileViewPane.setOnMouseClicked(e -> {
 			System.out.println(e);
 			if (e.getButton() == MouseButton.SECONDARY) {
 				switchMenu.show(this, e.getScreenX(), e.getScreenY());
 			}
 		});
-		this.setCenter(fileView);
+		this.setCenter(fileViewPane);
 	}
 	
 	private ContextMenu getSwitchViewMenu() {
@@ -138,7 +136,7 @@ public class MainFileExplorerView extends BorderPane {
 	}
 	
 	public Control getFileView() {
-		return this.fileView;
+		return this.fileView != null ? this.fileView.getFileView() : null;
 	}
 	
 	public FileExplorer getFileExplorer() {
@@ -158,10 +156,10 @@ public class MainFileExplorerView extends BorderPane {
 		if (historyView == null)
 			return;
 		setMainPanel(historyView);
-		if (fileView instanceof FileTableView) {
+		if (getFileTableView() != null) {
 			File focuedFile = historyView.getFocusedFile();
 			if (focuedFile != null) {
-				((FileTableView<?>) fileView).setFileToBeSelected(focuedFile);
+				getFileTableView().setFileToBeSelected(focuedFile);
 			}
 		}
 	}
@@ -171,8 +169,8 @@ public class MainFileExplorerView extends BorderPane {
 	}
 	
 	protected final void loadHistoryView(HistoryView historyView) {
-		if(fileView instanceof FileTableView) {
-			ObservableList<File> selectedFiles = ((FileTableView<?>) fileView).getSelectedFiles();
+		if(getFileTableView() != null) {
+			ObservableList<File> selectedFiles = getFileTableView().getSelectedFiles();
 			if(selectedFiles.size() == 1) {
 				historyView.setFocusedFile(selectedFiles.get(0));
 			}
@@ -195,10 +193,10 @@ public class MainFileExplorerView extends BorderPane {
 		List<File> files = subFiles.stream()
 		.filter((f) -> !f.isHidden()).collect(Collectors.toList());
 		
-		if(fileView instanceof FileTableView) {
-			((FileTableView<?>) fileView).setFiles(files);
+		if(getFileTableView() != null) {
+			getFileTableView().setFiles(files);
 		}
-		fileView.requestFocus();
+		getFileView().requestFocus();
 		Task<Void> task = new Task<Void>() {
 			
 			
@@ -224,8 +222,8 @@ public class MainFileExplorerView extends BorderPane {
 	
 	public void closePanel() {
 		w.shutdown();
-		if (fileView instanceof FileTableView) {
-			((FileTableView<?>) fileView).closePanel();
+		if (getFileTableView() != null) {
+			getFileTableView().closePanel();
 		}
 	}
 	
@@ -255,6 +253,14 @@ public class MainFileExplorerView extends BorderPane {
 	
 	public FileTableIconView getDefualtFileIconView() {
 		return new FileTableIconView(fileExplorer);
+	}
+	
+	private FileTableView<?> getFileTableView() {
+		return this.fileView != null ? this.fileView.getFileTableView() : null;
+	}
+	
+	private FileTableHandler getFileTableHandler() {
+		return this.fileView != null ? this.fileView.getFileTableHandler() : null;
 	}
 
 }

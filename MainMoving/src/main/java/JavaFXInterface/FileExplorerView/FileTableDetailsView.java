@@ -45,6 +45,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -66,13 +67,16 @@ import javafx.scene.paint.Color;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
-public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> implements FileTableHandler, FileTableView<FileDetails> {
+public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> implements FileViewMode<FileDetails> {
 	
 	private final ObservableList<String> fixedColumns;
 	private MainFileExplorerView mainFileExplorerView;
 	
+	private FileTableDetailsManager fileTableDetailsManager;
+	
     public FileTableDetailsView(MainFileExplorerView mainFileExplorerView) {
     	this.mainFileExplorerView = mainFileExplorerView;
+    	this.fileTableDetailsManager = new FileTableDetailsManager(this);
     	this.fixedColumns = FXCollections.observableArrayList(
     			Arrays.asList(FileAttributesType.NAME, FileAttributesType.TYPE).stream().map((s) -> s.getName()).collect(Collectors.toList()));
     	
@@ -187,81 +191,8 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
         
     public FileTableDetailsView(MainFileExplorerView mainFileExplorerView, File file) {
     	this(mainFileExplorerView);
-    	setFiles(Arrays.asList(file.listFiles()));
+    	fileTableDetailsManager.setFiles(Arrays.asList(file.listFiles()));
     }
-    
-	@Override
-	public ObservableList<FileDetails> getSelectedItems() {
-		return this.getSelectionModel().getSelectedItems();
-	}
-	
-	@Override
-	public ObservableList<File> getSelectedFiles() {
-		return this.getSelectedItems().stream()
-				.map((f) -> f.getFile())
-				.collect(Collectors.toCollection(FXCollections::observableArrayList));
-	}
-	
-	private ExecutorService loadFileDetailsService;
-
-	@Override
-	public void setFiles(Collection<File> files) {
-		closePanel();
-		
-    	ObservableList<FileDetails> fileList = this.getBackingList();
-    	if(fileList == null)
-    		fileList = FXCollections.observableArrayList();
-    	fileList.clear();
-    	files.stream()
-		.map(f -> {
-			try {
-				return new FileDetails(f);
-			} catch (IOException | SAXException | TikaException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
-			}
-		}).filter(p -> p != null).forEach(fileList::add);
-    	FilteredTableView.configureForFiltering(this, fileList);
-    	
-    	loadFileDetailsService = Executors.newFixedThreadPool(10);
-		for (FileDetails file : fileList) {
-			/*CompletableFuture.supplyAsync(() -> {
-				try {
-					file.loadMetadata();
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				return null;
-			});*/
-			Task<Void> task = new Task<Void>() {
-				
-				
-				@Override
-				protected Void call() throws Exception {
-					try {
-						file.loadMetadata();
-					} catch (FileNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					return null;
-				}
-			};
-			loadFileDetailsService.execute(task);
-			
-			/*executorService.execute(() -> {
-				try {
-					file.loadMetadata();
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			});*/
-		}
-		loadFileDetailsService.shutdown();
-	}
     
     private boolean doesColumnExists(String name) {
     	return this.getColumns().stream().anyMatch((c) -> c.getUserData().equals(name));
@@ -536,54 +467,59 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     	
     	this.getColumns().add(column);
     }
+    
+	@Override
+	public FileTableView<FileDetails> getFileTableView() {
+		return this.fileTableDetailsManager;
+	}
 
 	@Override
-	public void handleFileChange(FileChange fileChange) {
-		System.out.println(fileChange.getFileChaneType() + " " + fileChange.getPath());
-		FileChaneType type = fileChange.getFileChaneType();
-		File file = fileChange.getPath().toFile();
-		ObservableList<FileDetails> fileList = this.getBackingList();
-		switch(type) {
-		case CREATED:
-			if(!file.isHidden())
-				try {
-					fileList.add(new FileDetails(file));
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-				}
-			break;
-		case DELETED:
-			//fileList.remove(0);
-			break;
-		case RENAMED:
-			/*if(fileChange instanceof FileRename) {
-			    int itemIndex = fileList.indexOf(file);
-			    if (itemIndex != -1) {
-			    	File newFile = ((FileRename) fileChange).getNewPath().toFile();
-			        fileList.set(itemIndex, newFile);
-			    }
-			}*/
-			break;
-		case UPDATED:
-			break;
-		default:
-			break;
+	public FileTableHandler getFileTableHandler() {
+		return this.fileTableDetailsManager;
+	}
+	
+	@Override
+	public Control getFileView() {
+		return this;
+	}
+	
+	private class FileTableDetailsManager extends FileDetailsTableManager {
+		
+		private FileTableDetailsView fileTableDetailsView;
+		
+		public FileTableDetailsManager(FileTableDetailsView fileTableDetailsView) {
+			this.fileTableDetailsView = fileTableDetailsView;
 		}
-	}
-
-	@Override
-	public void setFileToBeSelected(File file) {
-		if(file == null)
-            return;
-		Optional<FileDetails> opt = this.getItems().stream().filter((fd) -> file.equals(fd.getFile())).findAny();
-		if(opt.isEmpty())
-            return;
-		this.getSelectionModel().select(opt.get());
-	}
-
-	@Override
-	public void closePanel() {
-		if(loadFileDetailsService != null) loadFileDetailsService.shutdownNow();
+		
+		@Override
+		public void setItems(ObservableList<FileDetails> items) {
+			fileTableDetailsView.setBackingList(items);
+		}
+		
+		@Override
+		public ObservableList<FileDetails> getItems() {
+			return fileTableDetailsView.getBackingList();
+		}
+		
+		@Override
+		public ObservableList<FileDetails> getSelectedItems() {
+			return fileTableDetailsView.getSelectionModel().getSelectedItems();
+		} 
+		
+		@Override
+		public void setFiles(Collection<File> files) {
+			super.setFiles(files);
+			FilteredTableView.configureForFiltering(fileTableDetailsView, getItems());
+		}
+		
+		@Override
+		public void setFileToBeSelected(File file) {
+			if(file == null)
+	            return;
+			Optional<FileDetails> opt = fileTableDetailsView.getItems().stream().filter((fd) -> file.equals(fd.getFile())).findAny();
+			if(opt.isEmpty())
+	            return;
+			fileTableDetailsView.getSelectionModel().select(opt.get());
+		}
 	}
 }

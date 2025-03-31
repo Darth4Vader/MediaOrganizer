@@ -62,9 +62,7 @@ public class ActivateFileExplorer extends Application {
     public void start(Stage stage) throws Exception {
     	this.stage = stage;
     	this.mainPanel = new BorderPane();
-    	
-    	Pane mainPanel = getMainPanel();
-    	this.mainPanel.setCenter(mainPanel);
+    	setSetupPane();
     	Scene scene = new Scene(this.mainPanel);
     	stage.setScene(scene);
     	stage.setWidth(800);
@@ -74,7 +72,7 @@ public class ActivateFileExplorer extends Application {
     
     private ManageFolderHistory managePojo;
     
-	public Pane getMainPanel() {
+	public void setSetupPane() {
 		VBox mainPane = new VBox();
 		
 		Button selectBtn = new Button("Select Folder");
@@ -102,8 +100,7 @@ public class ActivateFileExplorer extends Application {
 		
 		mainPane.getChildren().addAll(selectBtn, existingBtn);
 		
-		
-		return mainPane;
+		this.mainPanel.setCenter(mainPane);
 	}
 	
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm");
@@ -126,18 +123,19 @@ public class ActivateFileExplorer extends Application {
 		    row.setOnMouseClicked(event -> {
 		        if (event.getClickCount() == 2 && (! row.isEmpty()) ) {
 		        	event.consume();
-		        	mangeFolderHistoryPopup(row);
+		        	mangeFolderHistoryPopup(row.getItem());
 		        }
 		    });
-		    row.addEventFilter(KeyEvent.KEY_TYPED, event -> {
-                if (event.getCode() == KeyCode.ENTER) {
-                    event.consume();
-                    mangeFolderHistoryPopup(row);
-                }
-            });
-		    return row ;
+		    return row;
 		});
-		
+		table.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+			if (event.getCode() == KeyCode.ENTER) {
+				event.consume();
+				ManageFolderHistory selected = table.getSelectionModel().getSelectedItem();
+				if(selected == null) return;
+				mangeFolderHistoryPopup(selected);
+			}
+		});
 		ListView<String> folderList = new ListView<>();
 		table.getSelectionModel().selectedItemProperty().addListener((_, _, newVal) -> {
 			if (newVal != null) {
@@ -164,11 +162,27 @@ public class ActivateFileExplorer extends Application {
 		HBox.setHgrow(folderList, javafx.scene.layout.Priority.ALWAYS);
 		hbox.getChildren().addAll(table, folderList);
 		
-		this.mainPanel.setCenter(hbox);
+		BorderPane mainPane = new BorderPane();
+		
+		mainPane.setCenter(hbox);
+		
+		Button backButton = new Button("Back");
+		mainPane.setTop(new BorderPane(backButton));
+		mainPane.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
+			System.out.println("Key Typed: " + event.getCode());
+            if (event.getCode() == KeyCode.BACK_SPACE) {
+                event.consume();
+                setSetupPane();
+            }
+        });
+		backButton.setOnAction(_ -> {
+			setSetupPane();
+		});
+		
+		this.mainPanel.setCenter(mainPane);
 	}
 	
-	private void mangeFolderHistoryPopup(TableRow<ManageFolderHistory> row) {
-    	ManageFolderHistory selected = row.getItem();
+	private void mangeFolderHistoryPopup(ManageFolderHistory selected) {
 		VBox popupPnae = new VBox();
 		Button changedButton = new Button("Change Main Path");
 		changedButton.setOnAction(_ -> {
@@ -178,7 +192,6 @@ public class ActivateFileExplorer extends Application {
 			if (file == null) return;
 			selected.getManage().setUrlParent(file.getAbsolutePath());
 			managePojo = MainAppDataJson.updateManageFolderHistory(APP_DATA_FILE, selected);
-			row.setItem(selected);
 		});
 		
 		Button enterButton = new Button("Enter");

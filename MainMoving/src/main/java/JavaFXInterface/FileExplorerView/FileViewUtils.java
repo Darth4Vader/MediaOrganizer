@@ -85,13 +85,11 @@ public class FileViewUtils {
     }
     
     public static ObservableList<TableColumnBase<?,?>> getSortOrder(Object control) {
-        if (control instanceof TableView) {
-        	//((TableView<S>)control).getSortOrder();
-            return ((TableView)control).getSortOrder();
-        } else if (control instanceof TreeTableView) {
-            return ((TreeTableView)control).getSortOrder();
-        }
-        return FXCollections.observableArrayList();
+    	return switch(control) {
+        	case TableView tableView -> tableView.getSortOrder();
+        	case TreeTableView treeTableView -> treeTableView.getSortOrder();
+        	default -> FXCollections.observableArrayList();
+        };
     }
     
     public static <T> void setCheckIndices(CheckListView<T> checkListView, Stream<T> listStream) {

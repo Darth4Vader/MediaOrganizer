@@ -53,10 +53,9 @@ public class FileExplorer extends BorderPane {
 		this.mainFileExplorerView = new MainFileExplorerView(this, FileExplorerView.DETAILS);
 		
 		Control fileView = this.mainFileExplorerView.getFileView();
-		if(fileView instanceof GridView) {
-			GridView<?> listView = (GridView<?>) fileView;
-			listView.setCellWidth(this.getPrefWidth()*0.4);
-			listView.setCellHeight(this.getPrefHeight()*0.4);
+		if(fileView instanceof GridView gridView) {
+			gridView.setCellWidth(this.getPrefWidth()*0.4);
+			gridView.setCellHeight(this.getPrefHeight()*0.4);
 		}
 		
 		this.viewPane = new BorderPane();
@@ -166,8 +165,8 @@ public class FileExplorer extends BorderPane {
 		if (historyView == null)
 			return;
 		this.canRegisterHistory = false;
-		if(historyView instanceof HistorySearchView) {
-			this.searchField.setText(((HistorySearchView) historyView).getSearch());
+		if(historyView instanceof HistorySearchView historySearchView) {
+			this.searchField.setText(historySearchView.getSearch());
 			viewPane.setCenter(searchView);
 			this.searchView.enterHistoryView(historyView);
 		}

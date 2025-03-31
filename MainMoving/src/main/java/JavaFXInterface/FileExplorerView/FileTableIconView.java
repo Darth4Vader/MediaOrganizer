@@ -11,15 +11,19 @@ import Utils.DirectoryWatcher.FileChange.FileChaneType;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Control;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.input.ScrollEvent;
 
-public class FileTableIconView extends BetterGridView<File> implements FileTableHandler, FileTableView<File> {
+public class FileTableIconView extends BetterGridView<File> implements FileViewMode<File> {
 	
 	private static final double CELL_MIN_WIDTH = 100, CELL_MIN_HEIGHT = 100;
-
+	
+	private FileTableIconManager fileTableIconManager;
+	
 	public FileTableIconView(FileExplorer explorer) {
 		super(FXCollections.observableArrayList());
+		this.fileTableIconManager = new FileTableIconManager(this);
 		setCellFactory(_ -> new FileTableIconCellEditor());
 		setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
 		setStyle("-fx-focus-color: -fx-control-inner-background ; -fx-faint-focus-color: -fx-control-inner-background ;");
@@ -69,64 +73,51 @@ public class FileTableIconView extends BetterGridView<File> implements FileTable
 		});
 		getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 	}
-
-	@Override
-	public void handleFileChange(FileChange fileChange) {
-		System.out.println(fileChange.getFileChaneType() + " " + fileChange.getPath());
-		FileChaneType type = fileChange.getFileChaneType();
-		File file = fileChange.getPath().toFile();
-		ObservableList<File> fileList = this.getItems();
-		switch(type) {
-		case CREATED:
-			if(!file.isHidden())
-				fileList.add(file);
-			break;
-		case DELETED:
-			fileList.remove(0);
-			break;
-		case RENAMED:
-			if(fileChange instanceof FileRename) {
-			    int itemIndex = fileList.indexOf(file);
-			    if (itemIndex != -1) {
-			    	File newFile = ((FileRename) fileChange).getNewPath().toFile();
-			        fileList.set(itemIndex, newFile);
-			    }
-			}
-			break;
-		case UPDATED:
-			break;
-		default:
-			break;
-		}
-	}
-
-	@Override
-	public void setFiles(Collection<File> files) {
-		this.getItems().setAll(files);
-	}
 	
 	@Override
-	public ObservableList<File> getSelectedItems() {
-		return this.getSelectionModel().getSelectedItems();
+	public FileTableView<File> getFileTableView() {
+		return fileTableIconManager;
 	}
 
 	@Override
-	public ObservableList<File> getSelectedFiles() {
-		return this.getSelectionModel().getSelectedItems();
+	public FileTableHandler getFileTableHandler() {
+		return fileTableIconManager;
+	}
+
+	@Override
+	public Control getFileView() {
+		return this;
 	}
 	
-	@Override
-	public void setFileToBeSelected(File file) {
-		GridViewMultipleSelectionModel<File> selectionModel = this.getSelectionModel();
-		if(selectionModel != null) {
-			selectionModel.select(file);
-		}
-	}
-
-	@Override
-	public void closePanel() {
-		// TODO Auto-generated method stub
+	public class FileTableIconManager extends FileTableManager {
 		
-	}
+		private FileTableIconView fileTableView;
+		
+		public FileTableIconManager(FileTableIconView fileTableView) {
+			this.fileTableView = fileTableView;
+		}
+		
+		@Override
+		public ObservableList<File> getItems() {
+			return fileTableView.getItems();
+		}
+		
+		@Override
+		public ObservableList<File> getSelectedItems() {
+			return fileTableView.getSelectionModel().getSelectedItems();
+		}
 
+		@Override
+		public ObservableList<File> getSelectedFiles() {
+			return fileTableView.getSelectionModel().getSelectedItems();
+		}
+		
+		@Override
+		public void setFileToBeSelected(File file) {
+			GridViewMultipleSelectionModel<File> selectionModel = fileTableView.getSelectionModel();
+			if(selectionModel != null) {
+				selectionModel.select(file);
+			}
+		}
+	}
 }

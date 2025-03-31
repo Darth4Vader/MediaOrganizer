@@ -97,8 +97,7 @@ public class MainAppData {
 		public boolean equals(Object object) {
 			if(object == null) return false;
 			if(this == object) return true;
-			if(!(object instanceof ManageFolderHistory)) return false;
-			ManageFolderHistory history = (ManageFolderHistory) object;
+			if(!(object instanceof ManageFolderHistory history)) return false;
 			return Objects.equals(this.id, history.id);
 		}
 	}

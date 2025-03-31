@@ -75,14 +75,12 @@ public class JacksonUtils {
 	
 	public static <T> T getInjectValue(Object object, String name, Class<T> typeClass) throws JsonMappingException {
 		Object val = null;
-		if(object instanceof JsonGenerator) {
-			JsonGenerator gen = (JsonGenerator) object;
+		if(object instanceof JsonGenerator gen) {
 			ObjectMapper mapper = ((ObjectMapper) gen.getCodec());
 			InjectableValues inject = mapper.getInjectableValues();
 			val = inject.findInjectableValue(name, null, null, null);
 		}
-		else if (object instanceof DeserializationContext) {
-			DeserializationContext ctxt = (DeserializationContext) object;
+		else if (object instanceof DeserializationContext ctxt) {
 			val = ctxt.findInjectableValue(name, null, null);
 		}
 		return typeClass.cast(val);

@@ -7,6 +7,8 @@ import javafx.collections.ObservableList;
 
 public interface FileTableView<T> {
 	
+	public ObservableList<T> getItems();
+	
 	public ObservableList<T> getSelectedItems();
 	
 	public ObservableList<File> getSelectedFiles();
