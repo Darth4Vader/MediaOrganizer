@@ -1,30 +1,22 @@
 package JavaFXInterface.FileExplorerView;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import JavaFXInterface.FileExplorer.FileExplorer;
 import JavaFXInterface.FileExplorer.HistoryView;
-import Utils.DirectoryWatcher.FileChange;
-import Utils.DirectoryWatcher.FileRename;
-import Utils.DirectoryWatcher.HandleFileChanges;
 import Utils.DirectoryWatcher.DirectoryWatcher;
-import Utils.DirectoryWatcher.FileChange.FileChaneType;
-import Utils.FileUtils.FileDetails;
+import Utils.DirectoryWatcher.FileChange;
+import Utils.DirectoryWatcher.HandleFileChanges;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.collections.ListChangeListener.Change;
 import javafx.concurrent.Task;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.util.Callback;
 
@@ -47,6 +39,7 @@ public class MainFileExplorerView extends BorderPane {
 		this.fileExplorer = fileExplorer;
 		this.fileTableDetailsView = (detailsView) -> detailsView;
 		this.fileTableIconView = (iconsView) -> iconsView;
+		this.fileTableContentView = (contentView) -> contentView;
 		w = new DirectoryWatcher();
 	    w.setHandleFileChanges(new HandleFileChanges() {
 			
@@ -62,13 +55,13 @@ public class MainFileExplorerView extends BorderPane {
 			}
 		});
 	    this.folder = new SimpleObjectProperty<>();
-		this.folder.addListener((obs, oldV, newV) -> {
+		this.folder.addListener((_, _, _) -> {
 			System.out.println("rreee");
 			w.shutdown();
 			System.out.println("relax");
 			//t.s
 		});
-		this.parentProperty().addListener((obs, oldV, newV) -> {
+		this.parentProperty().addListener((_, _, _) -> {
 			closePanel();
 		});
 		this.switchMenu = getSwitchViewMenu();
@@ -85,6 +78,7 @@ public class MainFileExplorerView extends BorderPane {
 		fileView = switch(view) {
 			case DETAILS -> fileTableDetailsView.call(getDefualtFileDetailsView());
 			case ICONS -> fileTableIconView.call(getDefualtFileIconView());
+			case CONTENT -> fileTableContentView.call(getDefualtFileContentView());
 			default -> fileView;
 		};
 		Control fileViewPane = getFileView();
@@ -99,16 +93,12 @@ public class MainFileExplorerView extends BorderPane {
 	}
 	
 	private void refreshFileExplorerView() {
-		switch(this.fileExplorerViewType) {
-		case DETAILS:
-			fileView = fileTableDetailsView.call(getDefualtFileDetailsView());
-			break;
-		case ICONS:
-			fileView = fileTableIconView.call(getDefualtFileIconView());
-			break;
-		default:
-			break;
-		}
+		this.fileView = switch(this.fileExplorerViewType) {
+			case DETAILS -> fileTableDetailsView.call(getDefualtFileDetailsView());
+			case ICONS -> fileTableIconView.call(getDefualtFileIconView());
+			case CONTENT -> fileTableContentView.call(getDefualtFileContentView());
+			default -> fileView;
+		};
 		Control fileViewPane = getFileView();
 		enterFolder(getFolder());
 		fileViewPane.setOnMouseClicked(e -> {
@@ -123,14 +113,18 @@ public class MainFileExplorerView extends BorderPane {
 	private ContextMenu getSwitchViewMenu() {
 		ContextMenu menu = new ContextMenu();
 		MenuItem imageView = new MenuItem("Icons View");
-		imageView.setOnAction(a -> {
+		imageView.setOnAction(_ -> {
 			setFileExplorerView(FileExplorerView.ICONS);
 		});
 		MenuItem detailsView = new MenuItem("Details View");
-		detailsView.setOnAction(a -> {
+		detailsView.setOnAction(_ -> {
 			setFileExplorerView(FileExplorerView.DETAILS);
 		});
-		menu.getItems().addAll(imageView, detailsView);
+		MenuItem contentView = new MenuItem("Content View");
+		contentView.setOnAction(_ -> {
+			setFileExplorerView(FileExplorerView.CONTENT);
+		});
+		menu.getItems().addAll(imageView, detailsView, contentView);
 		menu.setAutoHide(true);
 		return menu;
 	}
@@ -253,6 +247,18 @@ public class MainFileExplorerView extends BorderPane {
 	
 	public FileTableIconView getDefualtFileIconView() {
 		return new FileTableIconView(fileExplorer);
+	}
+	
+	private Callback<FileTableContentView, FileTableContentView> fileTableContentView;
+	
+	public final void setFileContentView(Callback<FileTableContentView, FileTableContentView> fileTableContentView) {
+		this.fileTableContentView = fileTableContentView;
+		if(this.fileView instanceof FileTableContentView)
+			refreshFileExplorerView();
+	}
+	
+	public FileTableContentView getDefualtFileContentView() {
+		return new FileTableContentView();
 	}
 	
 	private FileTableView<?> getFileTableView() {

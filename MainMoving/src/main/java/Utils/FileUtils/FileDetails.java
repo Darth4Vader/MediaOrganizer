@@ -113,6 +113,10 @@ public class FileDetails {
     	return set;
     }
     
+    public String getTypeName() {
+		return typeName;
+	}
+    
 	@Override
 	public int hashCode() {
 		return Objects.hash(file);

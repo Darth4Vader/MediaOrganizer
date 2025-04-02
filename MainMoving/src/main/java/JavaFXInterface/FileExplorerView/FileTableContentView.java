@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import Utils.FileUtils.FileDetails;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.control.Control;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 
@@ -15,6 +17,7 @@ public class FileTableContentView extends ListView<FileDetails> implements FileV
 	public FileTableContentView() {
 		this.fileTableContentManger = new FileTableContentManger(this);
 		getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+		this.setCellFactory(param -> new FileTableContentCell(param));
 	}
 	
 	@Override
@@ -30,6 +33,31 @@ public class FileTableContentView extends ListView<FileDetails> implements FileV
 	@Override
 	public Control getFileView() {
 		return this;
+	}
+	
+	private class FileTableContentCell extends ListCell<FileDetails> {
+		
+		private FileTableConentCellPanel cell;
+		
+		public FileTableContentCell(ListView<FileDetails> tableView) {
+			this.cell = new FileTableConentCellPanel();
+			//this.cell.bindWidth(tableView.widthProperty());
+			this.cell.bindHeight(tableView.heightProperty());
+		}
+		
+	    @Override
+	    public void updateItem(FileDetails item, boolean empty) {
+	        super.updateItem(item, empty);
+	        if (item == null || empty) {
+	            setGraphic(null);
+	        	cell.reset();
+	        }
+	        else if(!cell.isSame(item)) {
+	        	cell.set(item, this);
+	        	setGraphic(cell.getView());
+	        }
+	        setAlignment(Pos.CENTER_LEFT);
+	    }
 	}
 	
 	private class FileTableContentManger extends FileDetailsTableManager {
