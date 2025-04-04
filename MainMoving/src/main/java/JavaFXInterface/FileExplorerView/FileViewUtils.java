@@ -5,16 +5,23 @@ import static com.sun.javafx.scene.control.TableColumnSortTypeWrapper.isDescendi
 import static com.sun.javafx.scene.control.TableColumnSortTypeWrapper.setSortType;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.controlsfx.control.CheckListView;
 
 import com.sun.javafx.scene.control.TableColumnSortTypeWrapper;
 
+import Utils.FileUtils.FileDetails;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Control;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
@@ -99,5 +106,23 @@ public class FileViewUtils {
 				.mapToInt(i -> i)
 				.sorted()
 				.toArray());
+    }
+    
+    public static ContextMenu getFileAttributesMenu(Collection<FileDetails> items) {
+		ContextMenu menu = new ContextMenu();
+		Set<String> attributes = items.stream()
+				.map(fd -> fd.getAllKeys())
+				.flatMap(Set::stream)
+				.collect(Collectors.toSet());
+		for(String attribute : attributes) {
+			MenuItem item = new MenuItem(attribute);
+			item.setOnAction(_ -> {
+				Map<String, List<FileDetails>> grouped = items.stream()
+					.collect(Collectors.groupingBy(fd -> fd.getValue(attribute)));
+			});
+			menu.getItems().add(item);
+		}
+		menu.setAutoHide(true);
+		return menu;
     }
 }
