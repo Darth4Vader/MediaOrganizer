@@ -2,8 +2,12 @@ package JavaFXInterface.ManageFileExplorer;
 
 import java.io.File;
 
+import DataStructures.FileInfo;
+import DataStructures.FolderInfo;
 import DataStructures.ManageFolder;
+import DataStructures.ManageFolder.FlagSearchMainFolderExeception;
 import JavaFXInterface.FileExplorer.FileExplorer;
+import Utils.DirectoryWatcher.FileChange;
 
 public class FileInfoExplorer extends FileExplorer {
 	
@@ -53,6 +57,44 @@ public class FileInfoExplorer extends FileExplorer {
 			});
 		});
 		*/
+	}
+	
+	@Override
+	public void handleFileChange(FileChange fileChange) {
+		switch(fileChange.getFileChaneType()) {
+			case CREATED -> {
+				File file = fileChange.getPath().toFile();
+				if(!file.isHidden()) {
+					if(file.isDirectory()) {
+						FileInfo fileInfo = new FileInfo(file);
+						try {
+							FolderInfo folderInfo = this.move.getMainFolder(fileInfo);
+							if(folderInfo != null) {
+								File removedFolder = folderInfo.getFile();
+								if(removedFolder.exists() != true) {
+									if(file.getName().equals(removedFolder.getName())) {
+										this.move.removeFromMap(folderInfo);
+										this.move.toAddInsideMap(file);
+									}
+								}
+							}
+						} catch (FlagSearchMainFolderExeception e) {
+						}
+					}
+				}
+				break;
+			}
+			case DELETED -> {
+				break;
+			}
+			case RENAMED -> {
+				break;
+			}
+			case UPDATED -> {
+				break;
+			}
+			default -> {}
+		}
 	}
 	
 	public ManageFolder getFolderManager() {

@@ -68,6 +68,7 @@ public class ManageFolder {
 	@JsonCreator
 	ManageFolder() {
 		this.urlParent = null;
+		this.sideMovesList = new ArrayList<>();
 	}
 	
 	public ManageFolder(String mainFolderPath) {
@@ -273,6 +274,16 @@ public class ManageFolder {
 		}
 		else
 			this.getMainDefaultMap(type).put(info.getMapName(), info);
+	}
+	
+	public void removeFromMap(FolderInfo folderInfo) {
+		FolderType type = folderInfo.getFolderType();
+		if(type == FolderType.TV_SERIES_AND_MOVIE) {
+			movieMap.remove(folderInfo.getMapName(), folderInfo);
+			TVMap.remove(folderInfo.getMapName(), folderInfo);
+		}
+		else
+			this.getMainDefaultMap(type).remove(folderInfo.getMapName(), folderInfo);
 	}
 	
 	private File checkStartingPath(String path) {

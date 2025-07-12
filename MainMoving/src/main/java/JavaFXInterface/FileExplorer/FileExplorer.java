@@ -12,6 +12,7 @@ import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
 import JavaFXInterface.utils.controlsfx.DragResizePane;
 import JavaFXUtilities.CanvasPane;
 import OtherUtilities.ImageUtils;
+import Utils.DirectoryWatcher.FileChange;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -130,6 +131,10 @@ public class FileExplorer extends BorderPane {
 			}
 		});
 		this.enterFolder(file);
+	}
+	
+	public void handleFileChange(FileChange fileChange) {
+		
 	}
 	
 	public void setMenuBar(MenuBar menuBar) {

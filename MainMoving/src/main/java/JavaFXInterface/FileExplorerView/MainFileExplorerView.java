@@ -49,6 +49,7 @@ public class MainFileExplorerView extends BorderPane {
 					Platform.runLater(() -> {
 						if(getFileTableHandler() != null) {
 							getFileTableHandler().handleFileChange(fileChange);
+							fileExplorer.handleFileChange(fileChange);
 						}
 					});
 				}
