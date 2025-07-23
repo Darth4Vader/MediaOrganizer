@@ -1534,13 +1534,21 @@ public class ManageFolder {
 			}
 		}
 		
+		private File createFolderByType(NameInfo nameInfo, FolderType type) {
+			File folderByType = folderInfo.createFolderByType(nameInfo, type);
+			if(folderByType == null) {
+				//will result in exception, needs to resolve this.
+			}
+			return folderByType;
+		}
+		
 		private void moveExtras() throws IllegalArgumentException {
 			if(moveType != FolderType.FEATURETTES && moveType != FolderType.CHARACTER_POSTERS
 					&& moveType != FolderType.POSTERS) {
 				throw new IllegalArgumentException(getFolderTypeExceptionMessage(moveType));
 			}
 			File file = sorceFileInfo.getFile();
-			File destFolder = folderInfo.createFolderByType(sorceFileInfo, moveType);
+			File destFolder = createFolderByType(sorceFileInfo, moveType);
 			List<File> arr = file.isDirectory() ? Arrays.asList(file.listFiles()) : Arrays.asList(file);
 			if(moveType == FolderType.POSTERS && !file.isDirectory()) {
 				System.out.println("See This: " + sorceFileInfo.getFullNameWithMime());
@@ -1565,7 +1573,7 @@ public class ManageFolder {
 		private void moveMedia() throws IOException {
 			File file = sorceFileInfo.getFile();
 			System.out.println("ffffffff " + folderInfo.getFile());
-			File mediaFolder = folderInfo.createFolderByType(sorceFileInfo, moveType);
+			File mediaFolder = createFolderByType(sorceFileInfo, moveType);
 			if(moveType == FolderType.TV_EPISODE) {
 				mediaFolder = renameFiles(mediaFolder, sorceFileInfo);
 			}
@@ -1593,7 +1601,7 @@ public class ManageFolder {
 			System.out.println("Hello icon");
 			System.out.println(FilesUtils.getFileLogo(iconFolder));
 			if(canDoIconActions()) {
-				File mainIconFolder = folderInfo.createFolderByType(sorceFileInfo, FolderType.INFORMATION);
+				File mainIconFolder = createFolderByType(sorceFileInfo, FolderType.INFORMATION);
 				String name = MimeUtils.createNameWithMime(folderInfo.getNameSeason(sorceFileInfo) + FolderType.LOGO.getFolderName(), MimeUtils.MIME_ICON);
 				String destPath = new File(mainIconFolder, name).getAbsolutePath();
 				moveList.add(new FileOperationHandler(this, sorceFileInfo.getFile(), destPath, FileOperation.MOVE));

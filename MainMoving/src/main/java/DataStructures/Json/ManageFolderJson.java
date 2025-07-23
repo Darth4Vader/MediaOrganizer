@@ -2,10 +2,13 @@ package DataStructures.Json;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import DataStructures.DataUtils;
 import DataStructures.ManageFolder;
 import DataStructures.App.ManageFolderPojo;
 
@@ -44,9 +47,23 @@ public class ManageFolderJson {
 		return mapper.convertValue(manageFolder, ManageFolderPojo.class);
 	}
 	
-	public static ManageFolder convertPojoToManageFolder(ManageFolderPojo manageFolder) {
-		ObjectMapper mapper = manageFolderObjectMapperDeserialization(manageFolder.getUrlParent());
-		return mapper.convertValue(manageFolder, ManageFolder.class);
+	public static ManageFolder convertPojoToManageFolder(ManageFolderPojo manageFolderPojo) {
+		File mainFolder = new File(manageFolderPojo.getUrlParent());
+		List<File> files = new ArrayList<>();
+		for(String key : manageFolderPojo.movieMap.values()) {
+			File file = DataUtils.getFileFromRelativePath(mainFolder, key);
+			files.add(file);
+		}
+		for(String key : manageFolderPojo.TVMap.values()) {
+			File file = DataUtils.getFileFromRelativePath(mainFolder, key);
+			files.add(file);
+		}
+		for(String key : manageFolderPojo.unkownMediaMap.values()) {
+			File file = DataUtils.getFileFromRelativePath(mainFolder, key);
+			files.add(file);
+		}
+		ManageFolder manageFolder = new ManageFolder(mainFolder.getAbsolutePath(), files);
+		return manageFolder;
 	}
 	
 	private static ObjectMapper manageFolderObjectMapperDeserialization(String mainPath) {

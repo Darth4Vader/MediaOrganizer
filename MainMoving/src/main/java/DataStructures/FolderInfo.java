@@ -32,10 +32,30 @@ public class FolderInfo extends FileInfo {
 		this.folderType = folderType;
 	}
 	
+	/**
+	 * Returns the folder of the given media type inside the current FolderInfo hierarchy. 
+	 * </br>
+	 * For example, if input is TV_EPISODE, and the nameInfo will contain S01E01, then the folder that will be returned will be: 
+	 * </br>
+	 * FolderInfo.getName() + " - S01E01"
+	 * </br>
+	 * If the folder does not exists, it will return null.
+	 * @param nameInfo the NameInfo of the given media
+	 * @param type the FolderType to search for
+	 * @return the folder of the given type, or null if it does not exists
+	 */
 	public File getFolderByType(NameInfo nameInfo, FolderType type) {
 		return getFolderByTypeWithCheck(nameInfo, type, false);
 	}
 	
+	/**
+	 * Returns the folder of the given media type inside the current FolderInfo hierarchy. 
+	 * </br>
+	 * If the folder does not exists, it will create it.
+	 * @param nameInfo the NameInfo of the given media
+	 * @param type the FolderType to search for
+	 * @return the folder of the given type, or null if it does not exists
+	 */
 	public File createFolderByType(NameInfo nameInfo, FolderType type) {
 		return getFolderByTypeWithCheck(nameInfo, type, true);
 	}
@@ -87,6 +107,10 @@ public class FolderInfo extends FileInfo {
 		System.out.println(currentFile);
 		if(currentFile == null || ascendingType == destType)
 			return currentFile;
+		if(sourceType == ascendingType) {
+			// that means an infinite loop will start
+			return null;
+		}
 		return getFolderByTypeWithCheck(currentFile, nameInfo, ascendingType, destType, createIfNotExists);
 	}
 	
