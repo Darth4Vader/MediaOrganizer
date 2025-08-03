@@ -16,6 +16,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -48,10 +49,6 @@ public class ActivateFileExplorer extends Application {
 	 */
 	
 	public static final File APP_DATA_FILE = new File("Data\\appData.json");
-
-	public static void main(String[] args) {
-		Application.launch(args);
-	}
 	
 	private FileExplorer explorer;
 	private BorderPane mainPanel;
@@ -69,6 +66,13 @@ public class ActivateFileExplorer extends Application {
     	stage.setHeight(500);
     	stage.show();
     }
+    
+    private void setCenter(Node control) {
+    	this.mainPanel.setCenter(control);
+    	stage.sizeToScene();
+    	stage.setWidth(800);
+    	stage.setHeight(500);
+	}
     
     private ManageFolderHistory managePojo;
     
@@ -90,7 +94,7 @@ public class ActivateFileExplorer extends Application {
 	    		}
 	    	});
 	    	setMainFileExplorer(selectorExplorer);
-	    	this.mainPanel.setCenter(this.explorer);
+	    	setCenter(this.explorer);
 		});
 		
 		Button existingBtn = new Button("Open Existing Folder");
@@ -264,7 +268,7 @@ public class ActivateFileExplorer extends Application {
 		settings.getItems().addAll(settingsAttributes, settingsMainFiles);
 		menuBar.getMenus().addAll(fileExplorer, settings);
 		mainPane.setTop(menuBar);
-		this.mainPanel.setCenter(mainPane);
+		setCenter(mainPane);
 	}
 	
 	private void setMainFileExplorer(FileExplorer explorer) {

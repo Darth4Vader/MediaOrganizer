@@ -9,6 +9,7 @@ import JavaFXInterface.FileExplorerSearch.FileSearchView;
 import JavaFXInterface.FileExplorerSearch.HistorySearchView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView;
 import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
+import JavaFXInterface.utils.JavaFXImageUtils;
 import JavaFXInterface.utils.controlsfx.DragResizePane;
 import JavaFXUtilities.CanvasPane;
 import OtherUtilities.ImageUtils;
@@ -96,13 +97,13 @@ public class FileExplorer extends BorderPane {
 		functionBox.setSpacing(10);
 		ExpandPanel backwardHistory = new ExpandPanel();
 		ExpandPanel forwardHistory = new ExpandPanel();
-		backwardHistory.setImage(SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/history_arrow.png"), null));
+		backwardHistory.setImage(JavaFXImageUtils.getImageResource(ExpandPanel.class, "images/history_arrow.png"));
 		backwardHistory.setPrefWidth(50);
 		backwardHistory.visibleActiveProperty().bind(history.hasPrevious());
 		backwardHistory.setOnMouseClicked(_ -> {
 			loadPreviousHistoryView();
 		});
-		forwardHistory.setImage(SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/history_arrow.png"), null));
+		forwardHistory.setImage(JavaFXImageUtils.getImageResource(ExpandPanel.class, "images/history_arrow.png"));
 		forwardHistory.setPrefWidth(50);
 		forwardHistory.visibleActiveProperty().bind(history.hasNext());
 		forwardHistory.setOnMouseClicked(_ -> {

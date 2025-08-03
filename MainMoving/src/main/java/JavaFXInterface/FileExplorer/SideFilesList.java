@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import JavaFXInterface.AppUtils;
+import JavaFXInterface.utils.JavaFXImageUtils;
 import JavaFXUtilities.CanvasPane;
 import OtherUtilities.ImageUtils;
 import javafx.beans.property.BooleanProperty;
@@ -31,7 +32,7 @@ import javafx.scene.transform.Affine;
 
 public class SideFilesList extends TreeView<File> {
 	
-	public static final javafx.scene.image.Image SIDE_ARROW = SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png"), null);
+	public static final Image SIDE_ARROW = JavaFXImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png");
 	
 	public SideFilesList(FileExplorer explorer, File root) {
 	    TreeItem<File> dummyRoot = new TreeItem<>();
@@ -91,7 +92,7 @@ public class SideFilesList extends TreeView<File> {
 		List<TreeItem<File>> treeItems = new ArrayList<>();
 		File[] list = root.listFiles();
 		for(File file : list)
-			if(file.isDirectory()) {
+			if(file.isDirectory() && !file.isHidden()) {
 				TreeItem<File> treeItem = new TreeItem<File>(file);
 				treeItem.getChildren().add(new TreeItem<File>(file));
 				treeItems.add(treeItem);

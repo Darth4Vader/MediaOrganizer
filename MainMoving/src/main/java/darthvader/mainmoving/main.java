@@ -73,9 +73,6 @@ import DataStructures.ManageFolder.FileOperation;
 import DataStructures.ManageFolder.ManageFile;
 import FileUtilities.FilesUtils;
 import FileUtilities.MimeUtils;
-import Interface.FIleExplorerSetup;
-import Interface.FileExplorer;
-import Interface.SideFilesList;
 import OtherUtilities.ImageUtils;
 import SwingUtilities.FocusPaneView;
 import SwingUtilities.JLabelTextFill;
@@ -170,7 +167,7 @@ public class main {
 		//use this for superman
 		
 		
-		new FIleExplorerSetup();
+		//new FIleExplorerSetup();
 		
 		
 		File file = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main");
@@ -186,7 +183,7 @@ public class main {
 		frame.setSize(400, 401);
 		//frame.setPreferredSize(new Dimension(400, 401));
 		JPanel pnl = new JPanel(new BorderLayout());
-		pnl.add(new SideFilesList(file), BorderLayout.CENTER);
+		//pnl.add(new SideFilesList(file), BorderLayout.CENTER);
 		frame.setContentPane(pnl);
 		//frame.setSize(400, 401);
 		frame.setVisible(true);

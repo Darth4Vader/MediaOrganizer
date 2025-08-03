@@ -80,6 +80,7 @@ import JavaFXInterface.FileExplorer.FileExplorer;
 import JavaFXInterface.FileExplorer.SideFilesList;
 import JavaFXInterface.FileExplorer.SideFilesList.ExpandPanel;
 import JavaFXInterface.FileExplorerView.FilePanel;
+import JavaFXInterface.utils.JavaFXImageUtils;
 import JavaFXInterface.utils.controlsfx.BetterFilteredTableColumn;
 import JavaFXInterface.utils.controlsfx.BetterFilteredTableView;
 import JavaFXInterface.utils.controlsfx.FilteredTableColumnCheckView;
@@ -160,7 +161,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.media.Media;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
@@ -363,7 +363,7 @@ public class TestDetailsFileTable extends Application {
         	
         	//Label filterButton = new Label("|");
         	
-        	final javafx.scene.image.Image SIDE_ARROW = SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png"), null);
+        	final javafx.scene.image.Image SIDE_ARROW = JavaFXImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png");
             /*Label arrow = new Label("^");// ▲^ new Label("›");
             arrow.setBorder(Border.stroke(Color.BLUEVIOLET));*/
         	ImageView filterImage = new ImageView();

@@ -2,6 +2,7 @@ package JavaFXInterface.ManageFileExplorer;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,7 +77,14 @@ public class FileInfoMenuBar extends MenuBar {
 			// we will handle every possible exception of the method that we call
 			createMovieLoggerControl.close();
 			Throwable exception = task.getException();
-			Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), exception);
+			UncaughtExceptionHandler exceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+			if(exceptionHandler != null)
+				exceptionHandler.uncaughtException(Thread.currentThread(), exception);
+			else {
+				System.out.println("NOOOOOOOOOOOOOOOOOO");
+				System.err.println(exception.getMessage());
+				exception.printStackTrace();
+			}
 			/*if (exception instanceof NumberFormatException) {
 				AdminPagesUtils.parseNumberException(movie.getMediaID());
 			} else if (exception instanceof CreateMovieException) {
