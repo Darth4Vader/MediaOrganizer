@@ -24,9 +24,11 @@ import org.xml.sax.SAXException;
 import JavaFXInterface.AppUtils;
 import JavaFXInterface.FileExplorer.FileExplorer;
 import JavaFXInterface.FileExplorer.SideFilesList.ExpandPanel;
+import JavaFXInterface.utils.JavaFXImageUtils;
 import JavaFXInterface.utils.controlsfx.BetterFilteredTableColumn;
 import JavaFXInterface.utils.controlsfx.BetterFilteredTableView;
 import JavaFXInterface.utils.controlsfx.FilteredTableColumnCheckView;
+import JavaFXInterface.utils.controlsfx.TableViewUtils;
 import OtherUtilities.ImageUtils;
 import Utils.DirectoryWatcher.FileChange;
 import Utils.DirectoryWatcher.FileChange.FileChaneType;
@@ -52,6 +54,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TableView;
 import javafx.scene.control.skin.TableColumnHeader;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -168,24 +171,25 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
             TableViewSelectionModel<S> model2 = tableView.getSelectionModel();
             switch (event.getCode()) {
                 case UP:
-                    model.focusAboveCell();
-                    //model2.selectAboveCell();
+                    //model.focusAboveCell();
+                    model2.selectAboveCell();
                     break;
                 case RIGHT:
-                    model.focusRightCell();
+                    //model.focusRightCell();
+                	model2.selectRightCell();
                     break;
                 case DOWN:
-                    model.focusBelowCell();
-                    //model2.selectBelowCell();
+                    //model.focusBelowCell();
+                    model2.selectBelowCell();
                     break;
                 case LEFT:
-                    model.focusLeftCell();
+                    //model.focusLeftCell();
+                	model2.selectLeftCell();
                     break;
                 default:
                     throw new AssertionError(event.getCode().name());
             }
-            tableView.scrollTo(model.getFocusedCell().getRow());
-            tableView.scrollToColumnIndex(model.getFocusedCell().getColumn());
+            TableViewUtils.betterScrollTo(this, model2.getSelectedIndex());
         }
     }
         
@@ -210,7 +214,7 @@ public class FileTableDetailsView extends BetterFilteredTableView<FileDetails> i
     	
     	//Label filterButton = new Label("|");
     	
-    	final javafx.scene.image.Image SIDE_ARROW = SwingFXUtils.toFXImage((BufferedImage) ImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png"), null);
+    	final Image SIDE_ARROW = JavaFXImageUtils.getImageResource(ExpandPanel.class, "images/side_arrow.png");
         /*Label arrow = new Label("^");// ▲^ new Label("›");
         arrow.setBorder(Border.stroke(Color.BLUEVIOLET));*/
     	ImageView filterImage = new ImageView();

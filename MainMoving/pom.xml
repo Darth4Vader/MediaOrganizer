@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>MainMoving</groupId>
-  <artifactId>MainMoving</artifactId>
+  <groupId>MediaOrganizer</groupId>
+  <artifactId>MediaOrganizer</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   
   		    <properties>
 		        <maven.compiler.source>23</maven.compiler.source>
 		        <maven.compiler.target>23</maven.compiler.target>
 		        <mainClass>JavaFXInterface.MainAppActivate</mainClass>
-		        <appName>MainMoving</appName>
+		        <appName>MediaOrganizer</appName>
 		        <javafx.version>26-ea+2</javafx.version>
 		        <tika.version>3.2.1</tika.version>
 		        <jackson.version>2.18.3</jackson.version>
@@ -45,13 +45,17 @@
 		                <additionalResources>
 		    				<additionalResource>${appName}.l4j.ini</additionalResource>
 		    				<additionalResource>Libaries/javafx-${javafx.version}/javafx</additionalResource>
+		    				<additionalResource>Data</additionalResource>
 						</additionalResources>
 						<copyDependencies>true</copyDependencies>
+						<!-- check if this can happen -->
+						<!--
 						<vmArgs>
-							<vmArgs>--sun-misc-unsafe-memory-access=allow</vmArgs>
-							<vmArgs>--enable-native-access=ALL-UNNAMED</vmArgs>
-							<vmArgs>--enable-native-access=javafx.graphics</vmArgs>
+							<vmArgs>sun-misc-unsafe-memory-access=allow</vmArgs>
+							<vmArgs>enable-native-access=ALL-UNNAMED</vmArgs>
+							<vmArgs>enable-native-access=javafx.graphics</vmArgs>
 						</vmArgs>
+						-->
 						<platform>windows</platform>
 						<winConfig>
 							<headerType>gui</headerType>
