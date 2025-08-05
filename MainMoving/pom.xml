@@ -2,17 +2,19 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>MediaOrganizer</groupId>
   <artifactId>MediaOrganizer</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
   
   		    <properties>
 		        <maven.compiler.source>23</maven.compiler.source>
 		        <maven.compiler.target>23</maven.compiler.target>
 		        <mainClass>JavaFXInterface.MainAppActivate</mainClass>
 		        <appName>MediaOrganizer</appName>
-		        <javafx.version>26-ea+2</javafx.version>
+		        <javafx.version>24.0.2</javafx.version>
 		        <tika.version>3.2.1</tika.version>
 		        <jackson.version>2.18.3</jackson.version>
 		        <slf4j.version>2.1.0-alpha1</slf4j.version>
+				<organizationName>com.github.Darth4Vader</organizationName>
+		        <description>Media Organizer is a JavaFX application for organizing and managing media files.</description>
 		    </properties>
 
     <build>
@@ -27,7 +29,7 @@
 		<plugin>
 		    <groupId>io.github.fvarrui</groupId>
 		    <artifactId>javapackager</artifactId>
-		    <version>1.7.6</version>
+		    <version>1.7.6-SNAPSHOT</version>
 		    <executions>
 		        <execution>
 		            <phase>package</phase>
@@ -40,12 +42,10 @@
 		                <!-- optional -->
 		                <!-- to bundle Jre: check if can exclude two versions of module, maybe in a fork of the original project, because the creator left: https://github.com/javapackager/JavaPackager/issues/400 -->
 		                <bundleJre>false</bundleJre>
-		                <generateInstaller>false</generateInstaller>
+		                <generateInstaller>true</generateInstaller>
 						<administratorRequired>false</administratorRequired>
 		                <additionalResources>
 		    				<additionalResource>${appName}.l4j.ini</additionalResource>
-		    				<additionalResource>Libaries/javafx-${javafx.version}/javafx</additionalResource>
-		    				<additionalResource>Data</additionalResource>
 						</additionalResources>
 						<copyDependencies>true</copyDependencies>
 						<!-- check if this can happen -->
@@ -60,6 +60,19 @@
 						<winConfig>
 							<headerType>gui</headerType>
 							<wrapJar>true</wrapJar>
+							<companyName>${organizationName}</companyName>
+							<productName>${project.name}</productName>
+							<internalName>${project.name}</internalName>
+							<txtFileVersion>${project.version}</txtFileVersion>
+							<txtProductVersion>${version}</txtProductVersion>
+							<productVersion>1.0.0.0</productVersion>
+							<fileVersion>1.0.0.0</fileVersion>
+							<fileDescription>${description}</fileDescription>
+							<originalFilename>${project.name}.exe</originalFilename>
+							<copyright>${organizationName} 2025</copyright>
+							
+							<createDesktopIconTask>true</createDesktopIconTask>
+							<generateMsi>true</generateMsi>
 						</winConfig>
 						<!-- https://github.com/javapackager/JavaPackager/issues/467 -->
 		            </configuration>
@@ -96,6 +109,9 @@
 	    <repository>
 	        <id>local-maven-repo</id>
 	        <url>file:///${project.basedir}/repository</url>
+	        <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
 	    </repository>
 	</repositories>
 

@@ -36,3 +36,13 @@ CALL mvn install:install-file  ^
     -DartifactId=vorbis-java-core  ^
     -Dversion=0.8.5  ^
     -Dpackaging=jar
+
+CALL mvn install:install-file  ^
+    -DlocalRepositoryPath=repository ^
+    -Dfile="Libaries/javapackager/javapackager-1.7.6-SNAPSHOT.jar" ^
+    -Dsources="Libaries/javapackager/javapackager-1.7.6-SNAPSHOT-sources.jar" ^
+    -DgroupId=io.github.fvarrui  ^
+    -DartifactId=javapackager  ^
+    -Dversion=1.7.6-SNAPSHOT  ^
+    -Dpackaging=jar ^
+    -DpomFile="Libaries/javapackager/javapackager-1.7.6-SNAPSHOT.pom"

@@ -2,10 +2,13 @@ package JavaFXInterface.ManageFileExplorer;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
+import FileUtilities.FilesUtils;
 import JavaFXInterface.Logger.CreateMovieLoggerControl;
 import OtherUtilities.ImageUtils;
 import javafx.concurrent.Task;
@@ -127,11 +130,11 @@ public class FileInfoMenuBar extends MenuBar {
 	
 	
 	private enum ToolName {
-		ORGANIZE_FOLDER("Organize Folder", "Organize Folder"),
-		RENAME_FILE("Rename file", "Rename file"),
-		REFRESH_LOGO("Refresh File Logo", "Refresh File Logo"),
-		SET_LOGO("Set File Logo", "Set File Logo"),
-		SET_SUBTITLES("set main subtitles language", "set main subtitles language");
+		ORGANIZE_FOLDER("Organize_Folder", "Organize Folder"),
+		RENAME_FILE("Rename_file", "Rename file"),
+		REFRESH_LOGO("Refresh_File_Logo", "Refresh File Logo"),
+		SET_LOGO("Set_File_Logo", "Set File Logo"),
+		SET_SUBTITLES("set_main_subtitles_language", "set main subtitles language");
 		
 		
 		private final String id;
@@ -155,7 +158,15 @@ public class FileInfoMenuBar extends MenuBar {
 		
 		public ToolPanel(ToolName tool) {
 			BorderPane pane = new BorderPane();
-			final java.awt.Image img = ImageUtils.loadImage("Data\\Images\\" + tool.getID());
+			String fileName = tool.getID() + ".png";
+			String fileRealtivePath = "images" + FilesUtils.addPackageName(ToolPanel.class, fileName);
+			java.awt.Image img;
+			try {
+				img = ImageUtils.getImageResource(ToolPanel.class, fileRealtivePath);
+			} catch (URISyntaxException | IOException e) {
+				e.printStackTrace();
+				img = null;
+			}
 			final BufferedImage image = img != null ? ImageUtils.paintImageInColor(img, java.awt.Color.BLACK) : null;
 			ImageView iconImg = new ImageView();
 			iconImg.fitWidthProperty().bind(pane.widthProperty().multiply(0.6));
