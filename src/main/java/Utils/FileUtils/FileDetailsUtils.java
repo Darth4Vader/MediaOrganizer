@@ -67,30 +67,24 @@ public class FileDetailsUtils {
     	if(file.isDirectory()) {
     		return "File folder";
     	}
-    	/* getFileExtension(file) */
-    	return getExtensionName(MimeUtils.getMimeTypeAsExtension(file));
+    	return getExtensionName(MimeUtils.getNameWithoutExtension(file), MimeUtils.getMimeTypeAsExtension(file));
     }
     
-    public static String getExtensionName(String extension) {
-    	if(!MimeUtils.hasMimeType(extension))
-    		throw new RuntimeException("Not leggal");
-    	String extensionSoftware = getDefaultAppToActivateExtension(extension);
-    	if(extensionSoftware == null)
-    		extensionSoftware = extension;
-    	System.out.println(extensionSoftware);
-    	if(Advapi32Util.registryValueExists(WinReg.HKEY_CLASSES_ROOT, extensionSoftware, "")) {
-    		return Advapi32Util.registryGetStringValue(WinReg.HKEY_CLASSES_ROOT, extensionSoftware, "");
+    public static String getExtensionName(String fileName, String extension) {
+    	if(MimeUtils.hasMimeType(extension)) {
+	    	String extensionSoftware = getDefaultAppToActivateExtension(extension);
+	    	if(extensionSoftware == null)
+	    		extensionSoftware = extension;
+	    	System.out.println(extensionSoftware);
+	    	if(Advapi32Util.registryValueExists(WinReg.HKEY_CLASSES_ROOT, extensionSoftware, "")) {
+	    		return Advapi32Util.registryGetStringValue(WinReg.HKEY_CLASSES_ROOT, extensionSoftware, "");
+	    	}
+    	}
+    	else {
+    		extension = fileName;
     	}
     	String format = extension.replace(".", "");
     	return format.toUpperCase() + " File";
-    	/*Preferences p = Preferences.userRoot();
-    	System.out.println(p);
-    	String userPreference = String.format("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\%s",extension);
-    	if(p.nodeExists(userPreference)) {
-    		p = p.node(userPreference);
-    		System.out.println("shook");
-    		System.out.println(p);
-    	}*/
     }
     
     public static String getDefaultAppToActivateExtension(String extension) {
