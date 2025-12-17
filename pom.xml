@@ -21,7 +21,15 @@
 	    <resources>
 	        <resource>
 	            <directory>src/main/resources</directory>
-	            <filtering>true</filtering>
+	        </resource>
+	        
+	        <!-- JavaFX FXML & CSS next to controllers -->
+	        <resource>
+	            <directory>src/main/java</directory>
+	            <includes>
+	                <include>**/*.fxml</include>
+	                <include>**/*.css</include>
+	            </includes>
 	        </resource>
         </resources>
      
@@ -65,8 +73,8 @@
 							<internalName>${project.name}</internalName>
 							<txtFileVersion>${project.version}</txtFileVersion>
 							<txtProductVersion>${version}</txtProductVersion>
-							<productVersion>1.0.0.0</productVersion>
-							<fileVersion>1.0.0.0</fileVersion>
+							<productVersion>1.0.2.0</productVersion>
+							<fileVersion>1.0.2.0</fileVersion>
 							<fileDescription>${description}</fileDescription>
 							<originalFilename>${project.name}.exe</originalFilename>
 							<copyright>${organizationName} 2025</copyright>
