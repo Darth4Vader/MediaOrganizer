@@ -222,6 +222,10 @@ public class MainFileExplorerView extends BorderPane {
 		}
 	}
 	
+	public SimpleObjectProperty<File> folderProperty() {
+		return this.folder;
+	}
+	
 	public File getFolder() {
 		return this.folder.get();
 	}

@@ -1,6 +1,5 @@
 package JavaFXInterface.FileExplorer;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 
 import org.controlsfx.control.GridView;
@@ -12,13 +11,11 @@ import JavaFXInterface.FileExplorerView.MainFileExplorerView.FileExplorerView;
 import JavaFXInterface.utils.JavaFXImageUtils;
 import JavaFXInterface.utils.controlsfx.DragResizePane;
 import JavaFXUtilities.CanvasPane;
-import OtherUtilities.ImageUtils;
 import Utils.DirectoryWatcher.FileChange;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Pos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Control;
 import javafx.scene.control.MenuBar;
@@ -62,7 +59,6 @@ public class FileExplorer extends BorderPane {
 		
 		this.viewPane = new BorderPane();
 		viewPane.setCenter(mainFileExplorerView);
-		BorderPane.setAlignment(mainFileExplorerView, Pos.TOP_CENTER);
 		SideFilesList sidePnl = new SideFilesList(this, file);
 		DragResizePane.makeResizable(sidePnl);
 		sidePnl.setPrefWidth(150);
@@ -97,6 +93,7 @@ public class FileExplorer extends BorderPane {
 		functionBox.setSpacing(10);
 		ExpandPanel backwardHistory = new ExpandPanel();
 		ExpandPanel forwardHistory = new ExpandPanel();
+		ExpandPanel moveToParent = new ExpandPanel();
 		backwardHistory.setImage(JavaFXImageUtils.getImageResource(ExpandPanel.class, "images/history_arrow.png"));
 		backwardHistory.setPrefWidth(50);
 		backwardHistory.visibleActiveProperty().bind(history.hasPrevious());
@@ -105,12 +102,39 @@ public class FileExplorer extends BorderPane {
 		});
 		forwardHistory.setImage(JavaFXImageUtils.getImageResource(ExpandPanel.class, "images/history_arrow.png"));
 		forwardHistory.setPrefWidth(50);
+		forwardHistory.setRotate(180);
 		forwardHistory.visibleActiveProperty().bind(history.hasNext());
 		forwardHistory.setOnMouseClicked(_ -> {
 			loadNextHistoryView();
         });
 		
-		functionBox.getChildren().addAll(backwardHistory, forwardHistory);
+		moveToParent.setImage(JavaFXImageUtils.getImageResource(ExpandPanel.class, "images/history_arrow.png"));
+		moveToParent.setPrefWidth(50);
+		moveToParent.setImageRotate(90);
+		moveToParent.visibleActiveProperty().bind(mainFileExplorerView.folderProperty().isNotEqualTo(file)
+				.and(mainFileExplorerView.folderProperty().isNotNull())
+				.and(Bindings.createBooleanBinding(() -> {
+					File currentFolder = mainFileExplorerView.getFolder();
+					if(currentFolder == null)
+						return false;
+					return currentFolder.toPath().startsWith(file.toPath());
+				}, mainFileExplorerView.folderProperty())));
+		moveToParent.setOnMouseClicked(_ -> {
+			File currentFile = mainFileExplorerView.getFolder();
+			if(currentFile == null)
+				return;
+
+			File parentFolder = currentFile.getParentFile();
+			if(parentFolder == null)
+				return;
+			
+			// parent must be root or inside root
+			if(parentFolder.equals(file) || parentFolder.toPath().startsWith(file.toPath())) {
+				enterFolder(parentFolder);
+			}
+		});
+		
+		functionBox.getChildren().addAll(backwardHistory, forwardHistory, moveToParent);
 		functionBox.getChildren().add(searchField);
 		this.setTop(functionBox);
 		
@@ -202,6 +226,7 @@ public class FileExplorer extends BorderPane {
 		private Color color;
 		private Color visibleColor = Color.BLACK;
 		private Color invisibleColor = Color.GRAY;
+		private double rotationAngle = 0;
 		
 		public ExpandPanel() {
             color = invisibleColor;
@@ -226,6 +251,11 @@ public class FileExplorer extends BorderPane {
 	        GraphicsContext gc = this.getCanvas().getGraphicsContext2D();
 	        gc.clearRect(0, 0, getWidth(), getHeight());
 	        gc.save();
+	        
+	        // rotate around center
+			gc.translate(getWidth() / 2, getHeight() / 2);
+			gc.rotate(rotationAngle);
+			gc.translate(-getWidth() / 2, -getHeight() / 2);
 			
 			Lighting lighting = new Lighting(new Light.Distant(45, 90, color));
 			ColorAdjust bright = new ColorAdjust(0, 1, 1, 1);
@@ -239,6 +269,11 @@ public class FileExplorer extends BorderPane {
 			gc.restore(); // back to original state (before rotation)
 		}
 		
+		public void setImageRotate(double angle) {
+			this.rotationAngle = angle;
+			paintComponent();
+		}
+		
 		private final BooleanProperty visibleActive = new SimpleBooleanProperty();
 		
 		public BooleanProperty visibleActiveProperty() {
@@ -247,6 +282,10 @@ public class FileExplorer extends BorderPane {
 		
 		public boolean getVisibleActive() {
 			return visibleActive.get();
+		}
+		
+		public void setVisibleActive(boolean value) {
+			visibleActive.set(value);
 		}
 		
 		public void setImage(Image image) {

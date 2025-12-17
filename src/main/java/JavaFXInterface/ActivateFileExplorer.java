@@ -72,6 +72,7 @@ public class ActivateFileExplorer extends Application {
     	setSetupPane();
     	
     	/*File file = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main");
+    	File file = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\output\\replicate");
 		ManageFolder manage = new ManageFolder(file.getAbsolutePath());
 		setManageFolderExplorer(manage);*/
     	
@@ -479,6 +480,7 @@ public class ActivateFileExplorer extends Application {
 			});
 			setMainFileExplorer(manageSelector);
 			mainPane.setCenter(this.explorer);
+			setCenter(mainPane);
 		});
 		
 		settings.getItems().addAll(settingsAttributes, settingsMainFiles);

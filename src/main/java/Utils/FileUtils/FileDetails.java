@@ -1,7 +1,6 @@
 package Utils.FileUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,11 +14,6 @@ import java.util.stream.Collectors;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.sax.BodyContentHandler;
-import org.apache.tika.sax.ExpandedTitleContentHandler;
 import org.xml.sax.SAXException;
 
 public class FileDetails {
@@ -37,12 +31,19 @@ public class FileDetails {
 		return file;
 	}
 	public BasicFileAttributes getAttributes() {
+		if(attributes == null) {
+			try {
+				attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		return attributes;
 	}
 	public void setFile(File file) throws IOException {
 		this.file = file;
-		this.attributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
-		this.typeName = FileDetailsUtils.getExtensionName(file);
+		this.attributes = null;
+		this.typeName = null;
 	}
 	
 	public void loadMetadata() throws FileNotFoundException {
@@ -60,11 +61,11 @@ public class FileDetails {
     		FileAttributesType type = FileAttributesType.getTypeByName(name);
     		value = type != null ?
     	    		switch(type) {
-    				case CREATION_TIME -> attributes.creationTime();
-    				case LAST_ACCESS_TIME -> attributes.lastAccessTime();
-    				case LAST_MODIFIED_TIME -> attributes.lastModifiedTime();
-    				case SIZE -> attributes.size();
-    				case TYPE -> typeName;
+    				case CREATION_TIME -> getAttributes() != null ? getAttributes().creationTime() : null;
+    				case LAST_ACCESS_TIME -> getAttributes() != null ? getAttributes().lastAccessTime() : null;
+    				case LAST_MODIFIED_TIME -> getAttributes() != null ? getAttributes().lastModifiedTime() : null;
+    				case SIZE -> getAttributes() != null ? getAttributes().size() : null;
+    				case TYPE -> getTypeName();
     				case NAME -> file.getName();
     				default -> null;
     	    		} : null;
@@ -114,6 +115,9 @@ public class FileDetails {
     }
     
     public String getTypeName() {
+    	if(typeName == null) {
+			typeName = FileDetailsUtils.getExtensionName(file);
+		}
 		return typeName;
 	}
     

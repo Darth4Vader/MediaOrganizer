@@ -88,7 +88,7 @@ public class OrderEpisodesUtils {
 		for(NameInfo nameInfo : episodesOrderList) {
 			if(nameInfo.hasIndex()) {
 				FileInfo fileInfo = fileInfos.stream().filter(p -> 
-							nameInfo.getName().equals(p.getName()) && nameInfo.getEpisode().equals(p.getEpisode()) && nameInfo.getSeason().equals(p.getSeason()))
+					nameInfo.equalsBasedOnCriteria(p, NameInfoType.NAME, NameInfoType.SEASON, NameInfoType.EPISODE))
 						.findFirst().orElse(null);
 				if(fileInfo != null) {
 					File file = fileInfo.getFile();

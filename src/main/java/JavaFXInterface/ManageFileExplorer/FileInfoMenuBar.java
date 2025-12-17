@@ -43,7 +43,7 @@ public class FileInfoMenuBar extends MenuBar {
 	
 	private void addInfoPanel(ToolName tool) {
 		FileInfoPanel infoPanel = explorer.getFileInfoPanel();
-		explorer.getChildren().remove(infoPanel);
+		boolean exists = explorer.getChildren().remove(infoPanel);
 		switch (tool) {
 		case ORGANIZE_FOLDER:
 			startMoving();
@@ -51,9 +51,11 @@ public class FileInfoMenuBar extends MenuBar {
 		case REFRESH_LOGO:
 			break;
 		case RENAME_FILE:
-			infoPanel.setPanel(currentFileToInfo);
-			if(infoPanel != null && explorer.getRight() == null) {
-				explorer.setRight(infoPanel);
+			if(!exists) {
+				infoPanel.setPanel(currentFileToInfo);
+				if(infoPanel != null && explorer.getRight() == null) {
+					explorer.setRight(infoPanel);
+				}
 			}
 			break;
 		case SET_LOGO:

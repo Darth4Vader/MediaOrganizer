@@ -4,9 +4,9 @@ package DataStructures;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ddf.EscherColorRef.SysIndexProcedure;
 
 import DataStructures.FileInfoType.FolderType;
 
@@ -760,12 +760,41 @@ public class NameInfo {
 	}
 	
 	private boolean isEnd(Word word) {
-		String[] arr = {"576p", "720p", "1080p", "2160p", "hdr", "bluray"};
-		String str = word.str.toLowerCase();	
-		for(String strArr : arr) 
-			if(str.contains(strArr))
-				return true;
+		Set<String> END_MARKERS = Set.of(
+			// resolution
+			"576p","720p","1080p","2160p",
+			
+			// source
+			"bluray","bdrip","dvdrip","hdtv",
+			"web","webdl","webrip",
+			"uhd","remux",
+			
+			// hdr / dv
+			"hdr","hdr10","hdr10plus",
+			"dv","dolbyvision",
+			
+			// video codec
+			"x264","x265","avc","hevc","h264","h265",
+			
+			// audio
+			"aac","ac3","eac3","dd","ddp",
+			"dts","dtshd","truehd","lpcm",
+			"atmos",
+			
+			// misc
+			"10bit","repack","proper","internal"
+		);
+		String str = normalize(word.str);
+		// exact match only
+		if (END_MARKERS.contains(str)) {
+		    return true;
+		}
 		
+		// resolution pattern (safety net)
+		if (str.matches("\\d{3,4}p")) {
+			return true;
+		}
+
 		String seasonNumbers = String.format("\\d{1,%d}", MAX_SEASON_LENGTH);
 		String regexSeason = "s" + seasonNumbers;
 		if(str.matches(regexSeason+"-"+regexSeason))
@@ -783,6 +812,13 @@ public class NameInfo {
 		}
 		
 		return false;
+	}
+	
+	private static String normalize(String s) {
+	    return s.toLowerCase()
+	            .replace(".", "")
+	            .replace("-", "")
+	            .replace("_", "");
 	}
 	
 	private boolean endScan(Word word) {

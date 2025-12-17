@@ -338,7 +338,7 @@ public class ManageFolder {
 	 * @param folderInfo a given folder info.
 	 * @throws IOException {@link #Files.move(Path, Path)}
 	 */
-	private void changeMiniSeriesToTvSeries(FolderInfo folderInfo) throws IOException {
+	public void changeMiniSeriesToTvSeries(FolderInfo folderInfo) throws IOException {
 		File folder = folderInfo.getFile();
 		FolderType folderType = folderInfo.getFolderType();
 		if(folderType != FolderType.MINI_SERIES) return; /* throw new IllegalArgumentException("The folder is already a TV Series"); */
@@ -800,7 +800,7 @@ public class ManageFolder {
 		String mapName = nameInfo.getMapName();
 		FolderType fileType = nameInfo.getFolderType();
 		//if the NameInfo contains season or episode then it can be in 2 maps: the TVMap or unkownMediaMap
-		if(folderInfoType == FolderType.TV_EPISODE || folderInfoType == FolderType.TV_SERIES) {
+		if(folderInfoType == FolderType.TV_EPISODE || folderInfoType == FolderType.TV_SERIES || folderInfoType == FolderType.MINI_SERIES) {
 			//check if it is in the TVMap
 			mainMap = TVMap;
 			mainInfo = mainMap.get(mapName);

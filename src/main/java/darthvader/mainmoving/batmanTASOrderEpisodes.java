@@ -32,14 +32,32 @@ import DataStructures.FileInfoType;
 import DataStructures.FileInfoType.FolderType;
 import DataStructures.FolderInfo;
 import DataStructures.ManageFolder;
+import DataStructures.ManageFolder.FlagSearchMainFolderExeception;
 import DataStructures.NameInfo;
 
 public class batmanTASOrderEpisodes {
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, FlagSearchMainFolderExeception {	
 		File json = new File("C:\\Users\\itay5\\OneDrive\\מסמכים\\Clone_Wars");
 		
-		createSupermanAndTheNewBatmanOrder(json);
+		
+		/*File btas = new File(json, "BTAS");
+		btas = new File("F:\\Check Yourself Bef");
+		ManageFolder man = new ManageFolder(btas.getAbsolutePath());
+		FolderInfo info = man.getMainFolder(new NameInfo("Batman The Animated Series (1992) s02"));
+		man.changeMiniSeriesToTvSeries(info);*/
+		
+		
+		// use to create json
+		//createSupermanAndTheNewBatmanOrder(json);
+		
+		
+		
+		
+		// use to add order to files
+		File jsonFile = new File(json, BATMAN+".json"); 
+		File folder = new File("F:\\Batman The Animated Series (1992)");
+		OrderEpisodesUtils.setOrderForEpisodes(jsonFile, folder);
 		
 		/*List<NameInfo> supermanNameInfoList = loadFile(new File(json, SUPERMAN+".json"));
 		for(NameInfo nameInfo : supermanNameInfoList) { 
