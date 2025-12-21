@@ -786,8 +786,9 @@ public class NameInfo {
 		);
 		String str = normalize(word.str);
 		// exact match only
-		if (END_MARKERS.contains(str)) {
-		    return true;
+		for(String endMarker : END_MARKERS) {
+			if(str.contains(endMarker))
+				return true;
 		}
 		
 		// resolution pattern (safety net)
