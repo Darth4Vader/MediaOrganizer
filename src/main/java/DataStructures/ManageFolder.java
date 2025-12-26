@@ -61,6 +61,7 @@ public class ManageFolder {
 	
     private List<ManageFile> sideMovesList;
 	private boolean flagSearchMainFolderExists = true;
+	private boolean flagMoveOnlyIfVideosExist = false;
 	
 	public static final String DEFAULT_INPUT = "Input", DEFAULT_OUTPUT = "W-Output", ICONS = "Icons";
 	public static final String OUTPUT_TV = "TV", OUTPUT_MOVIE = "Movies", OUTPUT_UNKOWN = "Media";
@@ -127,6 +128,13 @@ public class ManageFolder {
 		if(read.contains(checkStartingPath(DEFAULT_OUTPUT))) {
 			read.remove(checkStartingPath(DEFAULT_OUTPUT));
 			setMap(checkStartingPath(DEFAULT_OUTPUT));
+		}
+		
+		String[] removeDefaultStr = {DEFAULT_INPUT, ICONS};
+		for(String str : removeDefaultStr) {
+			if(read.contains(checkStartingPath(str))) {
+				read.remove(checkStartingPath(str));
+			}
 		}
 		
 		for(File file : read) {
@@ -1413,7 +1421,7 @@ public class ManageFolder {
 		
 		public ManageFile(FileInfo sourceFileInfo, FileOperation action) {
 			initilize(sourceFileInfo, action, true);
-			searchFolderInfo(true);
+			searchFolderInfo();
 		}
 		
 		/*public ManageFile(FileInfo moveFile, FileOperation action, FileInfo infoFile) {
@@ -1424,8 +1432,8 @@ public class ManageFolder {
 		public ManageFile(FileInfo sourceFileInfo, FileOperation action, FolderInfo folderInfo) {
 			this.folderInfo = folderInfo;
 			initilize(sourceFileInfo, action, true);
-			if(folderInfo == null)
-				searchFolderInfo(true);
+			if(this.folderInfo == null)
+				searchFolderInfo();
 		}
 		
 		private void initilize(FileInfo sourceFileInfo, FileOperation action, boolean validate) {
@@ -1439,7 +1447,7 @@ public class ManageFolder {
 					if(FileFormats.getFileFormat(sourceFileInfo.getFile()) == FileFormat.IMAGE) {
 						System.out.println("Spedd: " + folderInfo);
 						if(folderInfo == null)
-							searchFolderInfo(false);
+							searchFolderInfo();
 						System.out.println("Spedd: " + folderInfo);
 						if(exp != null || folderInfo != null) {
 							sorceFileInfo.setFolderType(FolderType.POSTERS);
@@ -1452,10 +1460,10 @@ public class ManageFolder {
 				this.valid = false;	
 		}
 		
-		private void searchFolderInfo(boolean createIfMissing) {
+		private void searchFolderInfo() {
 			if(valid) {
 				try {
-					this.folderInfo = getMainFolder(sorceFileInfo, createIfMissing);
+					this.folderInfo = getMainFolder(sorceFileInfo, flagMoveOnlyIfVideosExist);
 					if(folderInfo == null)
 						this.valid = false;
 				} catch (FlagSearchMainFolderExeception e) {
@@ -1573,13 +1581,21 @@ public class ManageFolder {
 		private void moveMedia() throws IOException {
 			File file = sorceFileInfo.getFile();
 			System.out.println("ffffffff " + folderInfo.getFile());
-			File mediaFolder = createFolderByType(sorceFileInfo, moveType);
-			if(moveType == FolderType.TV_EPISODE) {
-				mediaFolder = renameFiles(mediaFolder, sorceFileInfo);
+			File mediaFolder;
+			if(sorceFileInfo.getFormat() == FileFormat.VIDEO) {
+				mediaFolder = createFolderByType(sorceFileInfo, moveType);
+			}
+			else {
+				mediaFolder = folderInfo.getFolderByType(sorceFileInfo, moveType);
 			}
 			if(mediaFolder != null) {
-				String finalPath = new File(mediaFolder, sorceFileInfo.getFullNameWithMime()).getAbsolutePath();
-				moveList.add(new FileOperationHandler(file, finalPath));
+				if(moveType == FolderType.TV_EPISODE) {
+					mediaFolder = renameFiles(mediaFolder, sorceFileInfo);
+				}
+				if(mediaFolder != null) {
+					String finalPath = new File(mediaFolder, sorceFileInfo.getFullNameWithMime()).getAbsolutePath();
+					moveList.add(new FileOperationHandler(file, finalPath));
+				}
 			}
 		}
 		

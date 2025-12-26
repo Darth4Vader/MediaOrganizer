@@ -6,6 +6,7 @@ import java.util.Locale;
 import org.apache.commons.lang3.LocaleUtils;
 
 import DataStructures.FileInfoType.FolderType;
+import DataStructures.NameInfoParser.Word;
 import FileUtilities.FileFormats;
 import FileUtilities.FileFormats.FileFormat;
 import FileUtilities.MimeUtils.MimeContent;
@@ -76,7 +77,7 @@ public class FileInfo extends NameInfo {
 		System.out.println(newName);
 		System.out.println(getLastWord(newName).str);*/
 		//System.out.println("Hoo " + name);
-		setVal(name);
+		parseName(name);
 		setFolderType(getFolderType());
 	}
 	
