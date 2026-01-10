@@ -15,6 +15,7 @@
 		        <slf4j.version>2.1.0-alpha1</slf4j.version>
 				<organizationName>com.github.Darth4Vader</organizationName>
 		        <description>Media Organizer is a JavaFX application for organizing and managing media files.</description>
+		        <sofwareVersion>1.0.2.0</sofwareVersion>
 		    </properties>
 
     <build>
@@ -71,10 +72,11 @@
 							<companyName>${organizationName}</companyName>
 							<productName>${project.name}</productName>
 							<internalName>${project.name}</internalName>
-							<txtFileVersion>${project.version}</txtFileVersion>
-							<txtProductVersion>${version}</txtProductVersion>
-							<productVersion>1.0.2.0</productVersion>
-							<fileVersion>1.0.2.0</fileVersion>
+							
+							<txtFileVersion>${sofwareVersion}</txtFileVersion>
+							<txtProductVersion>${sofwareVersion}</txtProductVersion>
+							<productVersion>${sofwareVersion}</productVersion>
+							<fileVersion>${sofwareVersion}</fileVersion>
 							<fileDescription>${description}</fileDescription>
 							<originalFilename>${project.name}.exe</originalFilename>
 							<copyright>${organizationName} 2025</copyright>

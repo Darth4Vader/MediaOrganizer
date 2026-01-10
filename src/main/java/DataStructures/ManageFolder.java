@@ -314,21 +314,27 @@ public class ManageFolder {
 	 * @return the {@code FolderType} if exists otherwise FolderType.UNKOWN_MEDIA
 	 */
 	private FolderType getMainFolderType(File folder) {
-		if(folder.isDirectory()) for(File file : folder.listFiles()) {
-			if(!file.isHidden() && !FilesUtils.isSystemFile(file)) {
-				if(FileInfoType.getFolderType(file) == FolderType.MOVIE)
-					return FolderType.MOVIE;
-				else {
-					FileInfo info = new FileInfo(file);
-					if(info.hasSeason())
-						return FolderType.TV_SERIES;
-					else if(info.hasEpisode())
-						return FolderType.MINI_SERIES;
+		if(folder != null && folder.isDirectory() && isNonSystemFile(folder)) {
+			File[] files = folder.listFiles();
+			if(files != null) for(File file : files) {
+				if(isNonSystemFile(file)) {
+					if(FileInfoType.getFolderType(file) == FolderType.MOVIE)
+						return FolderType.MOVIE;
+					else {
+						FileInfo info = new FileInfo(file);
+						if(info.hasSeason())
+							return FolderType.TV_SERIES;
+						else if(info.hasEpisode())
+							return FolderType.MINI_SERIES;
+					}
 				}
 			}
-			
 		}
 		return FolderType.NONE;
+	}
+	
+	public static boolean isNonSystemFile(File file) {
+		return file != null && !file.isHidden() && !FilesUtils.isSystemFile(file);
 	}
 	
 	private Map<String, FolderInfo> getMainDefaultMap(FolderType type) {
@@ -665,10 +671,11 @@ public class ManageFolder {
 			//organize input: season beafore featurettes and posters.
 			List<File> first = new ArrayList<>();
 			List<File> posters = new ArrayList<>();
+			List<File> subtites = new ArrayList<>();
 			List<File> last = new ArrayList<>();
 			for(File file : arr) {
 				try {
-					if(!FilesUtils.isSystemFile(file)) {
+					if(isNonSystemFile(file)) {
 						FileInfo info = new FileInfo(file);
 						FolderType type = info.getFolderType();
 						if(type == FolderType.EXTRAS || type == FolderType.FEATURETTES 
@@ -678,6 +685,9 @@ public class ManageFolder {
 						else if(type == FolderType.POSTERS || FileFormats.getFileFormat(file) == FileFormat.IMAGE) {
 							posters.add(file);
 						}
+						else if(FileFormats.getFileFormat(file) == FileFormat.SUBTILTE) {
+							subtites.add(file);
+						}
 						else
 							first.add(file);
 					}
@@ -686,6 +696,7 @@ public class ManageFolder {
 					e.printStackTrace();
 				}
 			}
+			first.addAll(subtites);
 			first.addAll(posters);
 			first.addAll(last);
 			//start reading and moving
@@ -1463,7 +1474,9 @@ public class ManageFolder {
 		private void searchFolderInfo() {
 			if(valid) {
 				try {
-					this.folderInfo = getMainFolder(sorceFileInfo, flagMoveOnlyIfVideosExist);
+					// we only create the main folder only if the flag is set to true, or the file is a video file.
+					boolean createIfMissing = flagMoveOnlyIfVideosExist || sorceFileInfo.getFormat() == FileFormat.VIDEO;
+					this.folderInfo = getMainFolder(sorceFileInfo, createIfMissing);
 					if(folderInfo == null)
 						this.valid = false;
 				} catch (FlagSearchMainFolderExeception e) {
