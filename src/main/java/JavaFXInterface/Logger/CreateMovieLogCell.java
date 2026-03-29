@@ -2,14 +2,14 @@ package JavaFXInterface.Logger;
 
 import java.util.logging.Level;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import DataStructures.FileOperationDetails;
 import javafx.geometry.Pos;
 import javafx.scene.control.ListCell;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Popup;
 
 /**
  * Custom ListCell for displaying log records in a log view.
@@ -52,6 +52,34 @@ public class CreateMovieLogCell extends ListCell<LoggerRecord> {
         textFlow.getChildren().add(timeStamp);
         message = new Text();
         textFlow.getChildren().add(message);
+        
+    	setOnMouseClicked(event -> {
+			if (event.getClickCount() == 2 && getItem() != null) {
+			LoggerRecord logRecord = getItem();
+				if(logRecord.getLevel() == Level.SEVERE) {
+					// Create a new stage for the popup
+					VBox otherColCheck = new VBox();
+					otherColCheck.setAlignment(Pos.CENTER);
+					otherColCheck.setStyle("-fx-background-color: white; -fx-padding: 10px; -fx-border-color: black; -fx-border-width: 1px;");
+					otherColCheck.getChildren().add(new Text("Error Details:"));
+					Throwable exception = logRecord.getException();
+					if(exception != null) {
+						otherColCheck.getChildren().add(new Text("Exception: " + exception.toString()));
+						for(StackTraceElement element : exception.getStackTrace()) {
+							otherColCheck.getChildren().add(new Text("    at " + element.toString()));
+						}
+					}
+					else {
+						otherColCheck.getChildren().add(new Text("Message: " + logRecord.getMessage()));
+					}
+					
+        			Popup pop = new Popup();
+        			pop.getContent().add(new VBox(otherColCheck));
+        			pop.show(this.getScene().getWindow());
+        			pop.setAutoHide(true);
+				}
+			}
+		});
     }
     
     /**
@@ -63,24 +91,38 @@ public class CreateMovieLogCell extends ListCell<LoggerRecord> {
     private void set(LoggerRecord logRecord) {
         Level level = logRecord.getLevel();
         if(level == Level.WARNING) {
-            message.setFill(Color.RED);
+            message.setFill(Color.YELLOW);
         }
         else if(level == Level.FINER) {
             message.setFill(Color.GREEN);
         }
+        if(level == Level.SEVERE) {
+			message.setFill(Color.RED);
+		}
         else {
             message.setFill(Color.BLACK);
         }
         timeStamp.setText(logRecord.getTimestamp() + "  ");
-        try {
-        	ObjectMapper mapper = new ObjectMapper();
-        	FileOperationDetails fileOperationDetails = mapper.readValue(logRecord.getMessage(), FileOperationDetails.class);
-        	message.setText(fileOperationDetails.getSourceFile() + " (" + fileOperationDetails.getAction() + ") -> " + fileOperationDetails.getDestPath());
+        if(level == Level.SEVERE) {
+        	message.setText(logRecord.getMessage());
         }
-		catch (Exception e) {
-			e.printStackTrace();
-			message.setText(logRecord.getMessage());
-		}
+        else {
+	    	try {
+	        	Object body = logRecord.getBody();
+	        	System.out.println("LogRecord body: " + body);
+	        	if(body instanceof FileOperationDetails) {
+					FileOperationDetails fileOperationDetails = (FileOperationDetails) body;
+					message.setText(fileOperationDetails.getSourceFile() + " (" + fileOperationDetails.getAction() + ") -> " + fileOperationDetails.getDestPath());
+				}
+				else {
+					message.setText(logRecord.getMessage());
+				}
+	        }
+			catch (Exception e) {
+				e.printStackTrace();
+				message.setText(logRecord.getMessage());
+			}
+        }
     }
     
     /**

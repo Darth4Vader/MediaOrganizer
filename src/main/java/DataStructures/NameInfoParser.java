@@ -24,6 +24,9 @@ public class NameInfoParser {
 		nameInfo.setInfoType(new FileInfoType(name));
 		String newName = nameInfo.getInfoType().getNameWithoutFolderType();
 		createName(newName);
+		if(!nameInfo.hasName()) {
+			nameInfo.setName(nameInfo.getInfoType().getFolderTypeName());
+		}
 	}
 	
 	private void createName(String str) {
@@ -38,14 +41,14 @@ public class NameInfoParser {
 			}
 			else {
 				if(!version.isEmpty()) {
-					nameInfo.setName(addWord(nameInfo.getName(), version));
+					nameInfo.setName(addWord(nameInfo.getNameWithoutYear(), version));
 					version = "";
 				}
-				if(!nameInfo.getName().isEmpty() && isYearFormat(word.str)) {
+				if(!nameInfo.getNameWithoutYear().isEmpty() && isYearFormat(word.str)) {
 					if(!year.isEmpty()) {
-						nameInfo.setName(addWord(nameInfo.getName(), year));
+						nameInfo.setName(addWord(nameInfo.getNameWithoutYear(), year));
 						if(isPreviousDash) {
-							nameInfo.setName(addWord(nameInfo.getName(), "-"));
+							nameInfo.setName(addWord(nameInfo.getNameWithoutYear(), "-"));
 							isPreviousDash = false;
 						}
 					}
@@ -68,13 +71,13 @@ public class NameInfoParser {
 						isPreviousDash = true;
 					else {
 						if(!year.isEmpty()) {
-							nameInfo.setName(addWord(nameInfo.getName(), year));
+							nameInfo.setName(addWord(nameInfo.getNameWithoutYear(), year));
 							nameInfo.setYear("");
 							year = "";
 						}
-						if(!nameInfo.getName().isEmpty() && isPreviousDash)
-							nameInfo.setName(addWord(nameInfo.getName(), "-"));
-						nameInfo.setName(addWord(nameInfo.getName(), word));
+						if(!nameInfo.getNameWithoutYear().isEmpty() && isPreviousDash)
+							nameInfo.setName(addWord(nameInfo.getNameWithoutYear(), "-"));
+						nameInfo.setName(addWord(nameInfo.getNameWithoutYear(), word));
 						isPreviousDash = false;
 					}
 				}
@@ -272,7 +275,7 @@ public class NameInfoParser {
 			"x264","x265","avc","hevc","h264","h265",
 			
 			// audio
-			"aac","ac3","eac3","dd","ddp",
+			"aac","ac3","eac3","ddp",
 			"dts","dtshd","truehd","lpcm",
 			"atmos",
 			
@@ -282,8 +285,13 @@ public class NameInfoParser {
 		String str = normalize(word.str);
 		// exact match only
 		for(String endMarker : END_MARKERS) {
-			if(str.contains(endMarker))
+			if(str.contains(endMarker)) {
 				return true;
+			}
+		}
+		if(str.equalsIgnoreCase("xvid") || str.equalsIgnoreCase("divx") || str.equalsIgnoreCase("dd")) {
+			System.out.println("Exit 1.5");
+			return true; //xvid and divx are also video codecs, but they can be confused with names, so we check them separately with exact match
 		}
 		
 		// resolution pattern (safety net)
@@ -293,17 +301,19 @@ public class NameInfoParser {
 
 		String seasonNumbers = String.format("\\d{1,%d}", NameInfo.MAX_SEASON_LENGTH);
 		String regexSeason = "s" + seasonNumbers;
-		if(str.matches(regexSeason+"-"+regexSeason))
+		if(str.matches(regexSeason+"-"+regexSeason)) {
 			return true; //s01-s04
+		}
 		
 		Word nextWord = word.getNextWord();
 		if(!Arrays.asList("season").stream()
 				.noneMatch(p -> p.equals(str))) {
-			if(nextWord.str.matches(seasonNumbers + "-" + seasonNumbers))
+			if(nextWord.str.matches(seasonNumbers + "-" + seasonNumbers)) {
 				return true; //season 01-04
+			}
 		}
 		
-		if(word.str.equals("+") && nextWord.str.equalsIgnoreCase("extras")) {
+		if(str.equals("+") && nextWord.str.equalsIgnoreCase("extras")) {
 			return true; //+ Extras
 		}
 		

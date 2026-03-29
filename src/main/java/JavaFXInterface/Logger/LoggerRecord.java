@@ -26,6 +26,10 @@ public class LoggerRecord {
     /** The message of the log record. */
     private String message;
     
+    private Object body;
+    
+    private Throwable exception;
+    
     /**
      * Constructs a {@code LoggerRecord} from a {@link LogRecord}.
      * <p>Formats the timestamp of the log record and initializes the level and message fields.</p>
@@ -40,6 +44,8 @@ public class LoggerRecord {
         }
         this.timestamp = timestamp;
         this.level = logRecord.getLevel();
+        this.body = logRecord.getParameters() != null && logRecord.getParameters().length > 0 ? logRecord.getParameters()[0] : null;
+        this.exception = logRecord.getThrown();
         this.message = logRecord.getMessage();
     }
 
@@ -68,6 +74,14 @@ public class LoggerRecord {
      */
     public String getMessage() {
         return message;
+    }
+    
+    public Object getBody() {
+		return body;
+	}
+    
+    public Throwable getException() {
+		return exception;
     }
 
     /**

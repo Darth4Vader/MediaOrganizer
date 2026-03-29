@@ -694,6 +694,7 @@ public class ManageFolder {
 				}
 				catch (Exception e) {
 					e.printStackTrace();
+					LOGGER.log(Level.SEVERE, "Error while organizing file: " + file, e);
 				}
 			}
 			first.addAll(subtites);
@@ -1336,7 +1337,7 @@ public class ManageFolder {
 			
 			FileOperationDetails details = new FileOperationDetails(sourceFile, destPath, action);
 			ObjectMapper mapper = new ObjectMapper(); 
-			LOGGER.info(mapper.writeValueAsString(details));
+			LOGGER.log(Level.INFO, mapper.writeValueAsString(details), details);
 			System.out.println("Green");
 			System.out.print("\u001B[32m");
 			System.out.print(sourceFile + " (" + action + ") -> " + destPath);
@@ -1510,6 +1511,7 @@ public class ManageFolder {
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					LOGGER.log(Level.SEVERE, "Error configuring the move info from the folder info", e);
 				}
 			System.out.println("Start");
 			//System.out.println(fileInfo.);

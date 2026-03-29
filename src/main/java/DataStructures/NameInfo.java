@@ -103,6 +103,9 @@ public class NameInfo {
 	
 	public void parseName(String name) {
 		new NameInfoParser(this).parse(name);
+		// check that the result is legal
+		if(this.name == null || this.name.isBlank())
+			throw new IllegalArgumentException("Parsed name is empty for input: " + name);
 	}
 	
 	public void reset() {
