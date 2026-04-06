@@ -75,6 +75,7 @@ public class CreateMovieLoggerControl {
      */
     public void finishedTask() {
         alert.getDialogPane().lookupButton(ButtonType.OK).setDisable(false);
+        alert.setHeaderText("Finished Updating");
     }
     
     /**

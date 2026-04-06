@@ -49,7 +49,8 @@ public class FileInfo extends NameInfo {
 			System.out.println("LOVVEEEEEE");
 			Word lastWord = Word.getLastWord(name);
 			int start = lastWord.start;
-			if(start-- >= 0) {
+			if(start-1 >= 0) {
+				start = start-1;
 				char c = name.charAt(start);
 				System.out.println(c);
 				if(c == '.' || c == '_') {

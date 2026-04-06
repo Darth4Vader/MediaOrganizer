@@ -412,6 +412,12 @@ public class ActivateFileExplorer extends Application {
 		fileExplorerLabel.setOnMouseClicked(_ -> {
 			if (!(this.explorer instanceof FileInfoExplorer))
 				setMainFileExplorer(new FileInfoExplorer(manage));
+			else {
+				// Move to main folder path
+				File currentFolder = this.explorer.getCurrentFolder();
+				if (currentFolder == null || !currentFolder.getAbsolutePath().equals(manage.getMainFolderPath()))
+					this.explorer.enterFolder(new File(manage.getMainFolderPath()));
+			}
 			mainPane.setCenter(this.explorer);
 		});
 		fileExplorer.setGraphic(fileExplorerLabel);

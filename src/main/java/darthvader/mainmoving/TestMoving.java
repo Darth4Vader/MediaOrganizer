@@ -20,7 +20,42 @@ public class TestMoving {
 		File destFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\New folder (2)\\Main2024");
 		copyOnlyFolders(folder, destFolder);*/
 		
-    	File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
+		/*File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\MainSupernatural");
+		ManageFolder manage = new ManageFolder(mainFolder.getAbsolutePath(), Arrays.asList(mainFolder.listFiles()));
+		System.out.println("Starting moving files from input... " + manage.TVMap);
+		manage.moveFilesFromInput();*/
+		
+		NameInfo info8 = new NameInfo("Movies");
+		System.out.println("Final: " + info8.getName());
+		
+		NameInfo info89 = new NameInfo("Aladdin.2019.1080p.BluRay.x264-SPARKS - Copy.mkv");
+		System.out.println("Final: " + info89.getName());
+		
+		/*NameInfo info = new NameInfo("Supernatural -Season 05");
+		System.out.println("Final: " + info.getName());
+		
+		NameInfo info4 = new NameInfo("Supernatural -s05");
+		System.out.println(info.getName());
+		
+		NameInfo info5 = new NameInfo("Supernatural ----s05");
+		System.out.println(info5.getName());
+		
+		/*NameInfo info6 = new NameInfo("The season 1");
+		System.out.println(info6.getName());*/
+		
+		/*NameInfo info2 = new NameInfo("Supernatural - Season 05");
+		System.out.println(info2.getName());
+		
+		NameInfo info3 = new NameInfo("Supernatural Season 05");
+		System.out.println(info3.getName());
+		
+		/*File mainFolder = new File("D:\\");
+		ManageFolder manage = new ManageFolder(mainFolder.getAbsolutePath(), Arrays.asList(mainFolder.listFiles()));
+		System.out.println("Starting moving files from input... " + manage.TVMap);
+		manage.moveFilesFromInput();*/
+		
+		
+    	/*File mainFolder = new File("C:\\Users\\itay5\\OneDrive\\Pictures\\Main2024");
     	
 		
 		
@@ -30,7 +65,7 @@ public class TestMoving {
 		
 		manage.toAddInsideMap(file);
 		
-		manage.createIconToFolder();
+		manage.createIconToFolder();*/
     	
     	
     	//System.out.println(new NameInfo("The Bad Batch (2021) Season 1 S01 (1080p DSNP WEB-DL x265 HEVC 10bit EAC3 5.1 YOGI)").getName());

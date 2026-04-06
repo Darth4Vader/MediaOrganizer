@@ -1,32 +1,42 @@
 package DataStructures;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-
-import DataStructures.ManageFolder.FileOperation;
-import DataStructures.ManageFolder.ManageFile;
 
 public class ManageFileDetails {
 	
-	private FileOperationDetails mainFileOperationDetails;
+	private File mainFile;
 	private List<FileOperationDetails> fileOperationDetailsList;
 	
 	public ManageFileDetails() {
-		
-	}
-
-	public ManageFileDetails(FileOperationDetails mainFileOperationDetails,
-			List<FileOperationDetails> fileOperationDetailsList) {
-		this.mainFileOperationDetails = mainFileOperationDetails;
-		this.fileOperationDetailsList = fileOperationDetailsList;
+		this.fileOperationDetailsList = new ArrayList<>();
 	}
 	
-	public FileOperationDetails getMainFileOperationDetails() {
-		return mainFileOperationDetails;
+	public ManageFileDetails(File mainFile) {
+		this();
+		this.mainFile = mainFile;
+	}
+	
+	public File getMainFile() {
+		return mainFile;
 	}
 	
 	public List<FileOperationDetails> getFileOperationDetailsList() {
 		return fileOperationDetailsList;
 	}
-
+	
+	public void setMainFile(File mainFile) {
+		this.mainFile = mainFile;
+	}
+	
+	/*public void setFileOperationDetailsList(List<FileOperationDetails> fileOperationDetailsList) {
+		this.fileOperationDetailsList = fileOperationDetailsList;
+	}*/
+	
+	public void addFileOperationDetails(Collection<FileOperationDetails> fileOperationDetailsCollection) {
+		if(fileOperationDetailsCollection != null)
+			this.fileOperationDetailsList.addAll(fileOperationDetailsCollection);
+	}
 }

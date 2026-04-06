@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
@@ -75,7 +76,7 @@ public class ManageFolder {
 	public ManageFolder(String mainFolderPath) {
 		this.urlParent = mainFolderPath;
 		this.sideMovesList = new ArrayList<>();
-		setMap(checkStartingPath(DEFAULT_OUTPUT));
+		setManageFolderFiles(List.of(checkStartingPath(DEFAULT_OUTPUT)));
 	}
 	
 	public ManageFolder(String mainFolderPath, List<File> readDirectory) {
@@ -125,6 +126,7 @@ public class ManageFolder {
 		}
 		System.out.println(read);
 		
+		
 		if(read.contains(checkStartingPath(DEFAULT_OUTPUT))) {
 			read.remove(checkStartingPath(DEFAULT_OUTPUT));
 			setMap(checkStartingPath(DEFAULT_OUTPUT));
@@ -164,8 +166,23 @@ public class ManageFolder {
 						Arrays.asList(DEFAULT_OUTPUT, DEFAULT_INPUT, "W-Keep")
 										.stream()
 										.noneMatch(e -> e.equalsIgnoreCase(fileName))) {
-					System.out.println(file);
-					toAddInsideMap(file);
+					if (Set.of(
+					        Path.of(DEFAULT_OUTPUT, OUTPUT_TV),
+					        Path.of(DEFAULT_OUTPUT, OUTPUT_MOVIE),
+					        Path.of(DEFAULT_OUTPUT, OUTPUT_UNKOWN)
+					    ).stream().noneMatch(p -> file.toPath().endsWith(p))) {
+							System.out.println(file);
+							toAddInsideMap(file);
+						}
+					else {
+						// iterate inside the default output folders to add them to the map
+						File[] defaultOutputArr = file.listFiles();
+						if(defaultOutputArr != null) for(File defaultOutputChild : defaultOutputArr) {
+							if(defaultOutputChild.isDirectory() && !file.isHidden()) {
+								toAddInsideMap(defaultOutputChild);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -181,7 +198,6 @@ public class ManageFolder {
 		File folder = parentInfo.getFile();
 		FolderType typeOfFolder = parentInfo.getFolderType();
 		FolderType typeByInfo = parentInfo.getFolderTypeByInfo();
-		//System.out.println(typeOfFolder + " " +typeByInfo);
 		if(typeOfFolder != FolderType.MAIN_FOLDER && typeOfFolder != FolderType.NONE) {
 			return typeOfFolder;
 		}
@@ -374,7 +390,7 @@ public class ManageFolder {
 	 * @param folder the destination folder to set the icon on
 	 * @param file an icon file
 	 */
-	public List<Exception> setIconsToFolder() {
+	public List<Exception> setIconsToFolder2() {
 		File mainIconFolder = checkStartingPath(ICONS);
 		if(!mainIconFolder.exists())
 			mainIconFolder.mkdir();
@@ -387,9 +403,10 @@ public class ManageFolder {
 						if(!file.isDirectory()) {
 							FileInfo info = new FileInfo(file);
 							if(info.getFolderType() == FolderType.LOGO) {
+								ManageFileDetails details = new ManageFileDetails(file);
 								ManageFile manage = new ManageFile(info, FileOperation.SET_ICON);
 								try {
-									manage.printFileMoves();
+									manage.printFileMoves(details);
 								} catch (IOException | ActionAlreadyActivatedException e) {
 									list.add(e);
 								}
@@ -398,6 +415,54 @@ public class ManageFolder {
 					}
 				}
 			}
+		return list;
+	}
+	
+	public List<Exception> refreshIconsOfFolder() {
+		// iterate all maps and set the main icon of each folder to the one in the information file if exists
+		List<Exception> list = new ArrayList<>();
+		for(FolderInfo folderInfo : movieMap.values()) {
+			// first Main Folder
+			list.addAll(refreshIconsOfFolder(folderInfo, folderInfo));
+			// then movie folder
+			File movieFolderFile = folderInfo.getFolderByType(folderInfo, FolderType.MOVIE);
+			if(movieFolderFile != null) {
+				list.addAll(refreshIconsOfFolder(folderInfo, new FileInfo(movieFolderFile)));
+			}
+		}
+		for(FolderInfo folderInfo : TVMap.values()) {
+			// first Main Folder
+			list.addAll(refreshIconsOfFolder(folderInfo, folderInfo));
+			// then season folders
+			File[] children = folderInfo.getFile().listFiles();
+			if(children != null) for(File child : children) {
+				if(!child.isHidden() && child.isDirectory()) {
+					FileInfo childInfo = new FileInfo(child);
+					if(childInfo.getFolderTypeByInfo() == FolderType.TV_SERIES) {
+						list.addAll(refreshIconsOfFolder(folderInfo, childInfo));
+					}
+				}
+			}
+		}
+		for(FolderInfo folderInfo : unkownMediaMap.values()) {
+			// first Main Folder
+			list.addAll(refreshIconsOfFolder(folderInfo, folderInfo));
+		}
+		return list;
+	}
+	
+	private List<Exception> refreshIconsOfFolder(FolderInfo folderInfo, FileInfo fileInfo) {
+		List<Exception> list = new ArrayList<>();
+		File logoFile = getLogoOfFileInformation(folderInfo, fileInfo);
+		if(logoFile != null) {
+			ManageFileDetails details = new ManageFileDetails(logoFile);
+			ManageFile mainFolder = getSetIcon(new FileInfo(logoFile), fileInfo.getFile());
+			try {
+				mainFolder.printFileMoves(details);
+			} catch (IOException | ActionAlreadyActivatedException e) {
+				list.add(e);
+			}
+		}
 		return list;
 	}
 	
@@ -427,6 +492,25 @@ public class ManageFolder {
 			folderInformation = loadFolderInformation(folderInfo, fileInfo);
 		}
 		return folderInformation;
+	}
+	
+	public File getLogoOfFileInformation(FolderInfo folderInfo, FileInfo fileInfo) {
+		// it is inside the information file of the folder if exists
+		File extraFolder = folderInfo.getFolderByType(fileInfo, FolderType.EXTRAS);
+		if(extraFolder != null) {
+			// get info folder
+			File infoFolder = folderInfo.getFolderByType(fileInfo, FolderType.INFORMATION);
+			if(infoFolder != null) {
+				File[] infoFiles = infoFolder.listFiles();
+				if(infoFiles != null) for(File infoFile : infoFiles) {
+					FileInfo infoFileInfo = new FileInfo(infoFile);
+					if(infoFileInfo.getFolderType() == FolderType.LOGO) {
+						return infoFileInfo.getFile();
+					}
+				}
+			}
+		}
+		return null;
 	}
 	
 	public void setIconToFolder(File folder, File poster) {
@@ -474,20 +558,23 @@ public class ManageFolder {
 			}
 			FileInfo logo = isPosterOnListAsLogo(poster, folderInfo, fileInfo);
 			if(logo != null) {
+				// if can move file then add to the Logger Info about it
+				ManageFileDetails details = new ManageFileDetails(logo.getFile());
 				System.out.println("hohohoho");
 				ManageFile manage = getSetIcon(logo, fileToSetIcon);
 				try {
-					manage.printFileMoves();
+					manage.printFileMoves(details);
 				} catch (IOException | ActionAlreadyActivatedException e) {
 					e.printStackTrace();
 				}
 			}
 			else if(addNewPosterAsLogo) {
+				ManageFileDetails details = new ManageFileDetails(poster);
 				System.out.println("Mad");
 				FileInfo newPosterInfo = new FileInfo(poster);
 				ManageFile manage = getCreateIcon(newPosterInfo, folderInfo, fileToSetIcon); 
 				try {
-					manage.printFileMoves();
+					manage.printFileMoves(details);
 				} catch (IOException | ActionAlreadyActivatedException e) {
 					e.printStackTrace();
 				}
@@ -758,8 +845,10 @@ public class ManageFolder {
 					else
 						canMoveFile = true;
 					if(canMoveFile) {
+						// if can move file then add to the Logger Info about it
+						ManageFileDetails details = new ManageFileDetails(file);
 						ManageFile moveFile = new ManageFile(info, FileOperation.MOVE);
-						moveFile.printFileMoves();
+						moveFile.printFileMoves(details);
 					}
 					//removeTrashFiles(file);
 				}
@@ -1281,11 +1370,8 @@ public class ManageFolder {
 	
 	public class FileOperationHandler {
 		
-		private File sourceFile;
-		private String destPath;
+		private FileOperationDetails details;
 		private ManageFile moveFileInfo;
-		private FileOperation action;
-		private boolean isFinished;
 		
 		public FileOperationHandler(ManageFile moveFile, File sourceFile, String destPath) {
 			this(sourceFile, destPath);
@@ -1295,7 +1381,7 @@ public class ManageFolder {
 		public FileOperationHandler(ManageFile moveFile, File sourceFile, String destPath, FileOperation action) {
 			this(sourceFile, destPath);
 			this.moveFileInfo = moveFile;
-			this.action = action;
+			this.details.setAction(action);
 		}
 		
 		public FileOperationHandler(File sourceFile, String destPath) {
@@ -1303,10 +1389,7 @@ public class ManageFolder {
 		}
 		
 		public FileOperationHandler(File sourceFile, String destPath, FileOperation action) {
-			this.sourceFile = sourceFile;
-			this.destPath = destPath;
-			this.action = action;
-			this.isFinished = false;
+			this.details = new FileOperationDetails(sourceFile, destPath, action);
 			this.moveFileInfo = null;
 		}
 		
@@ -1319,9 +1402,9 @@ public class ManageFolder {
 		}
 
 		public synchronized void activateAction() throws IOException, ActionAlreadyActivatedException {
-			if(isFinished)
+			if(details.isFinished())
 				throw new ActionAlreadyActivatedException();
-			switch (action) {
+			switch (details.getAction()) {
 			case CREATE_ICON: createIcon();
 				break;
 			case MOVE: move();
@@ -1333,20 +1416,11 @@ public class ManageFolder {
 			default:
 				break;
 			}
-			this.isFinished = true;
-			
-			FileOperationDetails details = new FileOperationDetails(sourceFile, destPath, action);
-			ObjectMapper mapper = new ObjectMapper(); 
-			LOGGER.log(Level.INFO, mapper.writeValueAsString(details), details);
-			System.out.println("Green");
-			System.out.print("\u001B[32m");
-			System.out.print(sourceFile + " (" + action + ") -> " + destPath);
-			System.out.print("\u001B[0m");
-			System.out.println();
+			this.details.setFinished(true);
 		}
 		
 		private void move() throws IOException {
-			Files.move(sourceFile.toPath(), Paths.get(destPath));
+			Files.move(this.details.getSourceFile().toPath(), Paths.get(this.details.getDestPath()));
 			logoActions();
 		}
 		
@@ -1356,7 +1430,7 @@ public class ManageFolder {
 		 */
 		private void createIcon() throws IOException {
 			if(moveFileInfo.canDoIconActions()) {
-				File fil = ImageUtils.createIconFromFile(sourceFile, destPath);
+				File fil = ImageUtils.createIconFromFile(this.details.getSourceFile(), this.details.getDestPath());
 				System.out.println(fil);
 				if(fil != null) {
 					System.out.println("Goodd");
@@ -1369,26 +1443,33 @@ public class ManageFolder {
 		}
 		
 		private void setIcon() throws IOException {
+			System.out.println("Dumbeldore " + moveFileInfo.canDoIconActions());
 			if(moveFileInfo.canDoIconActions()) {
-				FilesUtils.setIniFileIcon(new File(destPath), sourceFile);
+				System.out.println("Dest Path: " + this.details.getDestPath());
+				System.out.println("Source File: " + this.details.getSourceFile());
+				FilesUtils.setIniFileIcon(new File(this.details.getDestPath()), this.details.getSourceFile());
 			}
 		}
 		
 		private void replaceIcon() throws IOException {
-			File icon = FilesUtils.removeFileLogo(sourceFile);
+			File icon = FilesUtils.removeFileLogo(this.details.getSourceFile());
 			if(icon != null)
 				removeTrashFiles(icon);
 			logoActions();
 		}
 		
 		private void logoActions() {
-			System.out.println("Dest Path: " + destPath);
+			System.out.println("Dest Path: " + this.details.getDestPath());
 			if(hasMoveFileInfo()) {
 				if(moveFileInfo.moveType == FolderType.POSTERS)
-					sideMovesList.add(new ManageFile(new File(destPath), FileOperation.CREATE_ICON, getFolderInfo()));
+					sideMovesList.add(new ManageFile(new File(this.details.getDestPath()), FileOperation.CREATE_ICON, getFolderInfo()));
 				if(moveFileInfo.moveType == FolderType.LOGO)
-					sideMovesList.add(new ManageFile(new File(destPath), FileOperation.SET_ICON, getFolderInfo()));
+					sideMovesList.add(new ManageFile(new File(this.details.getDestPath()), FileOperation.SET_ICON, getFolderInfo()));
 			}
+		}
+		
+		public FileOperationDetails getDetails() {
+			return details;
 		}
 		
 	}
@@ -1652,16 +1733,29 @@ public class ManageFolder {
 		private void setIcon() {
 			setIconFolder();
 			if(canDoIconActions()) {
+				setIcon(this.iconFolder);
+				if(folderInfo.getFolderType() == FolderType.MOVIE) {
+					File movieFolderFile = folderInfo.getFolderByType(folderInfo, FolderType.MOVIE);
+					if(movieFolderFile != null && !movieFolderFile.equals(sorceFileInfo.getFile())) {
+						setIcon(movieFolderFile);
+					}
+				}
+			}
+		}
+		
+		private void setIcon(File iconFolder) {
+			if(canDoIconActions()) {
 				Path relativeIconPath = DataUtils.getRelativePathFromOfFile(folderInfo.getFile(), sorceFileInfo.getFile());
 				Path relativeFolderPath = DataUtils.getRelativePathFromOfFile(folderInfo.getFile(), iconFolder);
 				if(relativeIconPath != null && relativeFolderPath != null) {
 					Path relativePath = relativeFolderPath.relativize(relativeIconPath);
 					System.out.println("Reli: " + relativeIconPath + " | " + relativeFolderPath + " | " + relativePath);
 					System.out.println(relativeFolderPath.toFile().toPath().relativize(relativeIconPath.toFile().toPath()));
-					moveList.add(new FileOperationHandler(this, new File(relativePath.toString()), this.iconFolder.getAbsolutePath(), FileOperation.SET_ICON));
+					moveList.add(new FileOperationHandler(this, new File(relativePath.toString()), iconFolder.getAbsolutePath(), FileOperation.SET_ICON));
 				}
-				else
-					moveList.add(new FileOperationHandler(this, sorceFileInfo.getFile(), this.iconFolder.getAbsolutePath(), FileOperation.SET_ICON));
+				else {
+					moveList.add(new FileOperationHandler(this, sorceFileInfo.getFile(), iconFolder.getAbsolutePath(), FileOperation.SET_ICON));
+				}
 			}
 		}
 		
@@ -1682,7 +1776,7 @@ public class ManageFolder {
 			return this.moveList;
 		}
 		
-		public void printFileMoves() throws IOException, ActionAlreadyActivatedException {
+		public void printFileMoves(ManageFileDetails details) throws IOException, ActionAlreadyActivatedException {
 			System.out.println(" Start valid: " + valid);
 			System.out.println(sorceFileInfo.getFile());
 			System.out.println(action);
@@ -1695,6 +1789,9 @@ public class ManageFolder {
 			System.out.println(this.action);
 			System.out.println(sorceFileInfo.getFile());
 			createMoveInfo();
+			if(details != null) {
+				details.addFileOperationDetails(this.moveList.stream().map(FileOperationHandler::getDetails).collect(Collectors.toList()));
+			}
 			System.out.println(moveList);
 			for(FileOperationHandler han : moveList)
 				han.activateAction();
@@ -1704,7 +1801,7 @@ public class ManageFolder {
 			}
 			sideMovesList.clear();
 			for(ManageFile han : list)
-				han.printFileMoves();
+				han.printFileMoves(details);
 		}
 	}
 }

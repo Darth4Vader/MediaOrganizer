@@ -8,6 +8,8 @@ public class DataUtils {
 	public static Path getRelativePathFromOfFile(File folder, File relativeFile) {
 		Path filePath = relativeFile.toPath();
 		Path folderPath = folder.toPath();
+		if(folderPath.equals(filePath))
+			return Path.of("");
 		if(filePath.startsWith(folderPath)) {
 			return filePath.subpath(folderPath.getNameCount(), filePath.getNameCount());
 		}

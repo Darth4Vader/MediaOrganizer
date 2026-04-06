@@ -220,6 +220,10 @@ public class FileExplorer extends BorderPane {
 		});
 	}
 	
+	public File getCurrentFolder() {
+		return this.mainFileExplorerView.getFolder();
+	}
+	
 	public class ExpandPanel extends CanvasPane {
 		
 		private Image image;
