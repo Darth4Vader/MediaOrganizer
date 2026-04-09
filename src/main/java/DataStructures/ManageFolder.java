@@ -740,19 +740,23 @@ public class ManageFolder {
 	}
 	
 	public void moveFilesFromInput() {
-		moveFiless(DEFAULT_INPUT);
+		moveFilesFromInput(null);
 	}
 	
-	public void moveFiless(String path) {
-		moveFiles(checkStartingPath(path), null);
+	public void moveFilesFromInput(ManageFileDetailsList managedFiles) {
+		moveFiless(DEFAULT_INPUT, managedFiles);
+	}
+	
+	public void moveFiless(String path, ManageFileDetailsList managedFiles) {
+		moveFiles(checkStartingPath(path), null, managedFiles);
 	}
 	
 	private void moveFiles(String path, FileInfo parentInfo) {
 		File parent = checkStartingPath(path);
-		moveFiles(parent, parentInfo);
+		moveFiles(parent, parentInfo, null);
 	}
 	
-	public void moveFiles(File parent, FileInfo parentInfo) {
+	public void moveFiles(File parent, FileInfo parentInfo, ManageFileDetailsList managedFiles) {
 		File[] arr = parent.listFiles();
 		if(arr != null) {
 			//organize input: season beafore featurettes and posters.
@@ -846,7 +850,7 @@ public class ManageFolder {
 						canMoveFile = true;
 					if(canMoveFile) {
 						// if can move file then add to the Logger Info about it
-						ManageFileDetails details = new ManageFileDetails(file);
+						ManageFileDetails details = managedFiles.addFile(file);
 						ManageFile moveFile = new ManageFile(info, FileOperation.MOVE);
 						moveFile.printFileMoves(details);
 					}

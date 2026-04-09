@@ -8,6 +8,7 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 import DataStructures.ManageFolder;
+import OtherUtilities.ImageUtils;
 
 public class TestManagerLogger {
 
@@ -28,18 +29,22 @@ public class TestManagerLogger {
 		
 		ManageFolder manage = new ManageFolder(file.getAbsolutePath());
 		// simulate moving the file to the input folder, and then start the logger
-		manage.moveFilesFromInput();
+		//manage.moveFilesFromInput();
 		
 		// create Poster dummy file
-		createPoster(inputFolder, customMovieName);
+		//createPoster(inputFolder, customMovieName);
+		/*File dummyPosterFolder = new File(file, "dummyPosterFolder");
+		createLogoFile(inputFolder, customMovieName, dummyPosterFolder);*/
+		createDummyInputFile(inputFolder, customMovieName + ".srt");
+		
 		
 		ManageFolder manage2 = new ManageFolder(file.getAbsolutePath());
 		System.out.println("Maps before moving files from input: " + manage2.movieMap + " " + manage2.TVMap + " " + manage2.unkownMediaMap);
 		// simulate moving the file to the input folder, and then start the logger
-		manage2.moveFilesFromInput();
+		//manage2.moveFilesFromInput();
 	}
 	
-	public static void createPoster(File inputFolder, String customMovieName) {
+	public static File createPoster(File inputFolder, String customMovieName) {
 		// create Poster dummy file
 		File posterFile = createDummyInputFile(inputFolder, customMovieName + " - Poster" + ".jpg");
 		// draw a stick figure on the poster file
@@ -60,6 +65,16 @@ public class TestManagerLogger {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return posterFile;
+	}
+	
+	public static File createLogoFile(File inputFolder, String customMovieName, File dummyPosterFolder) {
+		// create Logo dummy file
+		File dummyPosterFile = createPoster(dummyPosterFolder, customMovieName);
+		File logoFile = new File(inputFolder, customMovieName + " - Logo" + ".ico");
+		// draw a stick figure on the logo file
+		logoFile = ImageUtils.createIconFromFile(dummyPosterFile, logoFile.getAbsolutePath());
+		return logoFile;
 	}
 	
 	public static File createDummyInputFile(File inputFolder, String customMovieName) {

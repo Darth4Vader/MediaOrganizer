@@ -11,12 +11,17 @@ public class ManageFileDetails {
 	private List<FileOperationDetails> fileOperationDetailsList;
 	
 	public ManageFileDetails() {
-		this.fileOperationDetailsList = new ArrayList<>();
+		this(null);
 	}
 	
 	public ManageFileDetails(File mainFile) {
-		this();
+		this(mainFile, new ArrayList<>());
 		this.mainFile = mainFile;
+	}
+	
+	public ManageFileDetails(File mainFile, List<FileOperationDetails> fileOperationDetailsList) {
+		this.mainFile = mainFile;
+		this.fileOperationDetailsList = fileOperationDetailsList;
 	}
 	
 	public File getMainFile() {
@@ -30,10 +35,6 @@ public class ManageFileDetails {
 	public void setMainFile(File mainFile) {
 		this.mainFile = mainFile;
 	}
-	
-	/*public void setFileOperationDetailsList(List<FileOperationDetails> fileOperationDetailsList) {
-		this.fileOperationDetailsList = fileOperationDetailsList;
-	}*/
 	
 	public void addFileOperationDetails(Collection<FileOperationDetails> fileOperationDetailsCollection) {
 		if(fileOperationDetailsCollection != null)

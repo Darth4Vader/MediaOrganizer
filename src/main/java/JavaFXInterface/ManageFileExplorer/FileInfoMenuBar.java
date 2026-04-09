@@ -10,6 +10,7 @@ import java.util.Map;
 
 import FileUtilities.FilesUtils;
 import JavaFXInterface.Logger.CreateMovieLoggerControl;
+import JavaFXInterface.Logger.UiManageFileDetailsList;
 import OtherUtilities.ImageUtils;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
@@ -74,7 +75,8 @@ public class FileInfoMenuBar extends MenuBar {
 			
 			@Override
 			protected Void call() throws Exception {
-				explorer.getFolderManager().moveFilesFromInput();
+				UiManageFileDetailsList manageFileDetailsList = new UiManageFileDetailsList(createMovieLoggerControl.getCreateMovieLoggerList());
+				explorer.getFolderManager().moveFilesFromInput(manageFileDetailsList);
 				return null;
 			}
 		};

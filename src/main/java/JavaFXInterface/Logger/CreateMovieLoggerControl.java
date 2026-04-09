@@ -1,9 +1,7 @@
 package JavaFXInterface.Logger;
 
-import java.util.logging.Logger;
-
 import DataStructures.ManageFolder;
-import javafx.collections.FXCollections;
+import JavaFXInterface.utils.UiThreadList;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
@@ -23,13 +21,13 @@ public class CreateMovieLoggerControl {
      * ListView to display the log records.
      * <p>The {@link ListView} is used to present a scrollable list of log records.</p>
      */
-    private ListView<LoggerRecord> createMovieLoggerListView;
+    private ListView<UiManageFileDetails> createMovieLoggerListView;
     
     /**
      * Observable list of log records.
      * <p>The {@link ObservableList} holds the log records to be displayed in the {@link ListView}.</p>
      */
-    private ObservableList<LoggerRecord> createMovieLoggerList;
+    private UiThreadList<UiManageFileDetails> createMovieLoggerList;
     
     /**
      * Alert dialog for displaying the log information.
@@ -47,10 +45,8 @@ public class CreateMovieLoggerControl {
         createMovieLoggerListView = new ListView<>();
         createMovieLoggerListView.setSelectionModel(null);
         createMovieLoggerListView.setCellFactory(x -> new CreateMovieLogCell());
-        createMovieLoggerList = FXCollections.observableArrayList();
-        createMovieLoggerListView.setItems(createMovieLoggerList);
-        Logger logger = createMovie.getLogger();
-        logger.addHandler(new CreateMovieHandler(createMovieLoggerList));
+        createMovieLoggerList = new UiThreadList<UiManageFileDetails>();
+        createMovieLoggerListView.setItems(getCreateMovieLoggerObservableList());
     }
     
     /**
@@ -116,6 +112,14 @@ public class CreateMovieLoggerControl {
     private void closeAlert() {
         if(this.alert != null)
             this.alert.close();
+    }
+    
+    public ObservableList<UiManageFileDetails> getCreateMovieLoggerObservableList() {
+		return createMovieLoggerList.getObservableList();
+	}
+    
+    public UiThreadList<UiManageFileDetails> getCreateMovieLoggerList() {
+		return createMovieLoggerList;
     }
     
     /**
