@@ -46,7 +46,6 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.apache.tika.sax.TaggedContentHandler;
 import org.gagravarr.flac.FlacTags;
 import org.gagravarr.tika.FlacParser;
-import org.gagravarr.tika.TestFlacParser;
 
 import com.drew.metadata.wav.WavDescriptor;
 import com.sun.jna.platform.win32.Advapi32Util;

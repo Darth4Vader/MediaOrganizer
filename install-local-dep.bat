@@ -1,12 +1,15 @@
 @ echo off
 
+:: GOTO comment macro
+set "{:=goto :}%%"
+
 CALL mvn install:install-file  ^
     -DlocalRepositoryPath=repository ^
-    -Dfile="Libaries/controlsfx/controlsfx-11.2.2-SNAPSHOT.jar" ^
-    -Dsources="Libaries/controlsfx/controlsfx-11.2.2-SNAPSHOT-sources.jar" ^
+    -Dfile="Libaries/controlsfx/controlsfx-11.2.5-SNAPSHOT.jar" ^
+    -Dsources="Libaries/controlsfx/controlsfx-11.2.5-SNAPSHOT-sources.jar" ^
     -DgroupId=org.controlsfx  ^
     -DartifactId=controlsfx  ^
-    -Dversion=11.2.2-SNAPSHOT  ^
+    -Dversion=11.2.5-SNAPSHOT  ^
     -Dpackaging=jar
 
 CALL mvn install:install-file  ^
@@ -18,6 +21,7 @@ CALL mvn install:install-file  ^
     -Dversion=0.0.1-SNAPSHOT  ^
     -Dpackaging=jar
 
+%{:%
 CALL mvn install:install-file  ^
     -DlocalRepositoryPath=repository ^
     -Dfile="Libaries/vorbis-java-tika-0.8.5.jar" ^
@@ -27,7 +31,6 @@ CALL mvn install:install-file  ^
     -Dversion=0.8.5  ^
     -Dpackaging=jar
 
-
 CALL mvn install:install-file  ^
     -DlocalRepositoryPath=repository ^
     -Dfile="Libaries/vorbis-java-core-0.8.5.jar" ^
@@ -36,6 +39,7 @@ CALL mvn install:install-file  ^
     -DartifactId=vorbis-java-core  ^
     -Dversion=0.8.5  ^
     -Dpackaging=jar
+%:}%
 
 CALL mvn install:install-file  ^
     -DlocalRepositoryPath=repository ^

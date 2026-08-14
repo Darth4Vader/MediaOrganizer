@@ -49,7 +49,7 @@ public class FileExplorer extends BorderPane {
 	}
 
 	public FileExplorer(File file) {
-		this.mainFileExplorerView = new MainFileExplorerView(this, FileExplorerView.DETAILS);
+		this.mainFileExplorerView = new MainFileExplorerView(this, FileExplorerView.CONTENT);
 		
 		Control fileView = this.mainFileExplorerView.getFileView();
 		if(fileView instanceof GridView gridView) {

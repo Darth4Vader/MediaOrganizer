@@ -751,9 +751,9 @@ public class ManageFolder {
 		moveFiles(checkStartingPath(path), null, managedFiles);
 	}
 	
-	private void moveFiles(String path, FileInfo parentInfo) {
+	private void moveFiles(String path, FileInfo parentInfo, ManageFileDetailsList managedFiles) {
 		File parent = checkStartingPath(path);
-		moveFiles(parent, parentInfo, null);
+		moveFiles(parent, parentInfo, managedFiles);
 	}
 	
 	public void moveFiles(File parent, FileInfo parentInfo, ManageFileDetailsList managedFiles) {
@@ -815,7 +815,7 @@ public class ManageFolder {
 						if(FolderInfo.hierarchy.isFolderTypeAscendingHierarchy(type, subType) && type != subType
 								&& subType != FolderType.FEATURETTES && subType != FolderType.CHARACTER_POSTERS) {
 							if(file.isDirectory())
-								moveFiles(file.getAbsolutePath(), info);
+								moveFiles(file.getAbsolutePath(), info, managedFiles);
 							else
 								canMoveFile = true;
 						}
@@ -844,7 +844,7 @@ public class ManageFolder {
 					}
 					else if(file.isDirectory() && typeee != FolderType.FEATURETTES && typeee != FolderType.CHARACTER_POSTERS) {
 						info.setFolderType(FolderType.MAIN_FOLDER);
-						moveFiles(file.getAbsolutePath(), info);
+						moveFiles(file.getAbsolutePath(), info, managedFiles);
 					}
 					else
 						canMoveFile = true;
