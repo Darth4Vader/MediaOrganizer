@@ -2,26 +2,27 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>MediaOrganizer</groupId>
   <artifactId>MediaOrganizer</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>0.0.5-SNAPSHOT</version>
   
   		    <properties>
-		        <maven.compiler.source>23</maven.compiler.source>
-		        <maven.compiler.target>23</maven.compiler.target>
+		        <maven.compiler.source>24</maven.compiler.source>
+		        <maven.compiler.target>24</maven.compiler.target>
 		        <mainClass>JavaFXInterface.MainAppActivate</mainClass>
 		        <appName>MediaOrganizer</appName>
-		        <javafx.version>24.0.2</javafx.version>
-		        <tika.version>3.2.1</tika.version>
+		        <javafx.version>27-ea+26</javafx.version>
+		        <tika.version>3.3.2</tika.version>
 		        <jackson.version>2.18.3</jackson.version>
-		        <slf4j.version>2.1.0-alpha1</slf4j.version>
+		        <slf4j.version>2.0.18</slf4j.version>
 				<organizationName>com.github.Darth4Vader</organizationName>
 		        <description>Media Organizer is a JavaFX application for organizing and managing media files.</description>
-		        <sofwareVersion>1.0.2.0</sofwareVersion>
+		        <sofwareVersion>1.0.6.0</sofwareVersion>
 		    </properties>
 
     <build>
 	    <resources>
 	        <resource>
 	            <directory>src/main/resources</directory>
+	            <filtering>false</filtering>
 	        </resource>
 	        
 	        <!-- JavaFX FXML & CSS next to controllers -->
@@ -34,7 +35,7 @@
 	        </resource>
         </resources>
      
-     <plugins> 
+     <plugins>
 		<plugin>
 		    <groupId>io.github.fvarrui</groupId>
 		    <artifactId>javapackager</artifactId>
@@ -79,7 +80,7 @@
 							<fileVersion>${sofwareVersion}</fileVersion>
 							<fileDescription>${description}</fileDescription>
 							<originalFilename>${project.name}.exe</originalFilename>
-							<copyright>${organizationName} 2025</copyright>
+							<copyright>${organizationName} 2026</copyright>
 							
 							<createDesktopIconTask>true</createDesktopIconTask>
 							<generateMsi>true</generateMsi>
@@ -162,6 +163,7 @@
 	        <groupId>org.apache.tika</groupId>
 	        <artifactId>tika-parsers-standard-package</artifactId>
 	       	<exclusions>
+	          <!--
 	          <exclusion>
 	    		<groupId>org.gagravarr</groupId>
 	    		<artifactId>vorbis-java-tika</artifactId>
@@ -170,7 +172,7 @@
 	    		<groupId>org.gagravarr</groupId>
 	    		<artifactId>vorbis-java-core</artifactId>
 	          </exclusion>
-	          
+	          -->
 	          
   	          <exclusion>
 	    		<groupId>org.slf4j</groupId>
@@ -197,6 +199,7 @@
     <type>pom</type>
 </dependency>
 
+<!--
 <dependency>
 	<groupId>org.gagravarr</groupId>
 	<artifactId>vorbis-java-tika</artifactId>
@@ -210,6 +213,7 @@
 			    
 			</exclusions>
 </dependency>
+-->
 
 <dependency>
   <groupId>JIconExtractReloaded</groupId>
@@ -225,6 +229,7 @@
 			</exclusions>
 </dependency>
 
+<!--
 <dependency>
 	<groupId>org.gagravarr</groupId>
 	<artifactId>vorbis-java-core</artifactId>
@@ -238,12 +243,13 @@
 			    
 			</exclusions>
 </dependency>
+-->
 
 <!-- https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform -->
 <dependency>
     <groupId>net.java.dev.jna</groupId>
     <artifactId>jna-platform</artifactId>
-    <version>5.17.0</version>
+    <version>5.19.1</version>
 </dependency>
 
 		<dependency>
@@ -358,7 +364,7 @@
 <dependency>
 	<groupId>org.controlsfx</groupId>
 	<artifactId>controlsfx</artifactId>
-    <version>11.2.2-SNAPSHOT</version>
+    <version>11.2.5-SNAPSHOT</version>
 </dependency>
   </dependencies>
 </project>
